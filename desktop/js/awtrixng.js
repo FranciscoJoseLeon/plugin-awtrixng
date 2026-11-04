@@ -676,11 +676,22 @@ function updateScenarioSnippet() {
     var icon = $.trim($('#test_msg_icon').val() || '');
     var color = $.trim($('#test_msg_color').val() || '#00FF00');
     var text = $('#test_msg_text').val() || '';
+    var durMode = $('#test_msg_duration').val() || '12';
 
-    var titleStr = icon;
-    if (color && color.toUpperCase() !== '#00FF00' && color.toUpperCase() !== '#FFFFFF') {
-        titleStr = (icon ? icon + ' | ' : '') + color;
+    var durStr = '';
+    if (durMode === 'hold') {
+        durStr = 'fija';
+    } else if (parseInt(durMode, 10) > 12) {
+        var sec = parseInt(durMode, 10);
+        durStr = (sec >= 60) ? (sec / 60) + 'm' : sec + 's';
     }
+
+    var parts = [];
+    if (icon) parts.push(icon);
+    if (color && color.toUpperCase() !== '#FFFFFF') parts.push(color);
+    if (durStr) parts.push(durStr);
+
+    var titleStr = parts.join(' | ');
 
     $('#snippet_scenario_cmd').text('#[...][' + eqName + '][{{Notificar (Popup)}}]#');
     $('#snippet_scenario_title').text(titleStr || '{{(icono o vacío)}}');
@@ -823,6 +834,9 @@ $(document).on('click', '#bt_saveAsPresetCmd', function() {
     var text = $('#test_msg_text').val();
     var icon = $('#test_msg_icon').val();
     var color = $('#test_msg_color').val();
+    var durMode = $('#test_msg_duration').val() || '12';
+    var isHold = (durMode === 'hold') ? 1 : 0;
+    var durVal = (durMode === 'hold') ? 0 : (parseInt(durMode, 10) || 12);
 
     if (!text && !icon) {
         $('#div_alert').showAlert({message: '{{Escribe un mensaje o elige un icono antes de guardar}}', level: 'danger', emptyBefore: true});
@@ -830,8 +844,9 @@ $(document).on('click', '#bt_saveAsPresetCmd', function() {
     }
 
     var defaultName = text ? text.substring(0, 25) : (icon ? 'Alerta ' + icon : 'Notificación');
+    if (isHold) defaultName += ' (Fija)';
     bootbox.prompt({
-        title: '{{Nombre del nuevo comando de notificación (ej. "Regar poto", "Apagar luces", "Alerta termo"):}}',
+        title: '{{Nombre del nuevo comando de notificación (ej. "Regando Macetas", "Apagar luces", "Alerta termo"):}}',
         value: defaultName,
         callback: function(result) {
             if (result === null || $.trim(result) === '') return;
@@ -845,7 +860,9 @@ $(document).on('click', '#bt_saveAsPresetCmd', function() {
                     name: cmdName,
                     text: text,
                     icon: icon,
-                    color: color
+                    color: color,
+                    duration: durVal,
+                    hold: isHold
                 },
                 dataType: 'json',
                 global: false,
@@ -1247,6 +1264,9 @@ $('#bt_sendQuickNotification').on('click', function() {
     var text = $('#test_msg_text').val();
     var icon = $('#test_msg_icon').val();
     var color = $('#test_msg_color').val();
+    var durMode = $('#test_msg_duration').val() || '12';
+    var isHold = (durMode === 'hold') ? 1 : 0;
+    var durVal = (durMode === 'hold') ? 0 : (parseInt(durMode, 10) || 12);
 
     if (!ip) {
         $('#div_alert').showAlert({message: '{{Debes introducir primero la IP de este panel Awtrix}}', level: 'danger', emptyBefore: true});
@@ -1264,7 +1284,9 @@ $('#bt_sendQuickNotification').on('click', function() {
             eqLogic_id: $('.eqLogicAttr[data-l1key=id]').val() || 0,
             text: text,
             icon: icon,
-            color: color
+            color: color,
+            duration: durVal,
+            hold: isHold
         },
         dataType: 'json',
         error: function(request, status, error) {
@@ -1275,21 +1297,61 @@ $('#bt_sendQuickNotification').on('click', function() {
                 $('#div_alert').showAlert({message: data.result, level: 'danger', emptyBefore: true});
                 return;
             }
-            $('#div_alert').showAlert({message: '{{¡Notificación enviada correctamente al panel Awtrix!}} (' + ip + ')', level: 'success', emptyBefore: true});
+            var infoMode = isHold ? ' [{{Fija / Permanente}}]' : ' [' + durVal + 's]';
+            $('#div_alert').showAlert({message: '{{¡Notificación enviada correctamente al panel Awtrix!}} (' + ip + ')' + infoMode, level: 'success', emptyBefore: true});
             var cfgW = parseInt($('#input_matrix_width').val(), 10) || 32;
             var cfgH = parseInt($('#input_matrix_height').val(), 10) || 8;
             if (cfgW === 32 && cfgH === 8) {
                 setSimulatorMode('live');
                 if (awtrixSimState.revertToEditTimeout) clearTimeout(awtrixSimState.revertToEditTimeout);
-                awtrixSimState.revertToEditTimeout = setTimeout(function() {
-                    setSimulatorMode('edit');
-                }, 12500);
+                if (!isHold) {
+                    awtrixSimState.revertToEditTimeout = setTimeout(function() {
+                        setSimulatorMode('edit');
+                    }, (durVal > 0 ? durVal * 1000 + 500 : 12500));
+                }
             } else {
                 awtrixSimState.scrollOffset = 0;
                 setSimulatorMode('edit');
             }
         }
     });
+});
+
+// --- Dismiss Notification Button ---
+$('#bt_dismissNotification').on('click', function() {
+    clearJeedomToasts();
+    var ip = $('#input_device_ip').val();
+    var port = $('#input_device_port').val() || 80;
+    var eqId = $('.eqLogicAttr[data-l1key=id]').val() || 0;
+
+    $.ajax({
+        type: 'POST',
+        url: 'plugins/awtrixng/core/ajax/awtrixng.ajax.php',
+        data: {
+            action: 'dismissNotification',
+            ip: ip,
+            port: port,
+            password: $('#input_device_password').val() || '',
+            eqLogic_id: eqId
+        },
+        dataType: 'json',
+        error: function(request, status, error) {
+            handleAjaxError(request, status, error);
+        },
+        success: function(data) {
+            if (data.state != 'ok') {
+                $('#div_alert').showAlert({message: data.result, level: 'danger', emptyBefore: true});
+                return;
+            }
+            $('#div_alert').showAlert({message: '{{¡Notificación descartada/borrada correctamente de la pantalla!}}', level: 'success', emptyBefore: true});
+            if (awtrixSimState.revertToEditTimeout) clearTimeout(awtrixSimState.revertToEditTimeout);
+            setSimulatorMode('edit');
+        }
+    });
+});
+
+$('#test_msg_duration').on('change', function() {
+    updateScenarioSnippet();
 });
 
 // --- Send Broadcast Notification Button (All Active Panels) ---

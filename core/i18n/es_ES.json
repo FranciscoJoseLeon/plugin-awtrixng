@@ -308,7 +308,17 @@
         "¡Tag Jeedom copiado al portapapeles!": "¡Tag Jeedom copiado al portapapeles!",
         "Comando enviado a la pantalla": "Comando enviado a la pantalla",
         "Debes guardar primero el panel antes de crear comandos": "Debes guardar primero el panel antes de crear comandos",
-        "Escribe un mensaje o elige un icono antes de guardar": "Escribe un mensaje o elige un icono antes de guardar"
+        "Escribe un mensaje o elige un icono antes de guardar": "Escribe un mensaje o elige un icono antes de guardar",
+        "Descartar Notificación": "Descartar Notificación",
+        "Duración / Modo": "Duración / Modo",
+        "Normal (12 segundos)": "Normal (12 segundos)",
+        "30 segundos": "30 segundos",
+        "1 minuto": "1 minuto",
+        "5 minutos": "5 minutos",
+        "10 minutos": "10 minutos",
+        "Fija / Permanente (Hold - hasta descartar)": "Fija / Permanente (Hold - hasta descartar)",
+        "En modo 'Fija', el aviso se queda en pantalla hasta que se envíe 'Descartar Notificación' o termine el riego.": "En modo 'Fija', el aviso se queda en pantalla hasta que se envíe 'Descartar Notificación' o termine el riego.",
+        "¡Notificación descartada/borrada correctamente de la pantalla!": "¡Notificación descartada/borrada correctamente de la pantalla!"
     },
     "plugins/awtrixng/desktop/php/awtrixng.php": {
         "401 - Acceso no autorizado": "401 - Acceso no autorizado",
@@ -468,7 +478,17 @@
         "100% directo, sin escribir JSON": "100% directo, sin escribir JSON",
         "Crea un botón o comando de acción en Jeedom para enviar esta notificación sin escribir JSON": "Crea un botón o comando de acción en Jeedom para enviar esta notificación sin escribir JSON",
         "En el campo Mensaje puedes usar tags de Jeedom como": "En el campo Mensaje puedes usar tags de Jeedom como",
-        "y se evalúan automáticamente.": "y se evalúan automáticamente."
+        "y se evalúan automáticamente.": "y se evalúan automáticamente.",
+        "Descartar Notificación": "Descartar Notificación",
+        "Duración / Modo": "Duración / Modo",
+        "Normal (12 segundos)": "Normal (12 segundos)",
+        "30 segundos": "30 segundos",
+        "1 minuto": "1 minuto",
+        "5 minutos": "5 minutos",
+        "10 minutos": "10 minutos",
+        "Fija / Permanente (Hold - hasta descartar)": "Fija / Permanente (Hold - hasta descartar)",
+        "En modo 'Fija', el aviso se queda en pantalla hasta que se envíe 'Descartar Notificación' o termine el riego.": "En modo 'Fija', el aviso se queda en pantalla hasta que se envíe 'Descartar Notificación' o termine el riego.",
+        "¡Notificación descartada/borrada correctamente de la pantalla!": "¡Notificación descartada/borrada correctamente de la pantalla!"
     },
     "plugins/awtrixng/desktop/modal/modal.awtrixng.php": {
         "401 - Acceso no autorizado": "401 - Acceso no autorizado",
@@ -489,7 +509,17 @@
         "Accede directamente a la galería de iconos y a las guías oficiales de Awtrix:": "Accede directamente a la galería de iconos y a las guías oficiales de Awtrix:",
         "Galería de Iconos (https://awtrix.de/icons/)": "Galería de Iconos (https://awtrix.de/icons/)",
         "Get Started (Guía de Inicio)": "Get Started (Guía de Inicio)",
-        "How to build your own matrix LED": "How to build your own matrix LED"
+        "How to build your own matrix LED": "How to build your own matrix LED",
+        "Descartar Notificación": "Descartar Notificación",
+        "Duración / Modo": "Duración / Modo",
+        "Normal (12 segundos)": "Normal (12 segundos)",
+        "30 segundos": "30 segundos",
+        "1 minuto": "1 minuto",
+        "5 minutos": "5 minutos",
+        "10 minutos": "10 minutos",
+        "Fija / Permanente (Hold - hasta descartar)": "Fija / Permanente (Hold - hasta descartar)",
+        "En modo 'Fija', el aviso se queda en pantalla hasta que se envíe 'Descartar Notificación' o termine el riego.": "En modo 'Fija', el aviso se queda en pantalla hasta que se envíe 'Descartar Notificación' o termine el riego.",
+        "¡Notificación descartada/borrada correctamente de la pantalla!": "¡Notificación descartada/borrada correctamente de la pantalla!"
     },
     "plugins/awtrixng/desktop/js/awtrixng.js": {
         "Matriz DIY Awtrix NG": "Matriz DIY Awtrix NG",
@@ -595,7 +625,17 @@
         "¡Tag Jeedom copiado al portapapeles!": "¡Tag Jeedom copiado al portapapeles!",
         "Comando enviado a la pantalla": "Comando enviado a la pantalla",
         "Debes guardar primero el panel antes de crear comandos": "Debes guardar primero el panel antes de crear comandos",
-        "Escribe un mensaje o elige un icono antes de guardar": "Escribe un mensaje o elige un icono antes de guardar"
+        "Escribe un mensaje o elige un icono antes de guardar": "Escribe un mensaje o elige un icono antes de guardar",
+        "Descartar Notificación": "Descartar Notificación",
+        "Duración / Modo": "Duración / Modo",
+        "Normal (12 segundos)": "Normal (12 segundos)",
+        "30 segundos": "30 segundos",
+        "1 minuto": "1 minuto",
+        "5 minutos": "5 minutos",
+        "10 minutos": "10 minutos",
+        "Fija / Permanente (Hold - hasta descartar)": "Fija / Permanente (Hold - hasta descartar)",
+        "En modo 'Fija', el aviso se queda en pantalla hasta que se envíe 'Descartar Notificación' o termine el riego.": "En modo 'Fija', el aviso se queda en pantalla hasta que se envíe 'Descartar Notificación' o termine el riego.",
+        "¡Notificación descartada/borrada correctamente de la pantalla!": "¡Notificación descartada/borrada correctamente de la pantalla!"
     },
     "plugins/awtrixng/plugin_info/configuration.php": {
         "Documentación oficial de Awtrix NG": "Documentación oficial de Awtrix NG",
@@ -607,7 +647,17 @@
         "Descargar Copia de Seguridad (Todos los Paneles)": "Descargar Copia de Seguridad (Todos los Paneles)",
         "Logs Awtrix NG": "Logs Awtrix NG",
         "Ver Registro de Logs (awtrixng)": "Ver Registro de Logs (awtrixng)",
-        "Copia de seguridad guardada en el servidor y descargada correctamente: ": "Copia de seguridad guardada en el servidor y descargada correctamente: "
+        "Copia de seguridad guardada en el servidor y descargada correctamente: ": "Copia de seguridad guardada en el servidor y descargada correctamente: ",
+        "Descartar Notificación": "Descartar Notificación",
+        "Duración / Modo": "Duración / Modo",
+        "Normal (12 segundos)": "Normal (12 segundos)",
+        "30 segundos": "30 segundos",
+        "1 minuto": "1 minuto",
+        "5 minutos": "5 minutos",
+        "10 minutos": "10 minutos",
+        "Fija / Permanente (Hold - hasta descartar)": "Fija / Permanente (Hold - hasta descartar)",
+        "En modo 'Fija', el aviso se queda en pantalla hasta que se envíe 'Descartar Notificación' o termine el riego.": "En modo 'Fija', el aviso se queda en pantalla hasta que se envíe 'Descartar Notificación' o termine el riego.",
+        "¡Notificación descartada/borrada correctamente de la pantalla!": "¡Notificación descartada/borrada correctamente de la pantalla!"
     },
     "plugins/awtrixng/core/class/awtrixng.class.php": {
         "Debes introducir una dirección IP o hostname válido.": "Debes introducir una dirección IP o hostname válido.",
@@ -649,7 +699,17 @@
         "Panel no encontrado para realizar la copia de seguridad.": "Panel no encontrado para realizar la copia de seguridad.",
         "El archivo o datos de copia de seguridad no tienen un formato válido de Awtrix NG.": "El archivo o datos de copia de seguridad no tienen un formato válido de Awtrix NG.",
         "El panel destino seleccionado para la restauración no existe.": "El panel destino seleccionado para la restauración no existe.",
-        "Equipo no encontrado": "Equipo no encontrado"
+        "Equipo no encontrado": "Equipo no encontrado",
+        "Descartar Notificación": "Descartar Notificación",
+        "Duración / Modo": "Duración / Modo",
+        "Normal (12 segundos)": "Normal (12 segundos)",
+        "30 segundos": "30 segundos",
+        "1 minuto": "1 minuto",
+        "5 minutos": "5 minutos",
+        "10 minutos": "10 minutos",
+        "Fija / Permanente (Hold - hasta descartar)": "Fija / Permanente (Hold - hasta descartar)",
+        "En modo 'Fija', el aviso se queda en pantalla hasta que se envíe 'Descartar Notificación' o termine el riego.": "En modo 'Fija', el aviso se queda en pantalla hasta que se envíe 'Descartar Notificación' o termine el riego.",
+        "¡Notificación descartada/borrada correctamente de la pantalla!": "¡Notificación descartada/borrada correctamente de la pantalla!"
     },
     "plugins/awtrixng/core/ajax/awtrixng.ajax.php": {
         "401 - Acceso no autorizado": "401 - Acceso no autorizado",
@@ -663,6 +723,16 @@
         "El archivo de copia de seguridad solicitado no existe en el servidor.": "El archivo de copia de seguridad solicitado no existe en el servidor.",
         "No se encontró el archivo de copia de seguridad en el servidor.": "No se encontró el archivo de copia de seguridad en el servidor.",
         "Los datos de la copia de seguridad no son un JSON válido.": "Los datos de la copia de seguridad no son un JSON válido.",
-        "Acción desconocida : ": "Acción desconocida : "
+        "Acción desconocida : ": "Acción desconocida : ",
+        "Descartar Notificación": "Descartar Notificación",
+        "Duración / Modo": "Duración / Modo",
+        "Normal (12 segundos)": "Normal (12 segundos)",
+        "30 segundos": "30 segundos",
+        "1 minuto": "1 minuto",
+        "5 minutos": "5 minutos",
+        "10 minutos": "10 minutos",
+        "Fija / Permanente (Hold - hasta descartar)": "Fija / Permanente (Hold - hasta descartar)",
+        "En modo 'Fija', el aviso se queda en pantalla hasta que se envíe 'Descartar Notificación' o termine el riego.": "En modo 'Fija', el aviso se queda en pantalla hasta que se envíe 'Descartar Notificación' o termine el riego.",
+        "¡Notificación descartada/borrada correctamente de la pantalla!": "¡Notificación descartada/borrada correctamente de la pantalla!"
     }
 }

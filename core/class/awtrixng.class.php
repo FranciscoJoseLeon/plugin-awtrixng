@@ -379,7 +379,8 @@ class awtrixng extends eqLogic {
             array('logicalId' => 'prev_app', 'name' => __('App Anterior', __FILE__), 'type' => 'action', 'subType' => 'other', 'display' => array('icon' => 'fas fa-step-backward')),
 
             // --- Action Commands (Mensajería, Iconos y Colores) ---
-            array('logicalId' => 'notify', 'name' => __('Notificar (Popup)', __FILE__), 'type' => 'action', 'subType' => 'message', 'display' => array('icon' => 'fas fa-bell', 'title_placeholder' => __('Icono o Color (ej. 2284 o #00FF00)', __FILE__), 'message_placeholder' => __('Mensaje a mostrar', __FILE__))),
+            array('logicalId' => 'notify', 'name' => __('Notificar (Popup)', __FILE__), 'type' => 'action', 'subType' => 'message', 'display' => array('icon' => 'fas fa-bell', 'title_placeholder' => __('Icono, Color o Duración (ej. plant-watering | #00FF00 | fija)', __FILE__), 'message_placeholder' => __('Mensaje a mostrar', __FILE__))),
+            array('logicalId' => 'dismiss_notif', 'name' => __('Descartar Notificación', __FILE__), 'type' => 'action', 'subType' => 'other', 'display' => array('icon' => 'fas fa-bell-slash')),
             array('logicalId' => 'custom_app', 'name' => __('App Carrusel (Publicar)', __FILE__), 'type' => 'action', 'subType' => 'message', 'display' => array('icon' => 'fas fa-layer-group', 'title_placeholder' => __('Nombre App (ej. termo, riego)', __FILE__), 'message_placeholder' => __('Texto de la app', __FILE__))),
             array('logicalId' => 'delete_app', 'name' => __('Eliminar App Carrusel', __FILE__), 'type' => 'action', 'subType' => 'message', 'display' => array('icon' => 'fas fa-trash-alt', 'title_placeholder' => __('Nombre de la App a borrar', __FILE__))),
             array('logicalId' => 'sync_apps', 'name' => __('Sincronizar Info del Panel', __FILE__), 'type' => 'action', 'subType' => 'other', 'display' => array('icon' => 'fas fa-cloud-upload-alt')),
@@ -785,11 +786,45 @@ class awtrixng extends eqLogic {
         return $icons;
     }
 
+    public function dismissNotification() {
+        if ($this->isV1Api()) {
+            try {
+                $this->apiRequest('v1/notifications/dismiss', 'POST', array());
+                log::add('awtrixng', 'info', "Notificación descartada/borrada correctamente de la pantalla.");
+                return;
+            } catch (Exception $e) {
+                try {
+                    $this->apiRequest('v1/notifications', 'POST', array('dismiss' => true, 'text' => ''));
+                    log::add('awtrixng', 'info', "Notificación descartada/borrada con fallback v1.");
+                    return;
+                } catch (Exception $e2) {}
+            }
+        }
+        try {
+            $this->apiRequest('notify/dismiss', 'POST', array());
+        } catch (Exception $e) {
+            try {
+                $this->apiRequest('notify', 'POST', array('text' => '', 'dismiss' => true));
+            } catch (Exception $e2) {}
+        }
+        log::add('awtrixng', 'info', "Notificación descartada/borrada correctamente de la pantalla.");
+    }
+
     public function sendNotification($title, $message, $options = array()) {
         $text = trim($message);
         $icon = '';
         $color = '';
         $durationSec = isset($options['duration']) && intval($options['duration']) > 0 ? intval($options['duration']) : 12;
+        $hold = isset($options['hold']) && boolval($options['hold']);
+
+        $lowerMsg = strtolower($text);
+        $lowerTitle = strtolower(trim($title));
+
+        // Detección directa de comando de descarte / borrado sin JSON
+        if (in_array($lowerMsg, array('dismiss', 'borrar', 'descartar', 'clear', 'off')) || in_array($lowerTitle, array('dismiss', 'borrar', 'descartar', 'clear', 'off'))) {
+            $this->dismissNotification();
+            return;
+        }
 
         // Flexible parameter parsing: title can be icon, color, key=value or pipe format
         if (!empty($title)) {
@@ -799,12 +834,26 @@ class awtrixng extends eqLogic {
                 if (!empty($parsedParams['icon'])) $icon = $parsedParams['icon'];
                 if (!empty($parsedParams['color'])) $color = $this->normalizeColor($parsedParams['color']);
                 if (!empty($parsedParams['duration'])) $durationSec = intval($parsedParams['duration']);
+                if (isset($parsedParams['hold'])) $hold = boolval($parsedParams['hold']);
                 if (!empty($parsedParams['sound'])) $options['sound'] = $parsedParams['sound'];
             } elseif (strpos($trimmedTitle, '|') !== false) {
                 $parts = explode('|', $trimmedTitle);
                 if (isset($parts[0]) && trim($parts[0]) !== '') $icon = trim($parts[0]);
                 if (isset($parts[1]) && trim($parts[1]) !== '') $color = $this->normalizeColor(trim($parts[1]));
-                if (isset($parts[2]) && intval(trim($parts[2])) > 0) $durationSec = intval(trim($parts[2]));
+                if (isset($parts[2])) {
+                    $p2 = strtolower(trim($parts[2]));
+                    if (in_array($p2, array('fija', 'fijo', 'hold', 'permanente', 'infinito'))) {
+                        $hold = true;
+                    } elseif (preg_match('/^([0-9]+)\s*m(in)?$/', $p2, $mMatch)) {
+                        $durationSec = intval($mMatch[1]) * 60;
+                    } elseif (preg_match('/^([0-9]+)\s*s(eg)?$/', $p2, $sMatch)) {
+                        $durationSec = intval($sMatch[1]);
+                    } elseif (intval($p2) > 0) {
+                        $durationSec = intval($p2);
+                    }
+                }
+            } elseif (in_array($lowerTitle, array('fija', 'fijo', 'hold', 'permanente'))) {
+                $hold = true;
             } elseif (is_numeric($trimmedTitle)) {
                 $icon = $trimmedTitle;
             } elseif (preg_match('/^#?[0-9a-fA-F]{6}$/', $trimmedTitle) || in_array(strtolower($trimmedTitle), array('rojo', 'red', 'verde', 'green', 'azul', 'blue', 'amarillo', 'yellow', 'naranja', 'orange'))) {
@@ -814,7 +863,7 @@ class awtrixng extends eqLogic {
             }
         }
 
-        if (empty($text) && !empty($title)) {
+        if (empty($text) && !empty($title) && !$hold) {
             $text = trim($title);
             $icon = '';
         }
@@ -836,7 +885,6 @@ class awtrixng extends eqLogic {
         }
         $color = $this->normalizeColor($color);
 
-        $durationSec = isset($options['duration']) && intval($options['duration']) > 0 ? intval($options['duration']) : 12;
         $repeat = isset($options['repeat']) ? intval($options['repeat']) : 2;
         $wakeup = isset($options['wakeup']) ? boolval($options['wakeup']) : true;
         $stack = isset($options['stack']) ? boolval($options['stack']) : true;
@@ -844,11 +892,15 @@ class awtrixng extends eqLogic {
         if ($this->isV1Api()) {
             $v1Payload = array(
                 'text' => $text,
-                'durationMs' => $durationSec * 1000,
                 'repeat' => $repeat,
                 'wakeup' => $wakeup,
                 'stack' => $stack
             );
+            if ($hold) {
+                $v1Payload['hold'] = true;
+            } else {
+                $v1Payload['durationMs'] = $durationSec * 1000;
+            }
             if (!empty($icon)) {
                 $v1Payload['icon'] = $icon;
             }
@@ -863,7 +915,8 @@ class awtrixng extends eqLogic {
             }
 
             $this->apiRequest('v1/notifications', 'POST', $v1Payload);
-            log::add('awtrixng', 'info', "Notificación v1 enviada a Awtrix: '{$text}' (Icono: " . ($icon ?: 'ninguno') . ", Color: " . ($color ?: 'por defecto') . ")");
+            $modeStr = $hold ? 'FIJA (Hold)' : "duración {$durationSec}s";
+            log::add('awtrixng', 'info', "Notificación v1 enviada a Awtrix [{$modeStr}]: '{$text}' (Icono: " . ($icon ?: 'ninguno') . ", Color: " . ($color ?: 'por defecto') . ")");
             return;
         }
 
@@ -875,6 +928,9 @@ class awtrixng extends eqLogic {
             'wakeup' => $wakeup,
             'stack' => $stack
         );
+        if ($hold) {
+            $payload['hold'] = true;
+        }
 
         if (!empty($icon)) {
             $payload['icon'] = $icon;
@@ -890,7 +946,9 @@ class awtrixng extends eqLogic {
         }
 
         $this->apiRequest('notify', 'POST', $payload);
-        log::add('awtrixng', 'info', "Notificación enviada a Awtrix: '{$text}' (Icono: " . ($icon ?: 'ninguno') . ", Color: " . ($color ?: 'por defecto') . ")");
+        $modeStr = $hold ? 'FIJA (Hold)' : "duración {$durationSec}s";
+        log::add('awtrixng', 'info', "Notificación enviada a Awtrix [{$modeStr}]: '{$text}' (Icono: " . ($icon ?: 'ninguno') . ", Color: " . ($color ?: 'por defecto') . ")");
+    }
     }
 
     public function sendCustomApp($appName, $text, $options = array()) {
@@ -1425,6 +1483,11 @@ class awtrixngCmd extends cmd {
                 $eqLogic->sendNotification($title, $message, $extraOptions);
                 break;
 
+            case 'dismiss_notif':
+            case 'dismiss_notification':
+                $eqLogic->dismissNotification();
+                break;
+
             case 'custom_app':
                 $appName = !empty($title) ? $title : 'custom';
                 $extraOptions = array();
@@ -1453,8 +1516,11 @@ class awtrixngCmd extends cmd {
                     $icon = $this->getConfiguration('preset_icon', '');
                     $text = $this->getConfiguration('preset_text', '');
                     $color = $this->getConfiguration('preset_color', '');
-                    $eqLogic->sendNotification($icon, $text, array('color' => $color));
-                    log::add('awtrixng', 'info', "Notificación preconfigurada ejecutada: {$this->getName()} (Icono: {$icon}, Texto: {$text})");
+                    $duration = intval($this->getConfiguration('preset_duration', 12));
+                    $hold = intval($this->getConfiguration('preset_hold', 0)) == 1;
+                    $eqLogic->sendNotification($icon, $text, array('color' => $color, 'duration' => $duration, 'hold' => $hold));
+                    $modeStr = $hold ? 'FIJA' : "{$duration}s";
+                    log::add('awtrixng', 'info', "Notificación preconfigurada ejecutada [{$modeStr}]: {$this->getName()} (Icono: {$icon}, Texto: {$text})");
                     break;
                 }
                 log::add('awtrixng', 'debug', "Comando {$logicalId} ejecutado sin acción específica");

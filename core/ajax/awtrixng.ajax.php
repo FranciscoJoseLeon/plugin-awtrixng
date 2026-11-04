@@ -223,6 +223,17 @@ try {
         $text = trim(init('text', 'Regando las flores'));
         $icon = awtrixng::resolveIconName(init('icon', ''));
         $color = trim(init('color', '#00FF00'));
+        $duration = intval(init('duration', 12));
+        $hold = intval(init('hold', 0)) == 1;
+
+        $eqId = intval(init('eqLogic_id', 0));
+        if ($eqId > 0) {
+            $eq = eqLogic::byId($eqId);
+            if (is_object($eq)) {
+                $eq->sendNotification($icon, $text, array('color' => $color, 'duration' => $duration, 'hold' => $hold));
+                ajax::success(array('status' => 'ok', 'message' => __('Notificación enviada correctamente a tu pantalla Awtrix NG', __FILE__)));
+            }
+        }
         $password = trim(init('password', ''));
         $eqId = intval(init('eqLogic_id', 0));
 
@@ -249,11 +260,15 @@ try {
         $v1Url = "http://{$ip}:{$port}/api/v1/notifications";
         $v1Payload = array(
             'text' => $text,
-            'durationMs' => 12000,
             'repeat' => 2,
             'wakeup' => true,
             'stack' => false
         );
+        if ($hold) {
+            $v1Payload['hold'] = true;
+        } else {
+            $v1Payload['durationMs'] = $duration * 1000;
+        }
         if (!empty($icon)) {
             $v1Payload['icon'] = $icon;
         }
@@ -350,6 +365,8 @@ try {
         $cmd->setConfiguration('preset_text', $text);
         $cmd->setConfiguration('preset_icon', $icon);
         $cmd->setConfiguration('preset_color', $color);
+        $cmd->setConfiguration('preset_duration', intval(init('duration', 12)));
+        $cmd->setConfiguration('preset_hold', intval(init('hold', 0)));
         $cmd->save();
 
         ajax::success(array(
@@ -358,8 +375,58 @@ try {
             'human' => $cmd->getHumanName(),
             'text' => $text,
             'icon' => $icon,
-            'color' => $color
+            'color' => $color,
+            'duration' => intval(init('duration', 12)),
+            'hold' => intval(init('hold', 0))
         ));
+    }
+
+    if ($action == 'dismissNotification') {
+        $eqId = intval(init('eqLogic_id'));
+        $ip = trim(init('ip', ''));
+        $port = intval(init('port', 80));
+        $password = trim(init('password', ''));
+
+        if ($eqId > 0) {
+            $eq = eqLogic::byId($eqId);
+            if (is_object($eq)) {
+                $eq->dismissNotification();
+                ajax::success(array('status' => 'ok', 'message' => __('Notificación descartada/borrada correctamente', __FILE__)));
+            }
+        }
+
+        if (empty($ip)) {
+            throw new Exception(__('Debes indicar la dirección IP o seleccionar un panel', __FILE__));
+        }
+
+        $v1Url = "http://{$ip}:{$port}/api/v1/notifications/dismiss";
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $v1Url);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, "{}");
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json; charset=utf-8'));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 5);
+        if (!empty($password)) curl_setopt($ch, CURLOPT_USERPWD, 'admin:' . $password);
+        $res = curl_exec($ch);
+        $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+
+        if ($code < 200 || $code >= 300) {
+            $v1Url2 = "http://{$ip}:{$port}/api/v1/notifications";
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $v1Url2);
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode(array('text' => '', 'dismiss' => true)));
+            curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 5);
+            if (!empty($password)) curl_setopt($ch, CURLOPT_USERPWD, 'admin:' . $password);
+            curl_exec($ch);
+            curl_close($ch);
+        }
+
+        ajax::success(array('status' => 'ok', 'message' => __('Notificación descartada/borrada correctamente', __FILE__)));
     }
 
     if ($action == 'getPresetNotificationCmds') {

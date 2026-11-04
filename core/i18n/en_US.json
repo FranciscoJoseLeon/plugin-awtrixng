@@ -308,7 +308,17 @@
         "¡Tag Jeedom copiado al portapapeles!": "Jeedom tag copied to clipboard!",
         "Comando enviado a la pantalla": "Command sent to screen",
         "Debes guardar primero el panel antes de crear comandos": "You must save the panel before creating commands",
-        "Escribe un mensaje o elige un icono antes de guardar": "Write a message or pick an icon before saving"
+        "Escribe un mensaje o elige un icono antes de guardar": "Write a message or pick an icon before saving",
+        "Descartar Notificación": "Dismiss Notification",
+        "Duración / Modo": "Duration / Mode",
+        "Normal (12 segundos)": "Normal (12 seconds)",
+        "30 segundos": "30 seconds",
+        "1 minuto": "1 minute",
+        "5 minutos": "5 minutes",
+        "10 minutos": "10 minutes",
+        "Fija / Permanente (Hold - hasta descartar)": "Fixed / Permanent (Hold - until dismissed)",
+        "En modo 'Fija', el aviso se queda en pantalla hasta que se envíe 'Descartar Notificación' o termine el riego.": "In 'Fixed' mode, the alert stays on screen until 'Dismiss Notification' is triggered.",
+        "¡Notificación descartada/borrada correctamente de la pantalla!": "Notification successfully dismissed from the screen!"
     },
     "plugins/awtrixng/desktop/php/awtrixng.php": {
         "401 - Acceso no autorizado": "401 - Unauthorized access",
@@ -468,7 +478,17 @@
         "100% directo, sin escribir JSON": "100% direct, without writing JSON",
         "Crea un botón o comando de acción en Jeedom para enviar esta notificación sin escribir JSON": "Creates an action button or command in Jeedom to send this notification without writing JSON",
         "En el campo Mensaje puedes usar tags de Jeedom como": "In the Message field you can use Jeedom tags like",
-        "y se evalúan automáticamente.": "and they are automatically evaluated."
+        "y se evalúan automáticamente.": "and they are automatically evaluated.",
+        "Descartar Notificación": "Dismiss Notification",
+        "Duración / Modo": "Duration / Mode",
+        "Normal (12 segundos)": "Normal (12 seconds)",
+        "30 segundos": "30 seconds",
+        "1 minuto": "1 minute",
+        "5 minutos": "5 minutes",
+        "10 minutos": "10 minutes",
+        "Fija / Permanente (Hold - hasta descartar)": "Fixed / Permanent (Hold - until dismissed)",
+        "En modo 'Fija', el aviso se queda en pantalla hasta que se envíe 'Descartar Notificación' o termine el riego.": "In 'Fixed' mode, the alert stays on screen until 'Dismiss Notification' is triggered.",
+        "¡Notificación descartada/borrada correctamente de la pantalla!": "Notification successfully dismissed from the screen!"
     },
     "plugins/awtrixng/desktop/modal/modal.awtrixng.php": {
         "401 - Acceso no autorizado": "401 - Unauthorized access",
@@ -489,7 +509,17 @@
         "Accede directamente a la galería de iconos y a las guías oficiales de Awtrix:": "Access the icon gallery and official Awtrix guides directly:",
         "Galería de Iconos (https://awtrix.de/icons/)": "Icon Gallery (https://awtrix.de/icons/)",
         "Get Started (Guía de Inicio)": "Get Started (Quickstart Guide)",
-        "How to build your own matrix LED": "How to build your own matrix LED"
+        "How to build your own matrix LED": "How to build your own matrix LED",
+        "Descartar Notificación": "Dismiss Notification",
+        "Duración / Modo": "Duration / Mode",
+        "Normal (12 segundos)": "Normal (12 seconds)",
+        "30 segundos": "30 seconds",
+        "1 minuto": "1 minute",
+        "5 minutos": "5 minutes",
+        "10 minutos": "10 minutes",
+        "Fija / Permanente (Hold - hasta descartar)": "Fixed / Permanent (Hold - until dismissed)",
+        "En modo 'Fija', el aviso se queda en pantalla hasta que se envíe 'Descartar Notificación' o termine el riego.": "In 'Fixed' mode, the alert stays on screen until 'Dismiss Notification' is triggered.",
+        "¡Notificación descartada/borrada correctamente de la pantalla!": "Notification successfully dismissed from the screen!"
     },
     "plugins/awtrixng/desktop/js/awtrixng.js": {
         "Matriz DIY Awtrix NG": "Awtrix NG DIY Matrix",
@@ -595,7 +625,17 @@
         "¡Tag Jeedom copiado al portapapeles!": "Jeedom tag copied to clipboard!",
         "Comando enviado a la pantalla": "Command sent to screen",
         "Debes guardar primero el panel antes de crear comandos": "You must save the panel before creating commands",
-        "Escribe un mensaje o elige un icono antes de guardar": "Write a message or pick an icon before saving"
+        "Escribe un mensaje o elige un icono antes de guardar": "Write a message or pick an icon before saving",
+        "Descartar Notificación": "Dismiss Notification",
+        "Duración / Modo": "Duration / Mode",
+        "Normal (12 segundos)": "Normal (12 seconds)",
+        "30 segundos": "30 seconds",
+        "1 minuto": "1 minute",
+        "5 minutos": "5 minutes",
+        "10 minutos": "10 minutes",
+        "Fija / Permanente (Hold - hasta descartar)": "Fixed / Permanent (Hold - until dismissed)",
+        "En modo 'Fija', el aviso se queda en pantalla hasta que se envíe 'Descartar Notificación' o termine el riego.": "In 'Fixed' mode, the alert stays on screen until 'Dismiss Notification' is triggered.",
+        "¡Notificación descartada/borrada correctamente de la pantalla!": "Notification successfully dismissed from the screen!"
     },
     "plugins/awtrixng/plugin_info/configuration.php": {
         "Documentación oficial de Awtrix NG": "Official Awtrix NG Documentation",
@@ -607,7 +647,17 @@
         "Descargar Copia de Seguridad (Todos los Paneles)": "Download Backup (All Panels)",
         "Logs Awtrix NG": "Awtrix NG Logs",
         "Ver Registro de Logs (awtrixng)": "View Log File (awtrixng)",
-        "Copia de seguridad guardada en el servidor y descargada correctamente: ": "Backup saved on server and downloaded successfully: "
+        "Copia de seguridad guardada en el servidor y descargada correctamente: ": "Backup saved on server and downloaded successfully: ",
+        "Descartar Notificación": "Dismiss Notification",
+        "Duración / Modo": "Duration / Mode",
+        "Normal (12 segundos)": "Normal (12 seconds)",
+        "30 segundos": "30 seconds",
+        "1 minuto": "1 minute",
+        "5 minutos": "5 minutes",
+        "10 minutos": "10 minutes",
+        "Fija / Permanente (Hold - hasta descartar)": "Fixed / Permanent (Hold - until dismissed)",
+        "En modo 'Fija', el aviso se queda en pantalla hasta que se envíe 'Descartar Notificación' o termine el riego.": "In 'Fixed' mode, the alert stays on screen until 'Dismiss Notification' is triggered.",
+        "¡Notificación descartada/borrada correctamente de la pantalla!": "Notification successfully dismissed from the screen!"
     },
     "plugins/awtrixng/core/class/awtrixng.class.php": {
         "Debes introducir una dirección IP o hostname válido.": "You must enter a valid IP address or hostname.",
@@ -649,7 +699,17 @@
         "Panel no encontrado para realizar la copia de seguridad.": "Panel not found for backup.",
         "El archivo o datos de copia de seguridad no tienen un formato válido de Awtrix NG.": "The backup file or data does not have a valid Awtrix NG format.",
         "El panel destino seleccionado para la restauración no existe.": "The target panel selected for restore does not exist.",
-        "Equipo no encontrado": "Device not found"
+        "Equipo no encontrado": "Device not found",
+        "Descartar Notificación": "Dismiss Notification",
+        "Duración / Modo": "Duration / Mode",
+        "Normal (12 segundos)": "Normal (12 seconds)",
+        "30 segundos": "30 seconds",
+        "1 minuto": "1 minute",
+        "5 minutos": "5 minutes",
+        "10 minutos": "10 minutes",
+        "Fija / Permanente (Hold - hasta descartar)": "Fixed / Permanent (Hold - until dismissed)",
+        "En modo 'Fija', el aviso se queda en pantalla hasta que se envíe 'Descartar Notificación' o termine el riego.": "In 'Fixed' mode, the alert stays on screen until 'Dismiss Notification' is triggered.",
+        "¡Notificación descartada/borrada correctamente de la pantalla!": "Notification successfully dismissed from the screen!"
     },
     "plugins/awtrixng/core/ajax/awtrixng.ajax.php": {
         "401 - Acceso no autorizado": "401 - Unauthorized access",
@@ -663,6 +723,16 @@
         "El archivo de copia de seguridad solicitado no existe en el servidor.": "The requested backup file does not exist on the server.",
         "No se encontró el archivo de copia de seguridad en el servidor.": "Backup file not found on the server.",
         "Los datos de la copia de seguridad no son un JSON válido.": "Backup data is not valid JSON.",
-        "Acción desconocida : ": "Unknown action: "
+        "Acción desconocida : ": "Unknown action: ",
+        "Descartar Notificación": "Dismiss Notification",
+        "Duración / Modo": "Duration / Mode",
+        "Normal (12 segundos)": "Normal (12 seconds)",
+        "30 segundos": "30 seconds",
+        "1 minuto": "1 minute",
+        "5 minutos": "5 minutes",
+        "10 minutos": "10 minutes",
+        "Fija / Permanente (Hold - hasta descartar)": "Fixed / Permanent (Hold - until dismissed)",
+        "En modo 'Fija', el aviso se queda en pantalla hasta que se envíe 'Descartar Notificación' o termine el riego.": "In 'Fixed' mode, the alert stays on screen until 'Dismiss Notification' is triggered.",
+        "¡Notificación descartada/borrada correctamente de la pantalla!": "Notification successfully dismissed from the screen!"
     }
 }

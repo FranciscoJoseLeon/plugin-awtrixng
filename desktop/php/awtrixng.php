@@ -555,9 +555,29 @@ $eqLogics = eqLogic::byType($plugin->getId());
                             </div>
 
                             <div class="form-group">
+                                <label class="col-sm-3 control-label">{{Duración / Modo}}</label>
+                                <div class="col-sm-8">
+                                    <select class="form-control" id="test_msg_duration" style="max-width: 280px;">
+                                        <option value="12">{{Normal (12 segundos)}}</option>
+                                        <option value="30">{{30 segundos}}</option>
+                                        <option value="60">{{1 minuto}}</option>
+                                        <option value="300">{{5 minutos}}</option>
+                                        <option value="600">{{10 minutos}}</option>
+                                        <option value="hold">{{Fija / Permanente (Hold - hasta descartar)}}</option>
+                                    </select>
+                                    <span class="help-block" style="font-size: 11px; margin-bottom: 0;">
+                                        {{En modo 'Fija', el aviso se queda en pantalla hasta que se envíe 'Descartar Notificación' o termine el riego.}}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
                                 <div class="col-sm-offset-3 col-sm-9" style="display: flex; gap: 8px; flex-wrap: wrap;">
                                     <button type="button" class="btn btn-success" id="bt_sendQuickNotification">
                                         <i class="fas fa-bell"></i> {{Enviar a ESTE Panel}}
+                                    </button>
+                                    <button type="button" class="btn btn-danger" id="bt_dismissNotification" title="{{Elimina inmediatamente cualquier notificación activa en pantalla}}">
+                                        <i class="fas fa-bell-slash"></i> {{Descartar Notificación}}
                                     </button>
                                     <button type="button" class="btn btn-primary" id="bt_sendBroadcastNotification" title="{{Envía esta notificación emergente simultáneamente a todos los paneles Awtrix activos}}">
                                         <i class="fas fa-broadcast-tower"></i> {{Enviar a TODOS los Paneles}}

@@ -308,7 +308,17 @@
         "¡Tag Jeedom copiado al portapapeles!": "Tag Jeedom copié dans le presse-papiers !",
         "Comando enviado a la pantalla": "Commande envoyée à l'écran",
         "Debes guardar primero el panel antes de crear comandos": "Vous devez d'abord enregistrer le panneau avant de créer des commandes",
-        "Escribe un mensaje o elige un icono antes de guardar": "Écrivez un message ou choisissez une icône avant d'enregistrer"
+        "Escribe un mensaje o elige un icono antes de guardar": "Écrivez un message ou choisissez une icône avant d'enregistrer",
+        "Descartar Notificación": "Ignorer la notification",
+        "Duración / Modo": "Durée / Mode",
+        "Normal (12 segundos)": "Normal (12 secondes)",
+        "30 segundos": "30 secondes",
+        "1 minuto": "1 minute",
+        "5 minutos": "5 minutes",
+        "10 minutos": "10 minutes",
+        "Fija / Permanente (Hold - hasta descartar)": "Fixe / Permanente (Hold - jusqu'à suppression)",
+        "En modo 'Fija', el aviso se queda en pantalla hasta que se envíe 'Descartar Notificación' o termine el riego.": "En mode 'Fixe', la notification reste affichée jusqu'à l'envoi de 'Ignorer la notification'.",
+        "¡Notificación descartada/borrada correctamente de la pantalla!": "Notification effacée avec succès de l'écran !"
     },
     "plugins/awtrixng/desktop/php/awtrixng.php": {
         "401 - Acceso no autorizado": "401 - Accès non autorisé",
@@ -468,7 +478,17 @@
         "100% directo, sin escribir JSON": "100% direct, sans écrire de JSON",
         "Crea un botón o comando de acción en Jeedom para enviar esta notificación sin escribir JSON": "Crée un bouton ou commande d'action dans Jeedom pour envoyer cette notification sans écrire de JSON",
         "En el campo Mensaje puedes usar tags de Jeedom como": "Dans le champ Message vous pouvez utiliser des tags Jeedom comme",
-        "y se evalúan automáticamente.": "et ils sont évalués automatiquement."
+        "y se evalúan automáticamente.": "et ils sont évalués automatiquement.",
+        "Descartar Notificación": "Ignorer la notification",
+        "Duración / Modo": "Durée / Mode",
+        "Normal (12 segundos)": "Normal (12 secondes)",
+        "30 segundos": "30 secondes",
+        "1 minuto": "1 minute",
+        "5 minutos": "5 minutes",
+        "10 minutos": "10 minutes",
+        "Fija / Permanente (Hold - hasta descartar)": "Fixe / Permanente (Hold - jusqu'à suppression)",
+        "En modo 'Fija', el aviso se queda en pantalla hasta que se envíe 'Descartar Notificación' o termine el riego.": "En mode 'Fixe', la notification reste affichée jusqu'à l'envoi de 'Ignorer la notification'.",
+        "¡Notificación descartada/borrada correctamente de la pantalla!": "Notification effacée avec succès de l'écran !"
     },
     "plugins/awtrixng/desktop/modal/modal.awtrixng.php": {
         "401 - Acceso no autorizado": "401 - Accès non autorisé",
@@ -489,7 +509,17 @@
         "Accede directamente a la galería de iconos y a las guías oficiales de Awtrix:": "Accédez directement à la galerie d'icônes et aux guides officiels d'Awtrix :",
         "Galería de Iconos (https://awtrix.de/icons/)": "Galerie d'Icônes (https://awtrix.de/icons/)",
         "Get Started (Guía de Inicio)": "Get Started (Guide de Démarrage)",
-        "How to build your own matrix LED": "How to build your own matrix LED (Construire sa matrice LED)"
+        "How to build your own matrix LED": "How to build your own matrix LED (Construire sa matrice LED)",
+        "Descartar Notificación": "Ignorer la notification",
+        "Duración / Modo": "Durée / Mode",
+        "Normal (12 segundos)": "Normal (12 secondes)",
+        "30 segundos": "30 secondes",
+        "1 minuto": "1 minute",
+        "5 minutos": "5 minutes",
+        "10 minutos": "10 minutes",
+        "Fija / Permanente (Hold - hasta descartar)": "Fixe / Permanente (Hold - jusqu'à suppression)",
+        "En modo 'Fija', el aviso se queda en pantalla hasta que se envíe 'Descartar Notificación' o termine el riego.": "En mode 'Fixe', la notification reste affichée jusqu'à l'envoi de 'Ignorer la notification'.",
+        "¡Notificación descartada/borrada correctamente de la pantalla!": "Notification effacée avec succès de l'écran !"
     },
     "plugins/awtrixng/desktop/js/awtrixng.js": {
         "Matriz DIY Awtrix NG": "Matrice DIY Awtrix NG",
@@ -595,7 +625,17 @@
         "¡Tag Jeedom copiado al portapapeles!": "Tag Jeedom copié dans le presse-papiers !",
         "Comando enviado a la pantalla": "Commande envoyée à l'écran",
         "Debes guardar primero el panel antes de crear comandos": "Vous devez d'abord enregistrer le panneau avant de créer des commandes",
-        "Escribe un mensaje o elige un icono antes de guardar": "Écrivez un message ou choisissez une icône avant d'enregistrer"
+        "Escribe un mensaje o elige un icono antes de guardar": "Écrivez un message ou choisissez une icône avant d'enregistrer",
+        "Descartar Notificación": "Ignorer la notification",
+        "Duración / Modo": "Durée / Mode",
+        "Normal (12 segundos)": "Normal (12 secondes)",
+        "30 segundos": "30 secondes",
+        "1 minuto": "1 minute",
+        "5 minutos": "5 minutes",
+        "10 minutos": "10 minutes",
+        "Fija / Permanente (Hold - hasta descartar)": "Fixe / Permanente (Hold - jusqu'à suppression)",
+        "En modo 'Fija', el aviso se queda en pantalla hasta que se envíe 'Descartar Notificación' o termine el riego.": "En mode 'Fixe', la notification reste affichée jusqu'à l'envoi de 'Ignorer la notification'.",
+        "¡Notificación descartada/borrada correctamente de la pantalla!": "Notification effacée avec succès de l'écran !"
     },
     "plugins/awtrixng/plugin_info/configuration.php": {
         "Documentación oficial de Awtrix NG": "Documentation officielle d'Awtrix NG",
@@ -607,7 +647,17 @@
         "Descargar Copia de Seguridad (Todos los Paneles)": "Télécharger la Sauvegarde (Tous les Panneaux)",
         "Logs Awtrix NG": "Logs Awtrix NG",
         "Ver Registro de Logs (awtrixng)": "Voir le Journal des Logs (awtrixng)",
-        "Copia de seguridad guardada en el servidor y descargada correctamente: ": "Sauvegarde enregistrée sur le serveur et téléchargée avec succès : "
+        "Copia de seguridad guardada en el servidor y descargada correctamente: ": "Sauvegarde enregistrée sur le serveur et téléchargée avec succès : ",
+        "Descartar Notificación": "Ignorer la notification",
+        "Duración / Modo": "Durée / Mode",
+        "Normal (12 segundos)": "Normal (12 secondes)",
+        "30 segundos": "30 secondes",
+        "1 minuto": "1 minute",
+        "5 minutos": "5 minutes",
+        "10 minutos": "10 minutes",
+        "Fija / Permanente (Hold - hasta descartar)": "Fixe / Permanente (Hold - jusqu'à suppression)",
+        "En modo 'Fija', el aviso se queda en pantalla hasta que se envíe 'Descartar Notificación' o termine el riego.": "En mode 'Fixe', la notification reste affichée jusqu'à l'envoi de 'Ignorer la notification'.",
+        "¡Notificación descartada/borrada correctamente de la pantalla!": "Notification effacée avec succès de l'écran !"
     },
     "plugins/awtrixng/core/class/awtrixng.class.php": {
         "Debes introducir una dirección IP o hostname válido.": "Vous devez saisir une adresse IP ou un hostname valide.",
@@ -649,7 +699,17 @@
         "Panel no encontrado para realizar la copia de seguridad.": "Panneau introuvable pour effectuer la sauvegarde.",
         "El archivo o datos de copia de seguridad no tienen un formato válido de Awtrix NG.": "Le fichier ou les données de sauvegarde n'ont pas un format Awtrix NG valide.",
         "El panel destino seleccionado para la restauración no existe.": "Le panneau de destination sélectionné pour la restauration n'existe pas.",
-        "Equipo no encontrado": "Équipement introuvable"
+        "Equipo no encontrado": "Équipement introuvable",
+        "Descartar Notificación": "Ignorer la notification",
+        "Duración / Modo": "Durée / Mode",
+        "Normal (12 segundos)": "Normal (12 secondes)",
+        "30 segundos": "30 secondes",
+        "1 minuto": "1 minute",
+        "5 minutos": "5 minutes",
+        "10 minutos": "10 minutes",
+        "Fija / Permanente (Hold - hasta descartar)": "Fixe / Permanente (Hold - jusqu'à suppression)",
+        "En modo 'Fija', el aviso se queda en pantalla hasta que se envíe 'Descartar Notificación' o termine el riego.": "En mode 'Fixe', la notification reste affichée jusqu'à l'envoi de 'Ignorer la notification'.",
+        "¡Notificación descartada/borrada correctamente de la pantalla!": "Notification effacée avec succès de l'écran !"
     },
     "plugins/awtrixng/core/ajax/awtrixng.ajax.php": {
         "401 - Acceso no autorizado": "401 - Accès non autorisé",
@@ -663,6 +723,16 @@
         "El archivo de copia de seguridad solicitado no existe en el servidor.": "Le fichier de sauvegarde demandé n'existe pas sur le serveur.",
         "No se encontró el archivo de copia de seguridad en el servidor.": "Fichier de sauvegarde introuvable sur le serveur.",
         "Los datos de la copia de seguridad no son un JSON válido.": "Les données de la sauvegarde ne sont pas un JSON valide.",
-        "Acción desconocida : ": "Action inconnue : "
+        "Acción desconocida : ": "Action inconnue : ",
+        "Descartar Notificación": "Ignorer la notification",
+        "Duración / Modo": "Durée / Mode",
+        "Normal (12 segundos)": "Normal (12 secondes)",
+        "30 segundos": "30 secondes",
+        "1 minuto": "1 minute",
+        "5 minutos": "5 minutes",
+        "10 minutos": "10 minutes",
+        "Fija / Permanente (Hold - hasta descartar)": "Fixe / Permanente (Hold - jusqu'à suppression)",
+        "En modo 'Fija', el aviso se queda en pantalla hasta que se envíe 'Descartar Notificación' o termine el riego.": "En mode 'Fixe', la notification reste affichée jusqu'à l'envoi de 'Ignorer la notification'.",
+        "¡Notificación descartada/borrada correctamente de la pantalla!": "Notification effacée avec succès de l'écran !"
     }
 }
