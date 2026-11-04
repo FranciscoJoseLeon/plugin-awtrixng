@@ -677,6 +677,7 @@ function updateScenarioSnippet() {
     var color = $.trim($('#test_msg_color').val() || '#00FF00');
     var text = $('#test_msg_text').val() || '';
     var durMode = $('#test_msg_duration').val() || '12';
+    var isUrgent = $('#test_msg_priority').val() === 'urgent';
 
     var durStr = '';
     if (durMode === 'hold') {
@@ -690,6 +691,7 @@ function updateScenarioSnippet() {
     if (icon) parts.push(icon);
     if (color && color.toUpperCase() !== '#FFFFFF') parts.push(color);
     if (durStr) parts.push(durStr);
+    if (isUrgent) parts.push('urgente');
 
     var titleStr = parts.join(' | ');
 
@@ -843,8 +845,10 @@ $(document).on('click', '#bt_saveAsPresetCmd', function() {
         return;
     }
 
+    var isUrgent = $('#test_msg_priority').val() === 'urgent';
     var defaultName = text ? text.substring(0, 25) : (icon ? 'Alerta ' + icon : 'Notificación');
     if (isHold) defaultName += ' (Fija)';
+    if (isUrgent) defaultName += ' [Urgente]';
     bootbox.prompt({
         title: '{{Nombre del nuevo comando de notificación (ej. "Regando Macetas", "Apagar luces", "Alerta termo"):}}',
         value: defaultName,
@@ -862,7 +866,8 @@ $(document).on('click', '#bt_saveAsPresetCmd', function() {
                     icon: icon,
                     color: color,
                     duration: durVal,
-                    hold: isHold
+                    hold: isHold,
+                    priority: $('#test_msg_priority').val()
                 },
                 dataType: 'json',
                 global: false,
@@ -1267,6 +1272,7 @@ $('#bt_sendQuickNotification').on('click', function() {
     var durMode = $('#test_msg_duration').val() || '12';
     var isHold = (durMode === 'hold') ? 1 : 0;
     var durVal = (durMode === 'hold') ? 0 : (parseInt(durMode, 10) || 12);
+    var priority = $('#test_msg_priority').val() || 'normal';
 
     if (!ip) {
         $('#div_alert').showAlert({message: '{{Debes introducir primero la IP de este panel Awtrix}}', level: 'danger', emptyBefore: true});
@@ -1286,7 +1292,8 @@ $('#bt_sendQuickNotification').on('click', function() {
             icon: icon,
             color: color,
             duration: durVal,
-            hold: isHold
+            hold: isHold,
+            priority: priority
         },
         dataType: 'json',
         error: function(request, status, error) {
@@ -1350,7 +1357,7 @@ $('#bt_dismissNotification').on('click', function() {
     });
 });
 
-$('#test_msg_duration').on('change', function() {
+$('#test_msg_duration, #test_msg_priority').on('change', function() {
     updateScenarioSnippet();
 });
 

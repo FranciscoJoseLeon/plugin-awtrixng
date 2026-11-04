@@ -572,6 +572,19 @@ $eqLogics = eqLogic::byType($plugin->getId());
                             </div>
 
                             <div class="form-group">
+                                <label class="col-sm-3 control-label">{{Prioridad al coincidir}}</label>
+                                <div class="col-sm-8">
+                                    <select class="form-control" id="test_msg_priority" style="max-width: 280px;">
+                                        <option value="normal">{{Normal (Encolar en orden si hay otra)}}</option>
+                                        <option value="urgent">{{🚨 Urgente (Interrumpir pantalla de inmediato)}}</option>
+                                    </select>
+                                    <span class="help-block" style="font-size: 11px; margin-bottom: 0;">
+                                        {{El modo Urgente interrumpe de inmediato cualquier aviso activo o fijo (ideal para timbres, fugas de agua o alarmas).}}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
                                 <div class="col-sm-offset-3 col-sm-9" style="display: flex; gap: 8px; flex-wrap: wrap;">
                                     <button type="button" class="btn btn-success" id="bt_sendQuickNotification">
                                         <i class="fas fa-bell"></i> {{Enviar a ESTE Panel}}

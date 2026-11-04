@@ -816,14 +816,25 @@ class awtrixng extends eqLogic {
         $color = '';
         $durationSec = isset($options['duration']) && intval($options['duration']) > 0 ? intval($options['duration']) : 12;
         $hold = isset($options['hold']) && boolval($options['hold']);
+        $stack = true;
+        if (isset($options['stack'])) {
+            $stack = boolval($options['stack']);
+        } elseif (isset($options['priority']) && in_array(strtolower($options['priority']), array('urgent', 'urgente', 'alta', 'high'))) {
+            $stack = false;
+        }
 
         $lowerMsg = strtolower($text);
         $lowerTitle = strtolower(trim($title));
 
-        // Detección directa de comando de descarte / borrado sin JSON
+        // Detección de orden de descarte / borrado sin JSON
         if (in_array($lowerMsg, array('dismiss', 'borrar', 'descartar', 'clear', 'off')) || in_array($lowerTitle, array('dismiss', 'borrar', 'descartar', 'clear', 'off'))) {
             $this->dismissNotification();
             return;
+        }
+
+        // Si en el título aparece 'urgente', 'urgent' o 'prioridad', marcar prioridad inmediata (stack = false)
+        if (strpos($lowerTitle, 'urgente') !== false || strpos($lowerTitle, 'urgent') !== false || strpos($lowerTitle, 'prioridad') !== false) {
+            $stack = false;
         }
 
         // Flexible parameter parsing: title can be icon, color, key=value or pipe format
@@ -835,9 +846,19 @@ class awtrixng extends eqLogic {
                 if (!empty($parsedParams['color'])) $color = $this->normalizeColor($parsedParams['color']);
                 if (!empty($parsedParams['duration'])) $durationSec = intval($parsedParams['duration']);
                 if (isset($parsedParams['hold'])) $hold = boolval($parsedParams['hold']);
+                if (isset($parsedParams['stack'])) $stack = boolval($parsedParams['stack']);
                 if (!empty($parsedParams['sound'])) $options['sound'] = $parsedParams['sound'];
             } elseif (strpos($trimmedTitle, '|') !== false) {
-                $parts = explode('|', $trimmedTitle);
+                $rawParts = explode('|', $trimmedTitle);
+                $parts = array();
+                foreach ($rawParts as $rp) {
+                    $item = strtolower(trim($rp));
+                    if (in_array($item, array('urgente', 'urgent', 'prioridad', 'inmediata', 'inmediato'))) {
+                        $stack = false;
+                    } else {
+                        $parts[] = trim($rp);
+                    }
+                }
                 if (isset($parts[0]) && trim($parts[0]) !== '') $icon = trim($parts[0]);
                 if (isset($parts[1]) && trim($parts[1]) !== '') $color = $this->normalizeColor(trim($parts[1]));
                 if (isset($parts[2])) {
@@ -854,6 +875,8 @@ class awtrixng extends eqLogic {
                 }
             } elseif (in_array($lowerTitle, array('fija', 'fijo', 'hold', 'permanente'))) {
                 $hold = true;
+            } elseif (in_array($lowerTitle, array('urgente', 'urgent', 'prioridad'))) {
+                $stack = false;
             } elseif (is_numeric($trimmedTitle)) {
                 $icon = $trimmedTitle;
             } elseif (preg_match('/^#?[0-9a-fA-F]{6}$/', $trimmedTitle) || in_array(strtolower($trimmedTitle), array('rojo', 'red', 'verde', 'green', 'azul', 'blue', 'amarillo', 'yellow', 'naranja', 'orange'))) {
@@ -887,7 +910,11 @@ class awtrixng extends eqLogic {
 
         $repeat = isset($options['repeat']) ? intval($options['repeat']) : 2;
         $wakeup = isset($options['wakeup']) ? boolval($options['wakeup']) : true;
-        $stack = isset($options['stack']) ? boolval($options['stack']) : true;
+        if (isset($options['stack'])) {
+            $stack = boolval($options['stack']);
+        }
+
+        $prioStr = $stack ? 'Normal (Encolada)' : 'URGENTE (Interrupción Inmediata)';
 
         if ($this->isV1Api()) {
             $v1Payload = array(
@@ -915,7 +942,7 @@ class awtrixng extends eqLogic {
             }
 
             $this->apiRequest('v1/notifications', 'POST', $v1Payload);
-            $modeStr = $hold ? 'FIJA (Hold)' : "duración {$durationSec}s";
+            $modeStr = ($hold ? 'FIJA (Hold)' : "duración {$durationSec}s") . " | [{$prioStr}]";
             log::add('awtrixng', 'info', "Notificación v1 enviada a Awtrix [{$modeStr}]: '{$text}' (Icono: " . ($icon ?: 'ninguno') . ", Color: " . ($color ?: 'por defecto') . ")");
             return;
         }
@@ -946,7 +973,7 @@ class awtrixng extends eqLogic {
         }
 
         $this->apiRequest('notify', 'POST', $payload);
-        $modeStr = $hold ? 'FIJA (Hold)' : "duración {$durationSec}s";
+        $modeStr = ($hold ? 'FIJA (Hold)' : "duración {$durationSec}s") . " | [{$prioStr}]";
         log::add('awtrixng', 'info', "Notificación enviada a Awtrix [{$modeStr}]: '{$text}' (Icono: " . ($icon ?: 'ninguno') . ", Color: " . ($color ?: 'por defecto') . ")");
     }
     }
@@ -1518,8 +1545,9 @@ class awtrixngCmd extends cmd {
                     $color = $this->getConfiguration('preset_color', '');
                     $duration = intval($this->getConfiguration('preset_duration', 12));
                     $hold = intval($this->getConfiguration('preset_hold', 0)) == 1;
-                    $eqLogic->sendNotification($icon, $text, array('color' => $color, 'duration' => $duration, 'hold' => $hold));
-                    $modeStr = $hold ? 'FIJA' : "{$duration}s";
+                    $stack = intval($this->getConfiguration('preset_stack', 1)) == 1;
+                    $eqLogic->sendNotification($icon, $text, array('color' => $color, 'duration' => $duration, 'hold' => $hold, 'stack' => $stack));
+                    $modeStr = ($hold ? 'FIJA' : "{$duration}s") . ($stack ? '' : ' | URGENTE');
                     log::add('awtrixng', 'info', "Notificación preconfigurada ejecutada [{$modeStr}]: {$this->getName()} (Icono: {$icon}, Texto: {$text})");
                     break;
                 }

@@ -225,12 +225,13 @@ try {
         $color = trim(init('color', '#00FF00'));
         $duration = intval(init('duration', 12));
         $hold = intval(init('hold', 0)) == 1;
+        $stack = (init('priority') === 'urgent' || intval(init('stack', 1)) == 0) ? false : true;
 
         $eqId = intval(init('eqLogic_id', 0));
         if ($eqId > 0) {
             $eq = eqLogic::byId($eqId);
             if (is_object($eq)) {
-                $eq->sendNotification($icon, $text, array('color' => $color, 'duration' => $duration, 'hold' => $hold));
+                $eq->sendNotification($icon, $text, array('color' => $color, 'duration' => $duration, 'hold' => $hold, 'stack' => $stack));
                 ajax::success(array('status' => 'ok', 'message' => __('Notificación enviada correctamente a tu pantalla Awtrix NG', __FILE__)));
             }
         }
@@ -367,6 +368,7 @@ try {
         $cmd->setConfiguration('preset_color', $color);
         $cmd->setConfiguration('preset_duration', intval(init('duration', 12)));
         $cmd->setConfiguration('preset_hold', intval(init('hold', 0)));
+        $cmd->setConfiguration('preset_stack', (init('priority') === 'urgent' || intval(init('stack', 1)) == 0) ? 0 : 1);
         $cmd->save();
 
         ajax::success(array(
@@ -377,7 +379,8 @@ try {
             'icon' => $icon,
             'color' => $color,
             'duration' => intval(init('duration', 12)),
-            'hold' => intval(init('hold', 0))
+            'hold' => intval(init('hold', 0)),
+            'stack' => (init('priority') === 'urgent' || intval(init('stack', 1)) == 0) ? 0 : 1
         ));
     }
 

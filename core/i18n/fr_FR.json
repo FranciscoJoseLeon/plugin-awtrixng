@@ -318,7 +318,11 @@
         "10 minutos": "10 minutes",
         "Fija / Permanente (Hold - hasta descartar)": "Fixe / Permanente (Hold - jusqu'à suppression)",
         "En modo 'Fija', el aviso se queda en pantalla hasta que se envíe 'Descartar Notificación' o termine el riego.": "En mode 'Fixe', la notification reste affichée jusqu'à l'envoi de 'Ignorer la notification'.",
-        "¡Notificación descartada/borrada correctamente de la pantalla!": "Notification effacée avec succès de l'écran !"
+        "¡Notificación descartada/borrada correctamente de la pantalla!": "Notification effacée avec succès de l'écran !",
+        "Prioridad al coincidir": "Priorité en cas de conflit",
+        "Normal (Encolar en orden si hay otra)": "Normal (Mettre en file d'attente s'il y en a une autre)",
+        "🚨 Urgente (Interrumpir pantalla de inmediato)": "🚨 Urgent (Interrompre l'écran immédiatement)",
+        "El modo Urgente interrumpe de inmediato cualquier aviso activo o fijo (ideal para timbres, fugas de agua o alarmas).": "Le mode Urgent interrompt immédiatement toute alerte active ou fixe (idéal pour sonnette, fuite d'eau ou alarme)."
     },
     "plugins/awtrixng/desktop/php/awtrixng.php": {
         "401 - Acceso no autorizado": "401 - Accès non autorisé",
@@ -488,7 +492,11 @@
         "10 minutos": "10 minutes",
         "Fija / Permanente (Hold - hasta descartar)": "Fixe / Permanente (Hold - jusqu'à suppression)",
         "En modo 'Fija', el aviso se queda en pantalla hasta que se envíe 'Descartar Notificación' o termine el riego.": "En mode 'Fixe', la notification reste affichée jusqu'à l'envoi de 'Ignorer la notification'.",
-        "¡Notificación descartada/borrada correctamente de la pantalla!": "Notification effacée avec succès de l'écran !"
+        "¡Notificación descartada/borrada correctamente de la pantalla!": "Notification effacée avec succès de l'écran !",
+        "Prioridad al coincidir": "Priorité en cas de conflit",
+        "Normal (Encolar en orden si hay otra)": "Normal (Mettre en file d'attente s'il y en a une autre)",
+        "🚨 Urgente (Interrumpir pantalla de inmediato)": "🚨 Urgent (Interrompre l'écran immédiatement)",
+        "El modo Urgente interrumpe de inmediato cualquier aviso activo o fijo (ideal para timbres, fugas de agua o alarmas).": "Le mode Urgent interrompt immédiatement toute alerte active ou fixe (idéal pour sonnette, fuite d'eau ou alarme)."
     },
     "plugins/awtrixng/desktop/modal/modal.awtrixng.php": {
         "401 - Acceso no autorizado": "401 - Accès non autorisé",
@@ -519,7 +527,11 @@
         "10 minutos": "10 minutes",
         "Fija / Permanente (Hold - hasta descartar)": "Fixe / Permanente (Hold - jusqu'à suppression)",
         "En modo 'Fija', el aviso se queda en pantalla hasta que se envíe 'Descartar Notificación' o termine el riego.": "En mode 'Fixe', la notification reste affichée jusqu'à l'envoi de 'Ignorer la notification'.",
-        "¡Notificación descartada/borrada correctamente de la pantalla!": "Notification effacée avec succès de l'écran !"
+        "¡Notificación descartada/borrada correctamente de la pantalla!": "Notification effacée avec succès de l'écran !",
+        "Prioridad al coincidir": "Priorité en cas de conflit",
+        "Normal (Encolar en orden si hay otra)": "Normal (Mettre en file d'attente s'il y en a une autre)",
+        "🚨 Urgente (Interrumpir pantalla de inmediato)": "🚨 Urgent (Interrompre l'écran immédiatement)",
+        "El modo Urgente interrumpe de inmediato cualquier aviso activo o fijo (ideal para timbres, fugas de agua o alarmas).": "Le mode Urgent interrompt immédiatement toute alerte active ou fixe (idéal pour sonnette, fuite d'eau ou alarme)."
     },
     "plugins/awtrixng/desktop/js/awtrixng.js": {
         "Matriz DIY Awtrix NG": "Matrice DIY Awtrix NG",
@@ -635,7 +647,11 @@
         "10 minutos": "10 minutes",
         "Fija / Permanente (Hold - hasta descartar)": "Fixe / Permanente (Hold - jusqu'à suppression)",
         "En modo 'Fija', el aviso se queda en pantalla hasta que se envíe 'Descartar Notificación' o termine el riego.": "En mode 'Fixe', la notification reste affichée jusqu'à l'envoi de 'Ignorer la notification'.",
-        "¡Notificación descartada/borrada correctamente de la pantalla!": "Notification effacée avec succès de l'écran !"
+        "¡Notificación descartada/borrada correctamente de la pantalla!": "Notification effacée avec succès de l'écran !",
+        "Prioridad al coincidir": "Priorité en cas de conflit",
+        "Normal (Encolar en orden si hay otra)": "Normal (Mettre en file d'attente s'il y en a une autre)",
+        "🚨 Urgente (Interrumpir pantalla de inmediato)": "🚨 Urgent (Interrompre l'écran immédiatement)",
+        "El modo Urgente interrumpe de inmediato cualquier aviso activo o fijo (ideal para timbres, fugas de agua o alarmas).": "Le mode Urgent interrompt immédiatement toute alerte active ou fixe (idéal pour sonnette, fuite d'eau ou alarme)."
     },
     "plugins/awtrixng/plugin_info/configuration.php": {
         "Documentación oficial de Awtrix NG": "Documentation officielle d'Awtrix NG",
@@ -657,7 +673,11 @@
         "10 minutos": "10 minutes",
         "Fija / Permanente (Hold - hasta descartar)": "Fixe / Permanente (Hold - jusqu'à suppression)",
         "En modo 'Fija', el aviso se queda en pantalla hasta que se envíe 'Descartar Notificación' o termine el riego.": "En mode 'Fixe', la notification reste affichée jusqu'à l'envoi de 'Ignorer la notification'.",
-        "¡Notificación descartada/borrada correctamente de la pantalla!": "Notification effacée avec succès de l'écran !"
+        "¡Notificación descartada/borrada correctamente de la pantalla!": "Notification effacée avec succès de l'écran !",
+        "Prioridad al coincidir": "Priorité en cas de conflit",
+        "Normal (Encolar en orden si hay otra)": "Normal (Mettre en file d'attente s'il y en a une autre)",
+        "🚨 Urgente (Interrumpir pantalla de inmediato)": "🚨 Urgent (Interrompre l'écran immédiatement)",
+        "El modo Urgente interrumpe de inmediato cualquier aviso activo o fijo (ideal para timbres, fugas de agua o alarmas).": "Le mode Urgent interrompt immédiatement toute alerte active ou fixe (idéal pour sonnette, fuite d'eau ou alarme)."
     },
     "plugins/awtrixng/core/class/awtrixng.class.php": {
         "Debes introducir una dirección IP o hostname válido.": "Vous devez saisir une adresse IP ou un hostname valide.",
@@ -709,7 +729,11 @@
         "10 minutos": "10 minutes",
         "Fija / Permanente (Hold - hasta descartar)": "Fixe / Permanente (Hold - jusqu'à suppression)",
         "En modo 'Fija', el aviso se queda en pantalla hasta que se envíe 'Descartar Notificación' o termine el riego.": "En mode 'Fixe', la notification reste affichée jusqu'à l'envoi de 'Ignorer la notification'.",
-        "¡Notificación descartada/borrada correctamente de la pantalla!": "Notification effacée avec succès de l'écran !"
+        "¡Notificación descartada/borrada correctamente de la pantalla!": "Notification effacée avec succès de l'écran !",
+        "Prioridad al coincidir": "Priorité en cas de conflit",
+        "Normal (Encolar en orden si hay otra)": "Normal (Mettre en file d'attente s'il y en a une autre)",
+        "🚨 Urgente (Interrumpir pantalla de inmediato)": "🚨 Urgent (Interrompre l'écran immédiatement)",
+        "El modo Urgente interrumpe de inmediato cualquier aviso activo o fijo (ideal para timbres, fugas de agua o alarmas).": "Le mode Urgent interrompt immédiatement toute alerte active ou fixe (idéal pour sonnette, fuite d'eau ou alarme)."
     },
     "plugins/awtrixng/core/ajax/awtrixng.ajax.php": {
         "401 - Acceso no autorizado": "401 - Accès non autorisé",
@@ -733,6 +757,10 @@
         "10 minutos": "10 minutes",
         "Fija / Permanente (Hold - hasta descartar)": "Fixe / Permanente (Hold - jusqu'à suppression)",
         "En modo 'Fija', el aviso se queda en pantalla hasta que se envíe 'Descartar Notificación' o termine el riego.": "En mode 'Fixe', la notification reste affichée jusqu'à l'envoi de 'Ignorer la notification'.",
-        "¡Notificación descartada/borrada correctamente de la pantalla!": "Notification effacée avec succès de l'écran !"
+        "¡Notificación descartada/borrada correctamente de la pantalla!": "Notification effacée avec succès de l'écran !",
+        "Prioridad al coincidir": "Priorité en cas de conflit",
+        "Normal (Encolar en orden si hay otra)": "Normal (Mettre en file d'attente s'il y en a une autre)",
+        "🚨 Urgente (Interrumpir pantalla de inmediato)": "🚨 Urgent (Interrompre l'écran immédiatement)",
+        "El modo Urgente interrumpe de inmediato cualquier aviso activo o fijo (ideal para timbres, fugas de agua o alarmas).": "Le mode Urgent interrompt immédiatement toute alerte active ou fixe (idéal pour sonnette, fuite d'eau ou alarme)."
     }
 }
