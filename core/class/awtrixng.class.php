@@ -978,6 +978,7 @@ class awtrixng extends eqLogic {
             }
             if (!empty($color)) {
                 $v1Payload['textColor'] = $color;
+                $v1Payload['color'] = $color;
             }
             if (!empty($options['sound'])) {
                 $v1Payload['sound'] = $options['sound'];
@@ -1055,6 +1056,7 @@ class awtrixng extends eqLogic {
             }
             if (!empty($color)) {
                 $v1Payload['textColor'] = $color;
+                $v1Payload['color'] = $color;
             }
             try {
                 $this->apiRequest('v1/apps/pushed/' . rawurlencode($appName), 'PUT', $v1Payload);
