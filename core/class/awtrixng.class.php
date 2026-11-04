@@ -768,16 +768,27 @@ class awtrixng extends eqLogic {
      */
     public static function resolveIconName($icon) {
         $icon = preg_replace('/\.(gif|jpg|jpeg|png|bmp)$/i', '', trim((string)$icon));
-        $legacyMap = array(
-            '2284' => 'plant-watering',
-            '1425' => 'thermometer2',
-            '962' => 'water-leaked',
-            '2355' => 'outdoor-temp',
-            '27229' => 'battery-empty-2',
-            '1841' => 'outdoor'
+        if (empty($icon)) return '';
+
+        // Si el usuario escribe un alias en texto, mapearlo a su ID oficial de LaMetric / Awtrix
+        $nameToIdMap = array(
+            'plant-watering' => '2284',
+            'watering' => '2284',
+            'riego' => '2284',
+            'water' => '1077',
+            'agua' => '1077',
+            'gota' => '1077',
+            'thermometer2' => '1425',
+            'temp' => '1425',
+            'temperatura' => '1425',
+            'water-leaked' => '962',
+            'outdoor-temp' => '2355',
+            'battery-empty-2' => '27229',
+            'outdoor' => '1841'
         );
-        if (isset($legacyMap[$icon])) {
-            return $legacyMap[$icon];
+        $lower = strtolower($icon);
+        if (isset($nameToIdMap[$lower])) {
+            return $nameToIdMap[$lower];
         }
         return $icon;
     }
