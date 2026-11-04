@@ -84,3 +84,14 @@ To configure your clock's firmware or build your own custom DIY LED pixel matrix
 * 🚀 **Get Started**: [https://blueforcer.github.io/awtrix-ng/esp32/](https://blueforcer.github.io/awtrix-ng/esp32/)
 * 🛠️ **How to build your own matrix LED**: [https://blueforcer.github.io/awtrix-ng/esp32/advanced/diy-build/](https://blueforcer.github.io/awtrix-ng/esp32/advanced/diy-build/)
 
+---
+
+## 6. Legal Notice & Limitation of Liability
+
+This plugin is an independent open-source community development distributed under the **GNU AGPL v3** license.
+
+* **No Warranty («As Is»)**: The software is provided without warranty of any kind, either express or implied, including, but not limited to, the implied warranties of merchantability or fitness for a particular purpose.
+* **Limitation of Liability**: The author disclaims all liability for any direct, indirect, incidental, or consequential damages resulting from the use or inability to use this software (data loss, Jeedom system downtime, network disruptions, or damage to connected matrix hardware).
+* **Trademarks**: This project is not sponsored, affiliated with, or officially endorsed by **Jeedom SAS**, **Ulanzi**, or the developers of the **Awtrix NG** firmware. All registered trademarks and trade names remain the property of their respective owners.
+
+

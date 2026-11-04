@@ -86,3 +86,14 @@ Para configurar el firmware de tu reloj o fabricar tu propia matriz LED personal
 * 🚀 **Guía de Inicio Rápido (Get Started)**: [https://blueforcer.github.io/awtrix-ng/esp32/](https://blueforcer.github.io/awtrix-ng/esp32/)
 * 🛠️ **Cómo Construir tu Propia Pantalla Matriz LED (How to build your own matrix LED)**: [https://blueforcer.github.io/awtrix-ng/esp32/advanced/diy-build/](https://blueforcer.github.io/awtrix-ng/esp32/advanced/diy-build/)
 
+---
+
+## 6. Aviso Legal y Limitación de Responsabilidad
+
+Este plugin es un desarrollo comunitario independiente de código abierto distribuido bajo licencia **GNU AGPL v3**.
+
+* **Sin garantía («Tal cual / As Is»)**: El software se proporciona sin garantía de ningún tipo, explícita o implícita, incluyendo, sin limitación, garantías de comerciabilidad o idoneidad para un propósito determinado.
+* **Exención de responsabilidad**: El autor declina toda responsabilidad ante cualquier daño directo, indirecto, material o inmaterial derivado del uso o imposibilidad de uso de este software (pérdida de datos, caídas del sistema Jeedom, problemas de red o daños en las pantallas matriciales conectadas).
+* **Marcas registradas**: Este proyecto no está patrocinado, afiliado ni respaldado oficialmente por la empresa **Jeedom SAS**, la marca **Ulanzi**, ni por los desarrolladores del firmware **Awtrix NG**. Todas las marcas registradas pertenecen a sus respectivos propietarios.
+
+

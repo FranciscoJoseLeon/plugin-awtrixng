@@ -108,6 +108,14 @@ Terrace watering activated. Tank temperature: #[Rooftop][Water Heater]# °C (Gri
 
 ---
 
+## ⚠️ Disclaimer / Avertissement / Exención de Responsabilidad
+
+* **Disclaimer (EN)**: This plugin is provided "AS IS", without warranty of any kind, express or implied. In no event shall the author be liable for any claim, damages, data loss, hardware malfunctions, or other liability arising from the use of this software. This plugin is an independent community development and is not officially affiliated with, maintained by, or endorsed by Jeedom SAS, Ulanzi, or the Awtrix NG project.
+* **Avertissement (FR)**: Ce plugin est fourni « tel quel », sans garantie d'aucune sorte, expresse ou implicite. En aucun cas l'auteur ne pourra être tenu responsable des réclamations, dommages directs ou indirects, pertes de données ou dysfonctionnements matériels découlant de l'utilisation de ce logiciel. Ce plugin est un développement communautaire indépendant et n'est pas affilié, maintenu ni approuvé par Jeedom SAS, Ulanzi ou le projet Awtrix NG.
+* **Exención de Responsabilidad (ES)**: Este plugin se proporciona «tal cual», sin garantía de ningún tipo, expresa o implícita. En ningún caso el autor será responsable de reclamaciones, daños directos o indirectos, pérdidas de datos o averías de hardware derivadas del uso de este software. Este plugin es un desarrollo comunitario independiente y no está afiliado ni respaldado oficialmente por Jeedom SAS, Ulanzi o el proyecto Awtrix NG.
+
+---
+
 ## 📄 License
 
 This project is licensed under the **GNU Affero General Public License v3.0 (AGPL-3.0)** - see the [LICENSE](LICENSE) file for details.
