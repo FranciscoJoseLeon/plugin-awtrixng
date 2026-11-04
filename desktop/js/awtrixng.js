@@ -2098,6 +2098,8 @@ $(document).on('shown.bs.tab', 'a[data-toggle="tab"]', function(e) {
         drawSimulatedMatrixFrame();
         updateScenarioSnippet();
         loadPresetNotificationCmds();
+    } else if ($(e.target).attr('href') === '#soundtab') {
+        loadSoundLibrary();
     }
 });
 
@@ -2114,5 +2116,397 @@ $(function() {
             updateScenarioSnippet();
             loadPresetNotificationCmds();
         }, 300);
+    } else if (window.location.hash === '#soundtab') {
+        setTimeout(function() {
+            loadSoundLibrary();
+        }, 300);
     }
+});
+
+// =========================================================================
+// GESTOR DE BIBLIOTECA DE SONIDOS & MELODÍAS (RTTTL & MP3)
+// =========================================================================
+var currentSoundLibrary = [];
+var currentSoundCategory = 'all';
+
+function loadSoundLibrary() {
+    var eqId = $('.eqLogicAttr[data-l1key=id]').val();
+    var ip = $.trim($('#input_device_ip').val());
+    if (!eqId && !ip) return;
+
+    $('#sound_cards_container').html('<div class="col-xs-12 text-center" style="padding: 30px; color: #888;"><i class="fas fa-spinner fa-spin fa-2x"></i><br/>Cargando biblioteca de sonidos...</div>');
+
+    $.ajax({
+        type: 'POST',
+        url: 'plugins/awtrixng/core/ajax/awtrixng.ajax.php',
+        data: {
+            action: 'getSoundLibrary',
+            id: eqId,
+            ip: ip
+        },
+        dataType: 'json',
+        error: function(request, status, error) {
+            handleAjaxError(request, status, error);
+            $('#sound_cards_container').html('<div class="col-xs-12 alert alert-danger">Error al cargar la biblioteca de sonidos.</div>');
+        },
+        success: function(data) {
+            if (data.state != 'ok') {
+                $('#sound_cards_container').html('<div class="col-xs-12 alert alert-danger">' + data.result + '</div>');
+                return;
+            }
+
+            currentSoundLibrary = data.result.builtin || [];
+            renderSoundCards(currentSoundCategory);
+            renderCustomRtttlTable(data.result.custom_rtttl || []);
+            renderDeviceAudioFilesTable(data.result.files || []);
+        }
+    });
+}
+
+function renderSoundCards(filterCategory) {
+    var container = $('#sound_cards_container');
+    container.empty();
+
+    var filtered = currentSoundLibrary.filter(function(item) {
+        if (filterCategory === 'all') return true;
+        return item.category === filterCategory;
+    });
+
+    if (filtered.length === 0) {
+        container.html('<div class="col-xs-12 text-center text-muted" style="padding: 20px;">No hay sonidos en esta categoría.</div>');
+        return;
+    }
+
+    filtered.forEach(function(item) {
+        var cardHtml = '' +
+            '<div class="col-sm-6 col-md-4" style="margin-bottom: 15px;">' +
+                '<div class="panel panel-default" style="border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); transition: transform 0.15s ease-in-out; height: 100%; display: flex; flex-direction: column;">' +
+                    '<div class="panel-body" style="padding: 12px; flex: 1; display: flex; flex-direction: column;">' +
+                        '<div style="display: flex; align-items: center; margin-bottom: 8px;">' +
+                            '<span style="display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 6px; background-color: ' + (item.color || '#3B82F6') + '15; color: ' + (item.color || '#3B82F6') + '; font-size: 16px; margin-right: 10px;">' +
+                                '<i class="' + item.icon + '"></i>' +
+                            '</span>' +
+                            '<div style="flex: 1; overflow: hidden;">' +
+                                '<div style="font-weight: 600; font-size: 13px; color: #1e293b; text-overflow: ellipsis; white-space: nowrap; overflow: hidden;">' + item.name + '</div>' +
+                                '<div style="font-size: 11px; color: #64748b;">ID: <code>' + item.id + '</code></div>' +
+                            '</div>' +
+                        '</div>' +
+                        '<div style="font-size: 12px; color: #475569; margin-bottom: 10px; min-height: 32px; line-height: 1.3;">' + (item.description || '') + '</div>' +
+                        '<div style="margin-bottom: 10px;">' +
+                            '<span class="label label-primary" style="font-size: 9px; margin-right: 4px;">RTTTL (Piezo)</span>' +
+                            '<span class="label label-success" style="font-size: 9px;">MP3 (' + item.mp3_file + ')</span>' +
+                        '</div>' +
+                        '<div style="margin-top: auto; display: flex; gap: 5px; flex-wrap: wrap;">' +
+                            '<button type="button" class="btn btn-xs btn-primary bt_playSoundClock" data-sound="' + item.id + '" data-rtttl="' + encodeURIComponent(item.rtttl) + '" title="Reproducir este sonido ahora mismo en la pantalla"><i class="fas fa-play"></i> Probar</button>' +
+                            '<button type="button" class="btn btn-xs btn-default bt_copySoundTag" data-name="' + item.name + '" data-sound="' + item.id + '" data-rtttl="' + encodeURIComponent(item.rtttl) + '" title="Copiar comando listo para pegar en un Escenario de Jeedom"><i class="far fa-copy"></i> Copiar</button>' +
+                        '</div>' +
+                    '</div>' +
+                '</div>' +
+            '</div>';
+        container.append(cardHtml);
+    });
+}
+
+function renderCustomRtttlTable(items) {
+    var tbody = $('#table_custom_rtttl tbody');
+    tbody.empty();
+
+    if (!items || items.length === 0) {
+        tbody.html('<tr><td colspan="3" class="text-center text-muted" style="padding: 15px;">Sin melodías personalizadas añadidas.</td></tr>');
+        return;
+    }
+
+    items.forEach(function(item) {
+        var row = '' +
+            '<tr>' +
+                '<td><strong>' + item.name + '</strong></td>' +
+                '<td><code style="font-size: 10px; word-break: break-all;">' + item.code.substring(0, 32) + (item.code.length > 32 ? '...' : '') + '</code></td>' +
+                '<td style="text-align: right;">' +
+                    '<button type="button" class="btn btn-xs btn-info bt_playSoundClock" data-sound="' + encodeURIComponent(item.code) + '" style="margin-right: 3px;" title="Probar sonido"><i class="fas fa-play"></i></button>' +
+                    '<button type="button" class="btn btn-xs btn-danger bt_deleteCustomRtttl" data-id="' + item.id + '" title="Eliminar"><i class="fas fa-trash-alt"></i></button>' +
+                '</td>' +
+            '</tr>';
+        tbody.append(row);
+    });
+}
+
+function renderDeviceAudioFilesTable(files) {
+    var tbody = $('#table_device_audio_files tbody');
+    tbody.empty();
+
+    if (!files || files.length === 0) {
+        tbody.html('<tr><td colspan="3" class="text-center text-muted" style="padding: 15px;">Sin archivos de audio detectados en el almacenamiento del reloj.</td></tr>');
+        return;
+    }
+
+    files.forEach(function(f) {
+        var sizeKb = f.size ? (f.size / 1024).toFixed(1) + ' KB' : '-';
+        var row = '' +
+            '<tr>' +
+                '<td><i class="far fa-file-audio text-primary"></i> <strong>' + f.name + '</strong></td>' +
+                '<td>' + sizeKb + '</td>' +
+                '<td style="text-align: right;">' +
+                    '<button type="button" class="btn btn-xs btn-info bt_playSoundClock" data-sound="' + f.name + '" style="margin-right: 3px;" title="Reproducir archivo MP3 en el reloj"><i class="fas fa-play"></i></button>' +
+                    '<button type="button" class="btn btn-xs btn-danger bt_deleteDeviceAudioFile" data-filename="' + f.name + '" title="Eliminar del almacenamiento del reloj"><i class="fas fa-trash-alt"></i></button>' +
+                '</td>' +
+            '</tr>';
+        tbody.append(row);
+    });
+}
+
+// Filtro por categoría de sonidos
+$(document).on('click', '.filter-sound-cat', function() {
+    $('.filter-sound-cat').removeClass('active');
+    $(this).addClass('active');
+    currentSoundCategory = $(this).data('category');
+    renderSoundCards(currentSoundCategory);
+});
+
+// Reproducir sonido en el reloj
+$(document).on('click', '.bt_playSoundClock', function() {
+    var sound = $(this).data('sound');
+    var rtttl = $(this).data('rtttl');
+    if (rtttl) {
+        sound = decodeURIComponent(rtttl);
+    } else if (sound) {
+        sound = decodeURIComponent(sound);
+    }
+    var eqId = $('.eqLogicAttr[data-l1key=id]').val();
+    var ip = $.trim($('#input_device_ip').val());
+
+    var btn = $(this);
+    var oldHtml = btn.html();
+    btn.html('<i class="fas fa-spinner fa-spin"></i>').prop('disabled', true);
+
+    $.ajax({
+        type: 'POST',
+        url: 'plugins/awtrixng/core/ajax/awtrixng.ajax.php',
+        data: {
+            action: 'playAudioSound',
+            id: eqId,
+            ip: ip,
+            sound: sound
+        },
+        dataType: 'json',
+        error: function(request, status, error) {
+            handleAjaxError(request, status, error);
+            btn.html(oldHtml).prop('disabled', false);
+        },
+        success: function(data) {
+            btn.html(oldHtml).prop('disabled', false);
+            if (data.state != 'ok') {
+                $('#div_alert').showAlert({message: data.result, level: 'danger'});
+            } else {
+                $('#div_alert').showAlert({message: 'Sonido enviado al reloj correctamente', level: 'success'});
+            }
+        }
+    });
+});
+
+// Copiar comando de escenario al portapapeles
+$(document).on('click', '.bt_copySoundTag', function() {
+    var sound = $(this).data('sound');
+    var eqName = $('.eqLogicAttr[data-l1key=name]').val() || 'Awtrix NG';
+    var objectName = $('.eqLogicAttr[data-l1key=object_id] option:selected').text() || 'Casa';
+    objectName = $.trim(objectName.replace(/^[-\s]+/, ''));
+    if (!objectName) objectName = 'Casa';
+
+    // Generar formato de Jeedom para escenario
+    var tag = '#[' + objectName + '][' + eqName + '][Reproducir Sonido / RTTTL]# con Mensaje: ' + sound;
+    
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(tag).then(function() {
+            $('#div_alert').showAlert({message: '¡Copiado al portapapeles! Listo para pegar en tu escenario: ' + tag, level: 'success'});
+        });
+    } else {
+        var tempInput = $('<input>');
+        $('body').append(tempInput);
+        tempInput.val(tag).select();
+        document.execCommand('copy');
+        tempInput.remove();
+        $('#div_alert').showAlert({message: '¡Copiado al portapapeles! Listo para pegar en tu escenario: ' + tag, level: 'success'});
+    }
+});
+
+// Añadir melodía RTTTL personalizada
+$('#form_add_custom_rtttl').on('submit', function(e) {
+    e.preventDefault();
+    var eqId = $('.eqLogicAttr[data-l1key=id]').val();
+    var name = $.trim($('#input_rtttl_name').val());
+    var code = $.trim($('#input_rtttl_code').val());
+
+    if (!name || !code) return;
+
+    $.ajax({
+        type: 'POST',
+        url: 'plugins/awtrixng/core/ajax/awtrixng.ajax.php',
+        data: {
+            action: 'saveCustomRtttl',
+            id: eqId,
+            name: name,
+            code: code
+        },
+        dataType: 'json',
+        error: function(request, status, error) {
+            handleAjaxError(request, status, error);
+        },
+        success: function(data) {
+            if (data.state != 'ok') {
+                $('#div_alert').showAlert({message: data.result, level: 'danger'});
+            } else {
+                $('#input_rtttl_name').val('');
+                $('#input_rtttl_code').val('');
+                renderCustomRtttlTable(data.result);
+                $('#div_alert').showAlert({message: 'Melodía RTTTL guardada con éxito', level: 'success'});
+            }
+        }
+    });
+});
+
+// Eliminar melodía RTTTL personalizada
+$(document).on('click', '.bt_deleteCustomRtttl', function() {
+    var itemKey = $(this).data('id');
+    var eqId = $('.eqLogicAttr[data-l1key=id]').val();
+
+    bootbox.confirm('¿Deseas eliminar esta melodía personalizada?', function(result) {
+        if (!result) return;
+        $.ajax({
+            type: 'POST',
+            url: 'plugins/awtrixng/core/ajax/awtrixng.ajax.php',
+            data: {
+                action: 'deleteCustomRtttl',
+                id: eqId,
+                item_id: itemKey
+            },
+            dataType: 'json',
+            error: function(request, status, error) {
+                handleAjaxError(request, status, error);
+            },
+            success: function(data) {
+                if (data.state != 'ok') {
+                    $('#div_alert').showAlert({message: data.result, level: 'danger'});
+                } else {
+                    renderCustomRtttlTable(data.result);
+                    $('#div_alert').showAlert({message: 'Melodía eliminada', level: 'success'});
+                }
+            }
+        });
+    });
+});
+
+// Subida de archivos MP3 a la pantalla
+$('#bt_selectMP3File').on('click', function() {
+    $('#input_upload_mp3_file').trigger('click');
+});
+
+$('#input_upload_mp3_file').on('change', function() {
+    var file = this.files[0];
+    if (!file) return;
+
+    var eqId = $('.eqLogicAttr[data-l1key=id]').val();
+    var ip = $.trim($('#input_device_ip').val());
+    var formData = new FormData();
+    formData.append('action', 'uploadMP3ToPanel');
+    formData.append('id', eqId);
+    formData.append('ip', ip);
+    formData.append('audio_file', file);
+
+    $('#label_selected_mp3_name').html('<i class="fas fa-spinner fa-spin"></i> Subiendo ' + file.name + '...');
+
+    $.ajax({
+        type: 'POST',
+        url: 'plugins/awtrixng/core/ajax/awtrixng.ajax.php',
+        data: formData,
+        contentType: false,
+        processData: false,
+        dataType: 'json',
+        error: function(request, status, error) {
+            handleAjaxError(request, status, error);
+            $('#label_selected_mp3_name').text('');
+        },
+        success: function(data) {
+            $('#label_selected_mp3_name').text('');
+            if (data.state != 'ok') {
+                $('#div_alert').showAlert({message: data.result, level: 'danger'});
+            } else {
+                $('#div_alert').showAlert({message: 'Archivo MP3 subido correctamente a tu pantalla Awtrix NG', level: 'success'});
+                loadSoundLibrary();
+            }
+        }
+    });
+});
+
+// Eliminar archivo MP3 de la pantalla
+$(document).on('click', '.bt_deleteDeviceAudioFile', function() {
+    var fileName = $(this).data('filename');
+    var eqId = $('.eqLogicAttr[data-l1key=id]').val();
+    var ip = $.trim($('#input_device_ip').val());
+
+    bootbox.confirm('¿Deseas eliminar el archivo ' + fileName + ' de la memoria del reloj?', function(result) {
+        if (!result) return;
+        $.ajax({
+            type: 'POST',
+            url: 'plugins/awtrixng/core/ajax/awtrixng.ajax.php',
+            data: {
+                action: 'deleteMP3FromPanel',
+                id: eqId,
+                ip: ip,
+                file: fileName
+            },
+            dataType: 'json',
+            error: function(request, status, error) {
+                handleAjaxError(request, status, error);
+            },
+            success: function(data) {
+                if (data.state != 'ok') {
+                    $('#div_alert').showAlert({message: data.result, level: 'danger'});
+                } else {
+                    $('#div_alert').showAlert({message: 'Archivo eliminado de la pantalla', level: 'success'});
+                    loadSoundLibrary();
+                }
+            }
+        });
+    });
+});
+
+// Refrescar lista de audios
+$('#bt_refreshAudioFilesList').on('click', function() {
+    loadSoundLibrary();
+});
+
+// Instalar todos los MP3 integrados en el reloj
+$('#bt_installAllMP3sToClock').on('click', function() {
+    var eqId = $('.eqLogicAttr[data-l1key=id]').val();
+    var ip = $.trim($('#input_device_ip').val());
+
+    bootbox.confirm('¿Deseas instalar los 15 archivos MP3 de la biblioteca domótica en el almacenamiento interno de tu reloj? (Recomendado para Ulanzi TC002 o ESP32 con DAC).', function(result) {
+        if (!result) return;
+        var btn = $('#bt_installAllMP3sToClock');
+        var oldHtml = btn.html();
+        btn.html('<i class="fas fa-spinner fa-spin"></i> Instalando MP3s...').prop('disabled', true);
+
+        $.ajax({
+            type: 'POST',
+            url: 'plugins/awtrixng/core/ajax/awtrixng.ajax.php',
+            data: {
+                action: 'installAllBuiltinMP3s',
+                id: eqId,
+                ip: ip
+            },
+            dataType: 'json',
+            error: function(request, status, error) {
+                handleAjaxError(request, status, error);
+                btn.html(oldHtml).prop('disabled', false);
+            },
+            success: function(data) {
+                btn.html(oldHtml).prop('disabled', false);
+                if (data.state != 'ok') {
+                    $('#div_alert').showAlert({message: data.result, level: 'danger'});
+                } else {
+                    $('#div_alert').showAlert({message: '¡Instalación completada! ' + data.result.uploaded + ' archivos MP3 copiados al reloj.', level: 'success'});
+                    loadSoundLibrary();
+                }
+            }
+        });
+    });
 });

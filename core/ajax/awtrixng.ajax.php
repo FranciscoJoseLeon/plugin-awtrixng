@@ -624,6 +624,126 @@ try {
         ));
     }
 
+    if ($action == 'getSoundLibrary') {
+        $eqId = intval(init('eqLogic_id'));
+        $eqLogic = eqLogic::byId($eqId);
+        if (!is_object($eqLogic)) {
+            throw new Exception(__('Panel no encontrado', __FILE__));
+        }
+
+        $builtin = awtrixng::getBuiltinSoundLibrary();
+        $customRtttls = $eqLogic->getCustomRtttls();
+        $panelMp3s = array();
+        try {
+            $panelMp3s = $eqLogic->fetchAudioFiles();
+        } catch (Exception $e) {}
+
+        $model = $eqLogic->getConfiguration('model', '32x8');
+        $hasAudio = ($model === '52x16' || intval($eqLogic->getConfiguration('has_audio_tts', 0)) == 1);
+
+        ajax::success(array(
+            'builtin' => $builtin,
+            'custom_rtttls' => $customRtttls,
+            'panel_mp3s' => $panelMp3s,
+            'has_audio' => $hasAudio,
+            'model' => $model
+        ));
+    }
+
+    if ($action == 'playAudioSound') {
+        $eqId = intval(init('eqLogic_id'));
+        $sound = trim(init('sound'));
+        $eqLogic = eqLogic::byId($eqId);
+        if (!is_object($eqLogic)) {
+            throw new Exception(__('Panel no encontrado', __FILE__));
+        }
+        if (empty($sound)) {
+            throw new Exception(__('Debes indicar un sonido o código RTTTL', __FILE__));
+        }
+        $eqLogic->playSound($sound);
+        ajax::success(array('status' => 'ok', 'message' => __('Sonido enviado al reloj', __FILE__)));
+    }
+
+    if ($action == 'saveCustomRtttl') {
+        $eqId = intval(init('eqLogic_id'));
+        $name = trim(init('name'));
+        $code = trim(init('code'));
+        $eqLogic = eqLogic::byId($eqId);
+        if (!is_object($eqLogic)) {
+            throw new Exception(__('Panel no encontrado', __FILE__));
+        }
+        $newId = $eqLogic->addCustomRtttl($name, $code);
+        ajax::success(array('status' => 'ok', 'id' => $newId, 'name' => $name, 'code' => $code));
+    }
+
+    if ($action == 'deleteCustomRtttl') {
+        $eqId = intval(init('eqLogic_id'));
+        $id = trim(init('id'));
+        $eqLogic = eqLogic::byId($eqId);
+        if (!is_object($eqLogic)) {
+            throw new Exception(__('Panel no encontrado', __FILE__));
+        }
+        $eqLogic->removeCustomRtttl($id);
+        ajax::success(array('status' => 'ok'));
+    }
+
+    if ($action == 'uploadMP3ToPanel') {
+        $eqId = intval(init('eqLogic_id'));
+        $eqLogic = eqLogic::byId($eqId);
+        if (!is_object($eqLogic)) {
+            throw new Exception(__('Panel no encontrado', __FILE__));
+        }
+        if (!isset($_FILES['file']) || empty($_FILES['file']['name'])) {
+            throw new Exception(__('No se ha seleccionado ningún archivo', __FILE__));
+        }
+        $fileName = basename($_FILES['file']['name']);
+        if (!preg_match('/\.(mp3|wav|ogg)$/i', $fileName)) {
+            throw new Exception(__('Solo se admiten archivos de audio .mp3 o .wav', __FILE__));
+        }
+        $eqLogic->uploadAudioFile($_FILES['file']['tmp_name'], $fileName);
+        ajax::success(array('status' => 'ok', 'filename' => $fileName));
+    }
+
+    if ($action == 'deleteMP3FromPanel') {
+        $eqId = intval(init('eqLogic_id'));
+        $fileName = trim(init('filename'));
+        $eqLogic = eqLogic::byId($eqId);
+        if (!is_object($eqLogic)) {
+            throw new Exception(__('Panel no encontrado', __FILE__));
+        }
+        if (empty($fileName)) {
+            throw new Exception(__('Nombre de archivo no válido', __FILE__));
+        }
+        $eqLogic->deleteAudioFile($fileName);
+        ajax::success(array('status' => 'ok', 'filename' => $fileName));
+    }
+
+    if ($action == 'installAllBuiltinMP3s') {
+        $eqId = intval(init('eqLogic_id'));
+        $eqLogic = eqLogic::byId($eqId);
+        if (!is_object($eqLogic)) {
+            throw new Exception(__('Panel no encontrado', __FILE__));
+        }
+        $audioDir = dirname(__FILE__) . '/../../resources/audio';
+        if (!is_dir($audioDir)) {
+            throw new Exception(__('Carpeta de audios integrada no encontrada', __FILE__));
+        }
+        $files = scandir($audioDir);
+        $uploaded = 0;
+        $errors = array();
+        foreach ($files as $f) {
+            if (preg_match('/\.(mp3|wav)$/i', $f)) {
+                try {
+                    $eqLogic->uploadAudioFile($audioDir . '/' . $f, $f);
+                    $uploaded++;
+                } catch (Exception $e) {
+                    $errors[] = "{$f}: " . $e->getMessage();
+                }
+            }
+        }
+        ajax::success(array('status' => 'ok', 'uploaded_count' => $uploaded, 'errors' => $errors));
+    }
+
     throw new Exception(__('Acción desconocida : ', __FILE__) . $action);
 } catch (Exception $e) {
     ajax::error(displayException($e), $e->getCode());

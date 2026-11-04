@@ -131,6 +131,7 @@ $eqLogics = eqLogic::byType($plugin->getId());
             <li role="presentation" class="active"><a href="#eqlogictab" aria-controls="home" role="tab" data-toggle="tab"><i class="fas fa-tachometer-alt"></i> {{Equipo, IP y Tamaño}}</a></li>
             <li role="presentation"><a href="#panelinfotab" aria-controls="panelinfo" role="tab" data-toggle="tab"><i class="fas fa-layer-group"></i> {{Información de este Panel (Carrusel)}}</a></li>
             <li role="presentation"><a href="#quicktesttab" aria-controls="home" role="tab" data-toggle="tab"><i class="fas fa-paper-plane"></i> {{Probador en Vivo}}</a></li>
+            <li role="presentation"><a href="#soundtab" aria-controls="sound" role="tab" data-toggle="tab"><i class="fas fa-volume-up"></i> {{Biblioteca de Sonidos & Melodías}}</a></li>
             <li role="presentation"><a href="#commandtab" aria-controls="profile" role="tab" data-toggle="tab"><i class="fas fa-list-alt"></i> {{Comandos}}</a></li>
         </ul>
 
@@ -726,6 +727,124 @@ $eqLogics = eqLogic::byType($plugin->getId());
                                     <button type="button" class="btn btn-xs btn-default" id="sim_ctl_dismiss" title="{{Descartar notificación activa}}"><i class="fas fa-bell-slash"></i></button>
                                     <button type="button" class="btn btn-xs btn-default" id="sim_ctl_screenshot" title="{{Descargar captura de pantalla (PNG)}}"><i class="fas fa-download"></i></button>
                                     <button type="button" class="btn btn-xs btn-default" id="sim_ctl_1to1" data-scale1="0" title="{{Modo escala 1:1 real / Ajustar al ancho}}"><strong style="font-size: 10px;">1:1</strong></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 4: Sound & Melodies Library (RTTTL & MP3) -->
+            <div role="tabpanel" class="tab-pane" id="soundtab" style="padding: 15px;">
+                <!-- Hardware Badge & Explanatory Banner -->
+                <div class="alert alert-info" style="margin-bottom: 20px; border-radius: 6px;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+                        <div>
+                            <h4 style="margin: 0 0 5px 0;"><i class="fas fa-volume-up"></i> {{Biblioteca de Sonidos & Melodías}}</h4>
+                            <p style="margin: 0; font-size: 13px;">{{Tonos y melodías optimizados para alertas domóticas, electroválvulas de riego, timbres, avisos y música retro.}}</p>
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <span class="badge" style="background-color: #2563EB; font-size: 11px; padding: 6px 10px;"><i class="fas fa-microchip"></i> Ulanzi TC001: <strong>RTTTL (Piezo Buzzer)</strong></span>
+                            <span class="badge" style="background-color: #059669; font-size: 11px; padding: 6px 10px;"><i class="fas fa-bullhorn"></i> Ulanzi TC002: <strong>MP3 & RTTTL (I2S Speaker)</strong></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Category Filters and Mass Install -->
+                <div class="row" style="margin-bottom: 20px;">
+                    <div class="col-sm-7">
+                        <div class="btn-group" role="group" id="sound_category_filters">
+                            <button type="button" class="btn btn-default active filter-sound-cat" data-category="all"><i class="fas fa-list"></i> {{Todos los Sonidos}}</button>
+                            <button type="button" class="btn btn-default filter-sound-cat" data-category="home"><i class="fas fa-home"></i> {{Hogar & Avisos}}</button>
+                            <button type="button" class="btn btn-default filter-sound-cat" data-category="music"><i class="fas fa-music"></i> {{Melodías & Retro}}</button>
+                        </div>
+                    </div>
+                    <div class="col-sm-5 text-right">
+                        <button type="button" class="btn btn-success" id="bt_installAllMP3sToClock" title="{{Copia todos los 15 archivos MP3 de la biblioteca directamente a la memoria interna de tu pantalla Awtrix (requiere TC002 o ESP32 con DAC)}}">
+                            <i class="fas fa-cloud-upload-alt"></i> {{Instalar todos los MP3 integrados en el reloj}}
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Builtin Sound Cards Grid -->
+                <div id="sound_cards_container" class="row" style="margin-bottom: 30px;">
+                    <div class="col-xs-12 text-center" style="padding: 30px; color: #888;">
+                        <i class="fas fa-spinner fa-spin fa-2x"></i><br/>{{Cargando biblioteca de sonidos...}}
+                    </div>
+                </div>
+
+                <!-- Custom RTTTL & MP3 Upload Section -->
+                <div class="row">
+                    <!-- Column 1: Custom User RTTTL Tunes -->
+                    <div class="col-md-6">
+                        <div class="panel panel-default" style="border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                            <div class="panel-heading" style="font-weight: bold; background-color: #f8fafc;">
+                                <i class="fas fa-file-audio"></i> {{Mis Melodías RTTTL Personalizadas}}
+                            </div>
+                            <div class="panel-body">
+                                <p style="font-size: 12px; color: #64748b; margin-bottom: 12px;">{{Añade tus propios tonos RTTTL para zumbador piezo (TC001 / DIY). Podrás hacerlos sonar y usarlos en cualquier escenario.}}</p>
+                                
+                                <form id="form_add_custom_rtttl" style="margin-bottom: 15px;">
+                                    <div class="row">
+                                        <div class="col-sm-4" style="padding-right: 5px;">
+                                            <input type="text" class="form-control input-sm" id="input_rtttl_name" placeholder="{{Nombre del Tono}}" required />
+                                        </div>
+                                        <div class="col-sm-6" style="padding-left: 5px; padding-right: 5px;">
+                                            <input type="text" class="form-control input-sm" id="input_rtttl_code" placeholder="nombre:d=4,o=5,b=140:16c,16e..." required />
+                                        </div>
+                                        <div class="col-sm-2" style="padding-left: 5px;">
+                                            <button type="submit" class="btn btn-sm btn-primary btn-block"><i class="fas fa-plus"></i></button>
+                                        </div>
+                                    </div>
+                                </form>
+
+                                <div class="table-responsive" style="max-height: 250px; overflow-y: auto;">
+                                    <table class="table table-condensed table-hover" id="table_custom_rtttl">
+                                        <thead>
+                                            <tr>
+                                                <th>{{Nombre del Tono}}</th>
+                                                <th>{{Código RTTTL}}</th>
+                                                <th style="width: 100px; text-align: right;">{{Acción}}</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr><td colspan="3" class="text-center text-muted">{{Sin melodías personalizadas}}</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Column 2: Upload MP3 to Device Internal Storage -->
+                    <div class="col-md-6">
+                        <div class="panel panel-default" style="border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                            <div class="panel-heading" style="font-weight: bold; background-color: #f8fafc;">
+                                <i class="fas fa-hdd"></i> {{Archivos de Audio en la Pantalla}}
+                            </div>
+                            <div class="panel-body">
+                                <p style="font-size: 12px; color: #64748b; margin-bottom: 12px;">{{Sube archivos de audio .mp3 o .wav directamente a la memoria física de tu pantalla (almacenamiento interno / SPIFFS / SD).}}</p>
+
+                                <div style="display: flex; gap: 8px; margin-bottom: 15px;">
+                                    <input type="file" id="input_upload_mp3_file" accept=".mp3,.wav,.ogg" style="display: none;" />
+                                    <button type="button" class="btn btn-sm btn-info" id="bt_selectMP3File"><i class="fas fa-folder-open"></i> {{Subir archivo MP3 a la Pantalla}}</button>
+                                    <button type="button" class="btn btn-sm btn-default" id="bt_refreshAudioFilesList" title="{{Refrescar lista}}"><i class="fas fa-sync"></i></button>
+                                    <span id="label_selected_mp3_name" style="font-size: 12px; color: #64748b; align-self: center;"></span>
+                                </div>
+
+                                <div class="table-responsive" style="max-height: 250px; overflow-y: auto;">
+                                    <table class="table table-condensed table-hover" id="table_device_audio_files">
+                                        <thead>
+                                            <tr>
+                                                <th>{{Archivo}}</th>
+                                                <th>{{Tamaño}}</th>
+                                                <th style="width: 100px; text-align: right;">{{Acción}}</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr><td colspan="3" class="text-center text-muted">{{Sin archivos MP3 en el reloj}}</td></tr>
+                                        </tbody>
+                                    </table>
                                 </div>
                             </div>
                         </div>

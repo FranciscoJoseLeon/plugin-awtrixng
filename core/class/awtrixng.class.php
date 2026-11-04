@@ -653,6 +653,40 @@ class awtrixng extends eqLogic {
         $sound = trim($sound);
         if (empty($sound)) return;
 
+        // Si empieza directamente por "d=" o "b=" (cabecera RTTTL sin el nombre inicial), anteponer "tone:"
+        if (preg_match('/^[a-z]=[0-9]/i', $sound)) {
+            $sound = 'tone:' . $sound;
+        }
+
+        // Si es un alias conocido de la librería integrada (ej. water, alarm, mario, chime, siren, tetris...)
+        $builtinMatch = null;
+        $builtins = self::getBuiltinSoundLibrary();
+        foreach ($builtins as $item) {
+            if (strtolower($item['id']) === strtolower($sound)) {
+                $builtinMatch = $item;
+                break;
+            }
+        }
+
+        // Si coincide con la librería integrada y el dispositivo es TC001 (zumbador piezo) o no tiene altavoz MP3, usar RTTTL
+        $hasAudioTts = intval($this->getConfiguration('has_audio_tts', 0));
+        if ($builtinMatch !== null) {
+            if (!$hasAudioTts || strpos($sound, ':') !== false) {
+                $sound = $builtinMatch['rtttl'];
+            }
+        }
+
+        // Verificar si es una melodía personalizada guardada por el usuario
+        if (strpos($sound, ':') === false && !preg_match('/\.mp3$/i', $sound)) {
+            $customs = $this->getCustomRtttls();
+            foreach ($customs as $c) {
+                if (strtolower($c['name']) === strtolower($sound) || $c['id'] === $sound) {
+                    $sound = $c['code'];
+                    break;
+                }
+            }
+        }
+
         if ($this->isV1Api()) {
             try {
                 if (strpos($sound, ':') !== false) {
@@ -789,23 +823,33 @@ class awtrixng extends eqLogic {
     public function dismissNotification() {
         if ($this->isV1Api()) {
             try {
-                $this->apiRequest('v1/notifications/dismiss', 'POST', array());
-                log::add('awtrixng', 'info', "Notificación descartada/borrada correctamente de la pantalla.");
+                $this->apiRequest('v1/notifications', 'DELETE');
+                log::add('awtrixng', 'info', "Notificación descartada/borrada correctamente de la pantalla (v1 DELETE).");
                 return;
             } catch (Exception $e) {
                 try {
-                    $this->apiRequest('v1/notifications', 'POST', array('dismiss' => true, 'text' => ''));
-                    log::add('awtrixng', 'info', "Notificación descartada/borrada con fallback v1.");
+                    $this->apiRequest('v1/notifications/dismiss', 'DELETE');
+                    log::add('awtrixng', 'info', "Notificación descartada/borrada con endpoint dismiss (v1 DELETE).");
                     return;
-                } catch (Exception $e2) {}
+                } catch (Exception $e2) {
+                    try {
+                        $this->apiRequest('v1/notifications', 'POST', array('text' => ''));
+                        return;
+                    } catch (Exception $e3) {}
+                }
             }
         }
+        // Fallback Legacy API (/api/notify con payload vacío o texto vacío)
         try {
-            $this->apiRequest('notify/dismiss', 'POST', array());
+            $this->apiRequest('notify', 'POST', array());
         } catch (Exception $e) {
             try {
-                $this->apiRequest('notify', 'POST', array('text' => '', 'dismiss' => true));
-            } catch (Exception $e2) {}
+                $this->apiRequest('notify', 'POST', array('text' => ''));
+            } catch (Exception $e2) {
+                try {
+                    $this->apiRequest('notify/dismiss', 'POST', array());
+                } catch (Exception $e3) {}
+            }
         }
         log::add('awtrixng', 'info', "Notificación descartada/borrada correctamente de la pantalla.");
     }
@@ -826,14 +870,15 @@ class awtrixng extends eqLogic {
         $lowerMsg = strtolower($text);
         $lowerTitle = strtolower(trim($title));
 
-        // Detección de orden de descarte / borrado sin JSON
-        if (in_array($lowerMsg, array('dismiss', 'borrar', 'descartar', 'clear', 'off')) || in_array($lowerTitle, array('dismiss', 'borrar', 'descartar', 'clear', 'off'))) {
+        // Detección de orden de descarte / borrado sin JSON (Multilingüe: ES / FR / EN)
+        $dismissKeywords = array('dismiss', 'borrar', 'descartar', 'clear', 'off', 'annuler', 'effacer', 'supprimer', 'ignorer', 'stop');
+        if (in_array($lowerMsg, $dismissKeywords) || in_array($lowerTitle, $dismissKeywords)) {
             $this->dismissNotification();
             return;
         }
 
-        // Si en el título aparece 'urgente', 'urgent' o 'prioridad', marcar prioridad inmediata (stack = false)
-        if (strpos($lowerTitle, 'urgente') !== false || strpos($lowerTitle, 'urgent') !== false || strpos($lowerTitle, 'prioridad') !== false) {
+        // Si en el título aparece 'urgente', 'urgent', 'prioridad' o 'priorite', marcar prioridad inmediata (stack = false)
+        if (strpos($lowerTitle, 'urgente') !== false || strpos($lowerTitle, 'urgent') !== false || strpos($lowerTitle, 'prioridad') !== false || strpos($lowerTitle, 'priorite') !== false || strpos($lowerTitle, 'priority') !== false) {
             $stack = false;
         }
 
@@ -853,7 +898,7 @@ class awtrixng extends eqLogic {
                 $parts = array();
                 foreach ($rawParts as $rp) {
                     $item = strtolower(trim($rp));
-                    if (in_array($item, array('urgente', 'urgent', 'prioridad', 'inmediata', 'inmediato'))) {
+                    if (in_array($item, array('urgente', 'urgent', 'prioridad', 'priorite', 'priority', 'inmediata', 'inmediato', 'immediate'))) {
                         $stack = false;
                     } else {
                         $parts[] = trim($rp);
@@ -863,7 +908,7 @@ class awtrixng extends eqLogic {
                 if (isset($parts[1]) && trim($parts[1]) !== '') $color = $this->normalizeColor(trim($parts[1]));
                 if (isset($parts[2])) {
                     $p2 = strtolower(trim($parts[2]));
-                    if (in_array($p2, array('fija', 'fijo', 'hold', 'permanente', 'infinito'))) {
+                    if (in_array($p2, array('fija', 'fijo', 'hold', 'permanente', 'infinito', 'fixe', 'permanent'))) {
                         $hold = true;
                     } elseif (preg_match('/^([0-9]+)\s*m(in)?$/', $p2, $mMatch)) {
                         $durationSec = intval($mMatch[1]) * 60;
@@ -873,9 +918,9 @@ class awtrixng extends eqLogic {
                         $durationSec = intval($p2);
                     }
                 }
-            } elseif (in_array($lowerTitle, array('fija', 'fijo', 'hold', 'permanente'))) {
+            } elseif (in_array($lowerTitle, array('fija', 'fijo', 'hold', 'permanente', 'fixe', 'permanent'))) {
                 $hold = true;
-            } elseif (in_array($lowerTitle, array('urgente', 'urgent', 'prioridad'))) {
+            } elseif (in_array($lowerTitle, array('urgente', 'urgent', 'prioridad', 'priorite', 'priority'))) {
                 $stack = false;
             } elseif (is_numeric($trimmedTitle)) {
                 $icon = $trimmedTitle;
@@ -1427,6 +1472,318 @@ class awtrixng extends eqLogic {
             }
         }
     }
+
+    /**
+     * Biblioteca integrada de efectos de sonido y melodías RTTTL y MP3
+     */
+    public static function getBuiltinSoundLibrary() {
+        return array(
+            array(
+                'id' => 'water',
+                'name' => __('Agua / Riego de Plantas', __FILE__),
+                'category' => 'home',
+                'icon' => 'fas fa-tint',
+                'color' => '#00BFFF',
+                'rtttl' => 'water:d=4,o=5,b=140:16c,16e,16g,16c6,16e6,16g6,32p,16g6,16e6,16c6,16g,16e,16c',
+                'mp3_file' => 'water.mp3',
+                'description' => __('Arpegio acuático fluido ideal para electroválvulas y avisos de riego.', __FILE__)
+            ),
+            array(
+                'id' => 'alarm',
+                'name' => __('Alarma de Emergencia / Fuego', __FILE__),
+                'category' => 'home',
+                'icon' => 'fas fa-fire',
+                'color' => '#FF0000',
+                'rtttl' => 'alarm:d=4,o=5,b=160:8c,8e,8g,8c6,8g,8e,8c,8p,8c,8e,8g,8c6,8g,8e,8c',
+                'mp3_file' => 'alarm.mp3',
+                'description' => __('Alarma penetrante continua para humo, fuego o intrusión.', __FILE__)
+            ),
+            array(
+                'id' => 'siren',
+                'name' => __('Sirena de Policía / Intrusión', __FILE__),
+                'category' => 'home',
+                'icon' => 'fas fa-bullhorn',
+                'color' => '#DC2626',
+                'rtttl' => 'siren:d=4,o=5,b=120:16c6,16g6,16c6,16g6,16c6,16g6,16c6,16g6,16c6,16g6,16c6,16g6',
+                'mp3_file' => 'siren.mp3',
+                'description' => __('Tono oscilante bitonal de alta intensidad.', __FILE__)
+            ),
+            array(
+                'id' => 'doorbell',
+                'name' => __('Timbre de Casa (Ding-Dong)', __FILE__),
+                'category' => 'home',
+                'icon' => 'fas fa-bell',
+                'color' => '#F59E0B',
+                'rtttl' => 'doorbell:d=4,o=5,b=100:8e6,4c6',
+                'mp3_file' => 'doorbell.mp3',
+                'description' => __('Clásico sonido de llamada a la puerta de dos notas.', __FILE__)
+            ),
+            array(
+                'id' => 'power_on',
+                'name' => __('Encendido / Conexión (Power On)', __FILE__),
+                'category' => 'home',
+                'icon' => 'fas fa-plug',
+                'color' => '#10B981',
+                'rtttl' => 'power_on:d=4,o=5,b=180:16c,16e,16g,8c6',
+                'mp3_file' => 'power_on.mp3',
+                'description' => __('Acorde ascendente positivo para dispositivos que se encienden.', __FILE__)
+            ),
+            array(
+                'id' => 'power_off',
+                'name' => __('Apagado / Desconexión (Power Off)', __FILE__),
+                'category' => 'home',
+                'icon' => 'fas fa-power-off',
+                'color' => '#64748B',
+                'rtttl' => 'power_off:d=4,o=5,b=180:16c6,16g,16e,8c',
+                'mp3_file' => 'power_off.mp3',
+                'description' => __('Acorde descendente para fin de tarea o apagado.', __FILE__)
+            ),
+            array(
+                'id' => 'chime',
+                'name' => __('Notificación Suave (Chime)', __FILE__),
+                'category' => 'home',
+                'icon' => 'fas fa-comment-dots',
+                'color' => '#3B82F6',
+                'rtttl' => 'chime:d=4,o=5,b=160:16g6,16c7',
+                'mp3_file' => 'chime.mp3',
+                'description' => __('Campanilla discreta de dos notas para avisos normales.', __FILE__)
+            ),
+            array(
+                'id' => 'success',
+                'name' => __('Éxito / Tarea Completada', __FILE__),
+                'category' => 'home',
+                'icon' => 'fas fa-check-circle',
+                'color' => '#22C55E',
+                'rtttl' => 'success:d=4,o=5,b=160:16c,16e,16g,8b,4c6',
+                'mp3_file' => 'success.mp3',
+                'description' => __('Fanfarria triunfal para lavadora lista, recarga terminada, etc.', __FILE__)
+            ),
+            array(
+                'id' => 'warning',
+                'name' => __('Advertencia / Atento', __FILE__),
+                'category' => 'home',
+                'icon' => 'fas fa-exclamation-triangle',
+                'color' => '#EAB308',
+                'rtttl' => 'warning:d=4,o=5,b=120:8c6,8p,8c6,8p,4f#5',
+                'mp3_file' => 'warning.mp3',
+                'description' => __('Doble tono seco para llamar la atención sin estridencias.', __FILE__)
+            ),
+            array(
+                'id' => 'mario',
+                'name' => 'Super Mario Bros',
+                'category' => 'music',
+                'icon' => 'fas fa-gamepad',
+                'color' => '#EF4444',
+                'rtttl' => 'mario:d=4,o=5,b=100:16e6,16e6,32p,8e6,16c6,8e6,8g6,8p,8g,8p',
+                'mp3_file' => 'mario.mp3',
+                'description' => __('Tema clásico de inicio de Nintendo Super Mario.', __FILE__)
+            ),
+            array(
+                'id' => 'starwars',
+                'name' => 'Star Wars (Marcha Imperial)',
+                'category' => 'music',
+                'icon' => 'fas fa-jedi',
+                'color' => '#38BDF8',
+                'rtttl' => 'Imperial:d=4,o=5,b=100:e,e,e,8c,16g,e,8c,16g,2e',
+                'mp3_file' => 'starwars.mp3',
+                'description' => __('Marcha imperial de Darth Vader.', __FILE__)
+            ),
+            array(
+                'id' => 'mission_imp',
+                'name' => 'Misión Imposible',
+                'category' => 'music',
+                'icon' => 'fas fa-user-secret',
+                'color' => '#8B5CF6',
+                'rtttl' => 'MissionImp:d=16,o=6,b=95:d,d#,d,d#,d,d#,d,d#,d,d#,d,d#,d,d#,d,d#,4d,8f,8g,4d,8c,8c#',
+                'mp3_file' => 'mission_imp.mp3',
+                'description' => __('Melodía de suspense y acción rápida.', __FILE__)
+            ),
+            array(
+                'id' => 'tetris',
+                'name' => 'Tetris (Korobeiniki)',
+                'category' => 'music',
+                'icon' => 'fas fa-th',
+                'color' => '#EC4899',
+                'rtttl' => 'tetris:d=4,o=5,b=160:e6,8b,8c6,8d6,16e6,16d6,8c6,8b,a,8a,8c6,e6,8d6,8c6,b,8b,8c6,d6,e6,c6,a,2a',
+                'mp3_file' => 'tetris.mp3',
+                'description' => __('Banda sonora retro de Tetris.', __FILE__)
+            ),
+            array(
+                'id' => 'zelda',
+                'name' => 'Zelda (Secret Found)',
+                'category' => 'music',
+                'icon' => 'fas fa-gem',
+                'color' => '#14B8A6',
+                'rtttl' => 'zelda_secret:d=4,o=5,b=140:16g,16f#,16d#,16a,16g#,16e,16g#,8c6',
+                'mp3_file' => 'zelda.mp3',
+                'description' => __('Sonido mítico al abrir un cofre o descubrir un secreto.', __FILE__)
+            ),
+            array(
+                'id' => 'pacman',
+                'name' => 'Pac-Man Arcade',
+                'category' => 'music',
+                'icon' => 'fas fa-ghost',
+                'color' => '#FBBF24',
+                'rtttl' => 'pacman:d=4,o=5,b=110:32b,32b6,32f#6,32d#6,32b6,32f#6,16d#6,32c,32c7,32g6,32e6,32c7,32g6,16e6',
+                'mp3_file' => 'pacman.mp3',
+                'description' => __('Tono arcade retro de Pacman.', __FILE__)
+            )
+        );
+    }
+
+    public function fetchAudioFiles() {
+        $ip = trim($this->getConfiguration('ip', ''));
+        $port = intval($this->getConfiguration('port', 80)) > 0 ? intval($this->getConfiguration('port', 80)) : 80;
+        $password = trim($this->getConfiguration('auth_password', ''));
+        if (empty($ip)) return array();
+
+        $baseUrl = "http://{$ip}" . ($port != 80 ? ":{$port}" : "");
+        $ch = curl_init("{$baseUrl}/api/v1/files");
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 3);
+        if (!empty($password)) curl_setopt($ch, CURLOPT_USERPWD, 'admin:' . $password);
+        $res = curl_exec($ch);
+        $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+
+        $audioFiles = array();
+        if ($code === 200 && !empty($res)) {
+            $decoded = json_decode($res, true);
+            $files = isset($decoded['files']) && is_array($decoded['files']) ? $decoded['files'] : array();
+            foreach ($files as $f) {
+                if (!empty($f['name'])) {
+                    $name = (string)$f['name'];
+                    if (preg_match('/\.(mp3|wav|ogg)$/i', $name)) {
+                        $audioFiles[] = array(
+                            'name' => $name,
+                            'slug' => preg_replace('/\.(mp3|wav|ogg)$/i', '', $name),
+                            'size' => isset($f['size']) ? intval($f['size']) : 0,
+                            'size_str' => isset($f['size']) ? round(intval($f['size']) / 1024, 1) . ' KB' : ''
+                        );
+                    }
+                }
+            }
+        }
+        return $audioFiles;
+    }
+
+    public function uploadAudioFile($filePath, $fileName) {
+        $ip = trim($this->getConfiguration('ip', ''));
+        $port = intval($this->getConfiguration('port', 80)) > 0 ? intval($this->getConfiguration('port', 80)) : 80;
+        $password = trim($this->getConfiguration('auth_password', ''));
+        if (empty($ip)) throw new Exception(__('IP no configurada', __FILE__));
+        if (!file_exists($filePath)) throw new Exception(__('Archivo no encontrado en el servidor', __FILE__));
+
+        $baseUrl = "http://{$ip}" . ($port != 80 ? ":{$port}" : "");
+        
+        $postData = array('file' => new CURLFile($filePath, 'audio/mpeg', $fileName));
+        $ch = curl_init("{$baseUrl}/api/v1/files");
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $postData);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 15);
+        if (!empty($password)) curl_setopt($ch, CURLOPT_USERPWD, 'admin:' . $password);
+        $res = curl_exec($ch);
+        $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+
+        if ($code >= 200 && $code < 300) {
+            log::add('awtrixng', 'info', "Archivo de audio {$fileName} subido correctamente a Awtrix NG");
+            return true;
+        }
+
+        $ch = curl_init("{$baseUrl}/edit");
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, array('data' => new CURLFile($filePath, 'audio/mpeg', '/' . ltrim($fileName, '/'))));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 15);
+        if (!empty($password)) curl_setopt($ch, CURLOPT_USERPWD, 'admin:' . $password);
+        $res = curl_exec($ch);
+        $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+
+        if ($code >= 200 && $code < 300) {
+            log::add('awtrixng', 'info', "Archivo de audio {$fileName} subido mediante /edit a Awtrix NG");
+            return true;
+        }
+
+        throw new Exception(__("No se pudo subir el archivo de audio {$fileName} a la pantalla (HTTP {$code})", __FILE__));
+    }
+
+    public function deleteAudioFile($fileName) {
+        $ip = trim($this->getConfiguration('ip', ''));
+        $port = intval($this->getConfiguration('port', 80)) > 0 ? intval($this->getConfiguration('port', 80)) : 80;
+        $password = trim($this->getConfiguration('auth_password', ''));
+        if (empty($ip)) throw new Exception(__('IP no configurada', __FILE__));
+
+        $baseUrl = "http://{$ip}" . ($port != 80 ? ":{$port}" : "");
+        
+        $ch = curl_init("{$baseUrl}/api/v1/files?file=" . rawurlencode($fileName));
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'DELETE');
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+        if (!empty($password)) curl_setopt($ch, CURLOPT_USERPWD, 'admin:' . $password);
+        $res = curl_exec($ch);
+        $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+
+        if ($code >= 200 && $code < 300) {
+            log::add('awtrixng', 'info', "Archivo de audio {$fileName} eliminado de Awtrix NG");
+            return true;
+        }
+
+        $ch = curl_init("{$baseUrl}/edit?file=" . rawurlencode('/' . ltrim($fileName, '/')));
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'DELETE');
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+        if (!empty($password)) curl_setopt($ch, CURLOPT_USERPWD, 'admin:' . $password);
+        $res = curl_exec($ch);
+        $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+
+        if ($code >= 200 && $code < 300) {
+            log::add('awtrixng', 'info', "Archivo de audio {$fileName} eliminado de Awtrix NG mediante /edit");
+            return true;
+        }
+
+        throw new Exception(__("No se pudo eliminar el archivo {$fileName} de la pantalla (HTTP {$code})", __FILE__));
+    }
+
+    public function getCustomRtttls() {
+        $raw = $this->getConfiguration('custom_rtttls', '[]');
+        $decoded = is_string($raw) ? json_decode($raw, true) : $raw;
+        return is_array($decoded) ? $decoded : array();
+    }
+
+    public function addCustomRtttl($name, $code) {
+        $name = trim($name);
+        $code = trim($code);
+        if (empty($name) || empty($code)) throw new Exception(__('Nombre y código RTTTL son obligatorios', __FILE__));
+        $list = $this->getCustomRtttls();
+        $id = 'usr_' . substr(md5($name . microtime()), 0, 8);
+        $list[] = array(
+            'id' => $id,
+            'name' => $name,
+            'rtttl' => $code,
+            'created_at' => date('Y-m-d H:i:s')
+        );
+        $this->setConfiguration('custom_rtttls', json_encode($list, JSON_UNESCAPED_UNICODE));
+        $this->save();
+        return $id;
+    }
+
+    public function removeCustomRtttl($id) {
+        $list = $this->getCustomRtttls();
+        $newList = array();
+        foreach ($list as $item) {
+            if ($item['id'] !== $id) {
+                $newList[] = $item;
+            }
+        }
+        $this->setConfiguration('custom_rtttls', json_encode($newList, JSON_UNESCAPED_UNICODE));
+        $this->save();
+        return true;
+    }
 }
 
 class awtrixngCmd extends cmd {
@@ -1483,7 +1840,17 @@ class awtrixngCmd extends cmd {
                 break;
 
             case 'play_sound':
-                $sound = !empty($message) ? $message : $title;
+                $t = trim((string)$title);
+                $m = trim((string)$message);
+                if (!empty($t) && !empty($m)) {
+                    if (preg_match('/^[a-zA-Z0-9_-]+$/', $t) && (strpos($m, 'd=') === 0 || strpos($m, 'b=') === 0 || strpos($m, 'o=') === 0)) {
+                        $sound = $t . ':' . $m;
+                    } else {
+                        $sound = !empty($m) ? $m : $t;
+                    }
+                } else {
+                    $sound = !empty($m) ? $m : $t;
+                }
                 $eqLogic->playSound($sound);
                 break;
 
