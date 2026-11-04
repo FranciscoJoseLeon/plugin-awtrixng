@@ -1,0 +1,42 @@
+{
+  "id": "awtrixng",
+  "name": "Awtrix NG Matrix LED",
+  "pluginVersion": "0.9.0",
+  "version": "0.9.0",
+  "description": {
+    "fr_FR": "Intégration complète pour horloges matricielles LED Awtrix Light et Awtrix NG (Ulanzi TC001, Ulanzi TC002, ESP32). Contrôle des notifications, carrousel d'applications, luminosité, capteurs (batterie, lumière LDR, température) et mélodies via HTTP REST ou MQTT.",
+    "en_US": "Complete integration for Awtrix Light and Awtrix NG LED pixel matrix clocks (Ulanzi TC001, Ulanzi TC002, ESP32). Control notifications, custom app carousel, brightness, sensors (battery, ambient light, temperature), and melodies via HTTP REST or MQTT.",
+    "es_ES": "Integración completa para pantallas matriciales LED Awtrix Light y Awtrix NG (Ulanzi TC001, Ulanzi TC002, ESP32). Control de notificaciones, carrusel de aplicaciones, brillo, sensores (batería, luz LDR, temperatura) y melodías por HTTP REST y MQTT."
+  },
+  "category": "devicecommunication",
+  "author": "FranciscoJoseLeon",
+  "licence": "AGPL",
+  "require": "4.2",
+  "hasDependency": false,
+  "hasOwnDeamon": false,
+  "maxDependancyInstallTime": 0,
+  "os": {
+    "min": 10,
+    "max": 12.99
+  },
+  "language": [
+    "fr_FR",
+    "en_US",
+    "es_ES"
+  ],
+  "compatibility": [
+    "smart",
+    "luna",
+    "atlas",
+    "rpi",
+    "docker",
+    "diy",
+    "mobile"
+  ],
+  "documentation": "https://blueforcer.github.io/awtrix-ng/esp32/",
+  "changelog": "https://github.com/FranciscoJoseLeon/Jeedom-Awtrixng/blob/main/docs/es_ES/changelog.md",
+  "link": {
+    "get_started": "https://blueforcer.github.io/awtrix-ng/esp32/",
+    "diy_build": "https://blueforcer.github.io/awtrix-ng/esp32/advanced/diy-build/"
+  }
+}
