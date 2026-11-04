@@ -775,7 +775,7 @@ clearJeedomToasts();
 
 // --- Saved Notification Preset Commands Handler ---
 function loadPresetNotificationCmds() {
-    var eqId = $('.eqLogicAttr[data-l1key=id]').val();
+    var eqId = getAwtrixCurrentEqLogicId();
     var $container = $('#div_saved_preset_commands_list');
     if (!eqId || !$container.length) return;
 
@@ -828,7 +828,7 @@ function loadPresetNotificationCmds() {
 }
 
 $(document).on('click', '#bt_saveAsPresetCmd', function() {
-    var eqId = $('.eqLogicAttr[data-l1key=id]').val();
+    var eqId = getAwtrixCurrentEqLogicId();
     if (!eqId) {
         $('#div_alert').showAlert({message: '{{Debes guardar primero el panel antes de crear comandos}}', level: 'danger', emptyBefore: true});
         return;
@@ -1509,7 +1509,7 @@ $(document).on('click.awtrixng', '.bt_selectAppJeedomCmd', function() {
 
 // Sync Panel Apps Now button
 $('#bt_syncPanelAppsNow').on('click', function() {
-    var eqId = $('.eqLogicAttr[data-l1key=id]').val();
+    var eqId = getAwtrixCurrentEqLogicId();
     if (!eqId) {
         $('#div_alert').showAlert({message: '{{Guarda primero el equipo antes de sincronizar}}', level: 'warning'});
         return;
@@ -2126,11 +2126,29 @@ $(function() {
 // =========================================================================
 // GESTOR DE BIBLIOTECA DE SONIDOS & MELODÍAS (RTTTL & MP3)
 // =========================================================================
+function getAwtrixCurrentEqLogicId() {
+    var id = $('.eqLogicAttr[data-l1key=id]').val();
+    if (!id && typeof jeedomUtils !== 'undefined' && jeedomUtils.getUrlVars) {
+        id = jeedomUtils.getUrlVars('id');
+    }
+    if (!id && typeof init === 'function') {
+        id = init('id');
+    }
+    return id || '';
+}
+
 var currentSoundLibrary = [];
 var currentSoundCategory = 'all';
 
 function loadSoundLibrary() {
-    var eqId = $('.eqLogicAttr[data-l1key=id]').val();
+    var eqId = getAwtrixCurrentEqLogicId();
+    if (!eqId) {
+        if (typeof jeedomUtils !== 'undefined' && jeedomUtils.getUrlVars) {
+            eqId = jeedomUtils.getUrlVars('id');
+        } else if (typeof init === 'function') {
+            eqId = init('id');
+        }
+    }
     var ip = $.trim($('#input_device_ip').val());
     if (!eqId && !ip) return;
 
@@ -2142,6 +2160,7 @@ function loadSoundLibrary() {
         data: {
             action: 'getSoundLibrary',
             id: eqId,
+            eqLogic_id: eqId,
             ip: ip
         },
         dataType: 'json',
@@ -2157,8 +2176,8 @@ function loadSoundLibrary() {
 
             currentSoundLibrary = data.result.builtin || [];
             renderSoundCards(currentSoundCategory);
-            renderCustomRtttlTable(data.result.custom_rtttl || []);
-            renderDeviceAudioFilesTable(data.result.files || []);
+            renderCustomRtttlTable(data.result.custom_rtttls || data.result.custom_rtttl || []);
+            renderDeviceAudioFilesTable(data.result.panel_mp3s || data.result.files || []);
         }
     });
 }
@@ -2271,7 +2290,7 @@ $(document).on('click', '.bt_playSoundClock', function() {
     } else if (sound) {
         sound = decodeURIComponent(sound);
     }
-    var eqId = $('.eqLogicAttr[data-l1key=id]').val();
+    var eqId = getAwtrixCurrentEqLogicId();
     var ip = $.trim($('#input_device_ip').val());
 
     var btn = $(this);
@@ -2284,6 +2303,7 @@ $(document).on('click', '.bt_playSoundClock', function() {
         data: {
             action: 'playAudioSound',
             id: eqId,
+            eqLogic_id: eqId,
             ip: ip,
             sound: sound
         },
@@ -2331,7 +2351,7 @@ $(document).on('click', '.bt_copySoundTag', function() {
 // Añadir melodía RTTTL personalizada
 $('#form_add_custom_rtttl').on('submit', function(e) {
     e.preventDefault();
-    var eqId = $('.eqLogicAttr[data-l1key=id]').val();
+    var eqId = getAwtrixCurrentEqLogicId();
     var name = $.trim($('#input_rtttl_name').val());
     var code = $.trim($('#input_rtttl_code').val());
 
@@ -2343,6 +2363,7 @@ $('#form_add_custom_rtttl').on('submit', function(e) {
         data: {
             action: 'saveCustomRtttl',
             id: eqId,
+            eqLogic_id: eqId,
             name: name,
             code: code
         },
@@ -2366,7 +2387,7 @@ $('#form_add_custom_rtttl').on('submit', function(e) {
 // Eliminar melodía RTTTL personalizada
 $(document).on('click', '.bt_deleteCustomRtttl', function() {
     var itemKey = $(this).data('id');
-    var eqId = $('.eqLogicAttr[data-l1key=id]').val();
+    var eqId = getAwtrixCurrentEqLogicId();
 
     bootbox.confirm('¿Deseas eliminar esta melodía personalizada?', function(result) {
         if (!result) return;
@@ -2376,6 +2397,7 @@ $(document).on('click', '.bt_deleteCustomRtttl', function() {
             data: {
                 action: 'deleteCustomRtttl',
                 id: eqId,
+                eqLogic_id: eqId,
                 item_id: itemKey
             },
             dataType: 'json',
@@ -2403,11 +2425,13 @@ $('#input_upload_mp3_file').on('change', function() {
     var file = this.files[0];
     if (!file) return;
 
-    var eqId = $('.eqLogicAttr[data-l1key=id]').val();
+    var eqId = getAwtrixCurrentEqLogicId();
     var ip = $.trim($('#input_device_ip').val());
     var formData = new FormData();
     formData.append('action', 'uploadMP3ToPanel');
     formData.append('id', eqId);
+    formData.append('eqLogic_id', eqId);
+    formData.append('file', file);
     formData.append('ip', ip);
     formData.append('audio_file', file);
 
@@ -2439,7 +2463,7 @@ $('#input_upload_mp3_file').on('change', function() {
 // Eliminar archivo MP3 de la pantalla
 $(document).on('click', '.bt_deleteDeviceAudioFile', function() {
     var fileName = $(this).data('filename');
-    var eqId = $('.eqLogicAttr[data-l1key=id]').val();
+    var eqId = getAwtrixCurrentEqLogicId();
     var ip = $.trim($('#input_device_ip').val());
 
     bootbox.confirm('¿Deseas eliminar el archivo ' + fileName + ' de la memoria del reloj?', function(result) {
@@ -2450,6 +2474,8 @@ $(document).on('click', '.bt_deleteDeviceAudioFile', function() {
             data: {
                 action: 'deleteMP3FromPanel',
                 id: eqId,
+                eqLogic_id: eqId,
+                filename: fileName,
                 ip: ip,
                 file: fileName
             },
@@ -2476,7 +2502,7 @@ $('#bt_refreshAudioFilesList').on('click', function() {
 
 // Instalar todos los MP3 integrados en el reloj
 $('#bt_installAllMP3sToClock').on('click', function() {
-    var eqId = $('.eqLogicAttr[data-l1key=id]').val();
+    var eqId = getAwtrixCurrentEqLogicId();
     var ip = $.trim($('#input_device_ip').val());
 
     bootbox.confirm('¿Deseas instalar los 15 archivos MP3 de la biblioteca domótica en el almacenamiento interno de tu reloj? (Recomendado para Ulanzi TC002 o ESP32 con DAC).', function(result) {
@@ -2491,6 +2517,7 @@ $('#bt_installAllMP3sToClock').on('click', function() {
             data: {
                 action: 'installAllBuiltinMP3s',
                 id: eqId,
+                eqLogic_id: eqId,
                 ip: ip
             },
             dataType: 'json',

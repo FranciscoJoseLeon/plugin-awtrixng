@@ -625,7 +625,7 @@ try {
     }
 
     if ($action == 'getSoundLibrary') {
-        $eqId = intval(init('eqLogic_id'));
+        $eqId = intval(init('eqLogic_id', init('id')));
         $eqLogic = eqLogic::byId($eqId);
         if (!is_object($eqLogic)) {
             throw new Exception(__('Panel no encontrado', __FILE__));
@@ -651,7 +651,7 @@ try {
     }
 
     if ($action == 'playAudioSound') {
-        $eqId = intval(init('eqLogic_id'));
+        $eqId = intval(init('eqLogic_id', init('id')));
         $sound = trim(init('sound'));
         $eqLogic = eqLogic::byId($eqId);
         if (!is_object($eqLogic)) {
@@ -665,7 +665,7 @@ try {
     }
 
     if ($action == 'saveCustomRtttl') {
-        $eqId = intval(init('eqLogic_id'));
+        $eqId = intval(init('eqLogic_id', init('id')));
         $name = trim(init('name'));
         $code = trim(init('code'));
         $eqLogic = eqLogic::byId($eqId);
@@ -673,40 +673,41 @@ try {
             throw new Exception(__('Panel no encontrado', __FILE__));
         }
         $newId = $eqLogic->addCustomRtttl($name, $code);
-        ajax::success(array('status' => 'ok', 'id' => $newId, 'name' => $name, 'code' => $code));
+        ajax::success(array('status' => 'ok', 'id' => $newId, 'name' => $name, 'code' => $code, 'custom_rtttls' => $eqLogic->getCustomRtttls()));
     }
 
     if ($action == 'deleteCustomRtttl') {
-        $eqId = intval(init('eqLogic_id'));
-        $id = trim(init('id'));
+        $eqId = intval(init('eqLogic_id', init('id')));
+        $id = trim(init('item_id', init('id')));
         $eqLogic = eqLogic::byId($eqId);
         if (!is_object($eqLogic)) {
             throw new Exception(__('Panel no encontrado', __FILE__));
         }
         $eqLogic->removeCustomRtttl($id);
-        ajax::success(array('status' => 'ok'));
+        ajax::success(array('status' => 'ok', 'custom_rtttls' => $eqLogic->getCustomRtttls()));
     }
 
     if ($action == 'uploadMP3ToPanel') {
-        $eqId = intval(init('eqLogic_id'));
+        $eqId = intval(init('eqLogic_id', init('id')));
         $eqLogic = eqLogic::byId($eqId);
         if (!is_object($eqLogic)) {
             throw new Exception(__('Panel no encontrado', __FILE__));
         }
-        if (!isset($_FILES['file']) || empty($_FILES['file']['name'])) {
+        $uploadedFile = isset($_FILES['audio_file']) ? $_FILES['audio_file'] : (isset($_FILES['file']) ? $_FILES['file'] : null);
+        if (!$uploadedFile || empty($uploadedFile['name'])) {
             throw new Exception(__('No se ha seleccionado ningún archivo', __FILE__));
         }
-        $fileName = basename($_FILES['file']['name']);
+        $fileName = basename($uploadedFile['name']);
         if (!preg_match('/\.(mp3|wav|ogg)$/i', $fileName)) {
             throw new Exception(__('Solo se admiten archivos de audio .mp3 o .wav', __FILE__));
         }
-        $eqLogic->uploadAudioFile($_FILES['file']['tmp_name'], $fileName);
+        $eqLogic->uploadAudioFile($uploadedFile['tmp_name'], $fileName);
         ajax::success(array('status' => 'ok', 'filename' => $fileName));
     }
 
     if ($action == 'deleteMP3FromPanel') {
-        $eqId = intval(init('eqLogic_id'));
-        $fileName = trim(init('filename'));
+        $eqId = intval(init('eqLogic_id', init('id')));
+        $fileName = trim(init('filename', init('file')));
         $eqLogic = eqLogic::byId($eqId);
         if (!is_object($eqLogic)) {
             throw new Exception(__('Panel no encontrado', __FILE__));
@@ -719,7 +720,7 @@ try {
     }
 
     if ($action == 'installAllBuiltinMP3s') {
-        $eqId = intval(init('eqLogic_id'));
+        $eqId = intval(init('eqLogic_id', init('id')));
         $eqLogic = eqLogic::byId($eqId);
         if (!is_object($eqLogic)) {
             throw new Exception(__('Panel no encontrado', __FILE__));
@@ -743,9 +744,6 @@ try {
         }
         ajax::success(array('status' => 'ok', 'uploaded_count' => $uploaded, 'errors' => $errors));
     }
-
-    throw new Exception(__('Acción desconocida : ', __FILE__) . $action);
-} catch (Exception $e) {
     ajax::error(displayException($e), $e->getCode());
 }
 ?>
