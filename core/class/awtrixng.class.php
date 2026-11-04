@@ -41,6 +41,14 @@ class awtrixng extends eqLogic {
             }
         }
         $this->createCommands();
+        $this->fixCommandTypes();
+        if (!empty($ip)) {
+            try {
+                $this->syncPanelApps();
+            } catch (Exception $e) {
+                log::add('awtrixng', 'debug', $this->getLogPrefix() . 'Sincronización de apps en postSave omitida: ' . $e->getMessage());
+            }
+        }
     }
 
     public function postUpdate() {
@@ -423,6 +431,74 @@ class awtrixng extends eqLogic {
             }
             $cmd->setOrder(++$order);
             $cmd->save();
+        }
+    }
+
+    /**
+     * Corrige y repara de forma estricta los tipos de comandos en la base de datos de Jeedom.
+     * Garantiza que los comandos de acción nunca se guarden ni se muestren como 'info',
+     * devolviendo el botón 'Tester' / 'Probar' y los campos de títulos/mensajes en escenarios.
+     */
+    public function fixCommandTypes() {
+        $actionCmds = array(
+            'refresh' => 'other',
+            'power_on' => 'other',
+            'power_off' => 'other',
+            'toggle_power' => 'other',
+            'set_brightness' => 'slider',
+            'next_app' => 'other',
+            'prev_app' => 'other',
+            'notify' => 'message',
+            'dismiss_notif' => 'other',
+            'custom_app' => 'message',
+            'delete_app' => 'message',
+            'sync_apps' => 'other',
+            'play_sound' => 'message',
+            'reboot' => 'other',
+            'tts' => 'message',
+            'set_volume' => 'slider'
+        );
+        $infoCmds = array(
+            'online' => 'binary',
+            'battery' => 'numeric',
+            'lux' => 'numeric',
+            'temp' => 'numeric',
+            'humidity' => 'numeric',
+            'power_state' => 'binary',
+            'brightness_state' => 'numeric',
+            'current_app' => 'string',
+            'wifi_signal' => 'numeric',
+            'uptime_str' => 'string'
+        );
+        foreach ($this->getCmd() as $cmd) {
+            $logicalId = $cmd->getLogicalId();
+            if (isset($actionCmds[$logicalId])) {
+                $changed = false;
+                if ($cmd->getType() !== 'action') {
+                    $cmd->setType('action');
+                    $changed = true;
+                }
+                if ($cmd->getSubType() !== $actionCmds[$logicalId] && in_array($cmd->getSubType(), array('string', 'numeric', 'binary', '', 'other'))) {
+                    $cmd->setSubType($actionCmds[$logicalId]);
+                    $changed = true;
+                }
+                if ($changed) {
+                    $cmd->save();
+                }
+            } elseif (isset($infoCmds[$logicalId])) {
+                $changed = false;
+                if ($cmd->getType() !== 'info') {
+                    $cmd->setType('info');
+                    $changed = true;
+                }
+                if ($cmd->getSubType() !== $infoCmds[$logicalId] && empty($cmd->getSubType())) {
+                    $cmd->setSubType($infoCmds[$logicalId]);
+                    $changed = true;
+                }
+                if ($changed) {
+                    $cmd->save();
+                }
+            }
         }
     }
 
@@ -1165,21 +1241,34 @@ class awtrixng extends eqLogic {
         $appName = trim($appName);
         if (empty($appName)) return;
 
-        if ($this->isV1Api()) {
+        // 1. Endpoint estándar universal Awtrix (Awtrix Light y Awtrix NG):
+        // POST /api/custom?name=xxx con payload JSON '{}' elimina la app de la memoria y la pantalla
+        try {
+            $this->apiRequest('custom?name=' . urlencode($appName), 'POST', '{}');
+            log::add('awtrixng', 'info', $this->getLogPrefix() . "App carrusel '{$appName}' eliminada de Awtrix (POST /api/custom)");
+        } catch (Exception $e) {
+            log::add('awtrixng', 'debug', $this->getLogPrefix() . "POST /api/custom?name={$appName} exception: " . $e->getMessage());
+        }
+
+        // Si el nombre tiene mayúsculas, probar también en minúsculas por si el panel lo guardó así
+        $lowerName = strtolower($appName);
+        if ($lowerName !== $appName) {
             try {
-                $this->apiRequest('v1/apps/' . rawurlencode($appName), 'DELETE');
-                log::add('awtrixng', 'info', "App carrusel v1 '{$appName}' eliminada de Awtrix");
-                return;
+                $this->apiRequest('custom?name=' . urlencode($lowerName), 'POST', '{}');
             } catch (Exception $e) {
-                if ($e->getCode() != 404) {
-                    throw $e;
-                }
+                // Ignore
             }
         }
 
-        // Fallback Legacy API
-        $this->apiRequest('custom?name=' . urlencode($appName), 'POST', array());
-        log::add('awtrixng', 'info', "App carrusel '{$appName}' eliminada de Awtrix");
+        // 2. Si es v1 API, intentar también DELETE v1/apps/pushed/appName
+        if ($this->isV1Api()) {
+            try {
+                $this->apiRequest('v1/apps/pushed/' . rawurlencode($appName), 'DELETE');
+                log::add('awtrixng', 'info', $this->getLogPrefix() . "App carrusel v1 '{$appName}' eliminada de Awtrix (DELETE /api/v1/apps/pushed)");
+            } catch (Exception $e) {
+                // Ignore if endpoint not present on this firmware
+            }
+        }
     }
 
     /**
@@ -1205,12 +1294,13 @@ class awtrixng extends eqLogic {
             $appName = isset($app['name']) ? trim($app['name']) : '';
             if (empty($appName)) continue;
 
-            $enabled = isset($app['enable']) ? intval($app['enable']) : 1;
+            $enabled = (isset($app['enable']) && ($app['enable'] === 1 || $app['enable'] === '1' || $app['enable'] === true));
             if (!$enabled) {
                 try {
                     $this->deleteCustomApp($appName);
+                    log::add('awtrixng', 'info', $this->getLogPrefix() . "App carrusel deshabilitada '{$appName}' eliminada de la pantalla.");
                 } catch (Exception $e) {
-                    // Ignore delete errors if offline
+                    log::add('awtrixng', 'warning', $this->getLogPrefix() . "Error al eliminar app deshabilitada '{$appName}': " . $e->getMessage());
                 }
                 continue;
             }
@@ -1862,6 +1952,54 @@ class awtrixng extends eqLogic {
 }
 
 class awtrixngCmd extends cmd {
+
+    public function preSave() {
+        $actionCmds = array(
+            'refresh' => 'other',
+            'power_on' => 'other',
+            'power_off' => 'other',
+            'toggle_power' => 'other',
+            'set_brightness' => 'slider',
+            'next_app' => 'other',
+            'prev_app' => 'other',
+            'notify' => 'message',
+            'dismiss_notif' => 'other',
+            'custom_app' => 'message',
+            'delete_app' => 'message',
+            'sync_apps' => 'other',
+            'play_sound' => 'message',
+            'reboot' => 'other',
+            'tts' => 'message',
+            'set_volume' => 'slider'
+        );
+        $infoCmds = array(
+            'online' => 'binary',
+            'battery' => 'numeric',
+            'lux' => 'numeric',
+            'temp' => 'numeric',
+            'humidity' => 'numeric',
+            'power_state' => 'binary',
+            'brightness_state' => 'numeric',
+            'current_app' => 'string',
+            'wifi_signal' => 'numeric',
+            'uptime_str' => 'string'
+        );
+        $logicalId = $this->getLogicalId();
+        if (isset($actionCmds[$logicalId])) {
+            $this->setType('action');
+            if (empty($this->getSubType()) || in_array($this->getSubType(), array('string', 'numeric', 'binary', 'other'))) {
+                $this->setSubType($actionCmds[$logicalId]);
+            }
+        } elseif (isset($infoCmds[$logicalId])) {
+            $this->setType('info');
+            if (empty($this->getSubType())) {
+                $this->setSubType($infoCmds[$logicalId]);
+            }
+        } elseif ($this->getConfiguration('is_preset_notif') == 1 || strpos($logicalId, 'preset_notif_') === 0) {
+            $this->setType('action');
+            $this->setSubType('other');
+        }
+    }
 
     public function execute($options = array()) {
         $eqLogic = $this->getEqLogic();

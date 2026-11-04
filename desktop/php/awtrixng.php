@@ -19,6 +19,11 @@ if (!isConnect('admin')) {
 $plugin = plugin::byId('awtrixng');
 sendVarToJS('eqType', $plugin->getId());
 $eqLogics = eqLogic::byType($plugin->getId());
+foreach ($eqLogics as $eqLogicItem) {
+    if (is_object($eqLogicItem)) {
+        $eqLogicItem->fixCommandTypes();
+    }
+}
 ?>
 
 <div class="row row-overflow">

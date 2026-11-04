@@ -981,5 +981,6 @@
         "Panel no encontrado": "Panel not found",
         "Solo se admiten archivos de audio .mp3 o .wav": "Only .mp3 or .wav audio files are allowed",
         "Sonido enviado al reloj": "Sound sent to clock"
-    }
+    },
+    "App desactivada y eliminada del carrusel.": "App disabled and removed from carousel."
 }

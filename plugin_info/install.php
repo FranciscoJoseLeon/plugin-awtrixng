@@ -21,7 +21,11 @@ function awtrixng_install() {
 function awtrixng_update() {
     log::add('awtrixng', 'info', 'Actualización de plugin Awtrix NG completada.');
     foreach (eqLogic::byType('awtrixng') as $eqLogic) {
-        $eqLogic->save();
+        if (is_object($eqLogic)) {
+            $eqLogic->fixCommandTypes();
+            $eqLogic->createCommands();
+            $eqLogic->save();
+        }
     }
 }
 

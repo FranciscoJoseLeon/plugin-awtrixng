@@ -552,6 +552,23 @@ try {
         ajax::success(array('status' => 'ok', 'synced_count' => $count));
     }
 
+    if ($action == 'deleteCustomApp') {
+        $eqLogicId = intval(init('id'));
+        if (!$eqLogicId) {
+            $eqLogicId = intval(init('eqLogic_id'));
+        }
+        $eqLogic = eqLogic::byId($eqLogicId);
+        if (!is_object($eqLogic) || $eqLogic->getEqType_name() !== 'awtrixng') {
+            throw new Exception(__('Panel Awtrix no encontrado.', __FILE__));
+        }
+
+        $appName = trim(init('name', ''));
+        if (!empty($appName)) {
+            $eqLogic->deleteCustomApp($appName);
+        }
+        ajax::success(array('status' => 'ok', 'app' => $appName));
+    }
+
     if ($action == 'createBackup') {
         $panelId = init('panel_id', 'all');
         $saveOnServer = intval(init('save_on_server', 1)) === 1;

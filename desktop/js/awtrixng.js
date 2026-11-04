@@ -1480,8 +1480,44 @@ $(document).on('click.awtrixng', '.btn-add-app-preset', function() {
     });
 });
 
+$(document).on('change.awtrixng', '.appAttr_enable', function() {
+    var $tr = $(this).closest('tr');
+    var isChecked = $(this).is(':checked');
+    var appName = $.trim($tr.find('.appAttr_name').val());
+    var eqId = getAwtrixCurrentEqLogicId();
+    if (!isChecked && appName && eqId) {
+        // Al desmarcar, enviar orden inmediata al reloj para borrar la app del carrusel en vivo
+        $.ajax({
+            type: 'POST',
+            url: 'plugins/awtrixng/core/ajax/awtrixng.ajax.php',
+            data: {
+                action: 'deleteCustomApp',
+                id: eqId,
+                name: appName
+            },
+            success: function() {
+                $('#div_alert').showAlert({message: '{{App desactivada y eliminada del carrusel.}}', level: 'info'});
+            }
+        });
+    }
+});
+
 $(document).on('click.awtrixng', '.bt_removePanelApp', function() {
-    $(this).closest('tr').remove();
+    var $tr = $(this).closest('tr');
+    var appName = $.trim($tr.find('.appAttr_name').val());
+    var eqId = getAwtrixCurrentEqLogicId();
+    if (appName && eqId) {
+        $.ajax({
+            type: 'POST',
+            url: 'plugins/awtrixng/core/ajax/awtrixng.ajax.php',
+            data: {
+                action: 'deleteCustomApp',
+                id: eqId,
+                name: appName
+            }
+        });
+    }
+    $tr.remove();
 });
 
 $(document).on('input.awtrixng change.awtrixng', '.appAttr_picker', function() {
@@ -2043,36 +2079,59 @@ function addCmdToTable(_cmd) {
         _cmd.configuration = {};
     }
 
+    // Auto-corrección defensiva para garantizar que comandos de acción siempre tengan type 'action'
+    var actionCmdMap = {
+        'refresh': 'other',
+        'power_on': 'other',
+        'power_off': 'other',
+        'toggle_power': 'other',
+        'set_brightness': 'slider',
+        'next_app': 'other',
+        'prev_app': 'other',
+        'notify': 'message',
+        'dismiss_notif': 'other',
+        'custom_app': 'message',
+        'delete_app': 'message',
+        'sync_apps': 'other',
+        'play_sound': 'message',
+        'reboot': 'other',
+        'tts': 'message',
+        'set_volume': 'slider'
+    };
+    if (actionCmdMap[_cmd.logicalId]) {
+        _cmd.type = 'action';
+        if (!_cmd.subType || _cmd.subType === 'string' || _cmd.subType === 'numeric' || _cmd.subType === 'binary') {
+            _cmd.subType = actionCmdMap[_cmd.logicalId];
+        }
+    }
+
     var tr = '<tr class="cmd" data-cmd_id="' + init(_cmd.id) + '">';
-    tr += '<td style="width: 80px;">';
+    tr += '<td style="width: 70px;">';
     tr += '<span class="cmdAttr" data-l1key="id"></span>';
     tr += '</td>';
-    tr += '<td style="width: 300px;">';
-    tr += '<div class="row">';
-    tr += '<div class="col-xs-6">';
+    
+    tr += '<td style="width: 280px;">';
     tr += '<input class="cmdAttr form-control input-sm" data-l1key="name" placeholder="{{Nombre}}">';
-    tr += '</div>';
-    tr += '<div class="col-xs-6">';
-    tr += '<span class="type" type="' + init(_cmd.type) + '">' + jeedom.cmd.availableType() + '</span>';
-    tr += '<span class="subType" subType="' + init(_cmd.subType) + '"></span>';
-    tr += '</div>';
-    tr += '</div>';
-    tr += '</td>';
-    tr += '<td>';
-    tr += '<span class="cmdAttr" data-l1key="type" style="display:none;"></span>';
-    tr += '<span class="cmdAttr" data-l1key="subType" style="display:none;"></span>';
-    tr += '<span class="cmdAttr" data-l1key="logicalId" style="display:none;"></span>';
+    tr += '<div style="margin-top: 4px;">';
     tr += '<span class="badge badge-info">' + init(_cmd.logicalId) + '</span> ';
     if (init(_cmd.unite)) {
         tr += '<span class="badge badge-default">' + init(_cmd.unite) + '</span>';
     }
+    tr += '</div>';
     tr += '</td>';
+    
+    tr += '<td style="width: 220px;">';
+    tr += '<span class="type" type="' + init(_cmd.type) + '">' + jeedom.cmd.availableType() + '</span>';
+    tr += '<span class="subType" subType="' + init(_cmd.subType) + '"></span>';
+    tr += '</td>';
+    
     tr += '<td>';
     tr += '<label class="checkbox-inline"><input type="checkbox" class="cmdAttr" data-l1key="isVisible" checked/>{{Mostrar}}</label> ';
     if (_cmd.subType == 'numeric' || _cmd.subType == 'binary') {
         tr += '<label class="checkbox-inline"><input type="checkbox" class="cmdAttr" data-l1key="isHistorized"/>{{Historizar}}</label> ';
     }
     tr += '</td>';
+    
     tr += '<td style="width: 150px;">';
     if (is_numeric(_cmd.id)) {
         tr += '<a class="btn btn-default btn-xs cmdAction" data-action="configure"><i class="fas fa-cogs"></i></a> ';
@@ -2082,8 +2141,12 @@ function addCmdToTable(_cmd) {
     tr += '</tr>';
 
     $('#table_cmd tbody').append(tr);
-    $('#table_cmd tbody tr:last').setValues(_cmd, '.cmdAttr');
-    jeedom.cmd.changeType($('#table_cmd tbody tr:last'), init(_cmd.subType));
+    var $tr = $('#table_cmd tbody tr:last');
+    $tr.setValues(_cmd, '.cmdAttr');
+    if (isset(_cmd.type)) {
+        $tr.find('.cmdAttr[data-l1key=type]').val(init(_cmd.type));
+    }
+    jeedom.cmd.changeType($tr, init(_cmd.subType));
 }
 
 // Ensure matrix simulation and installed icons load when entering Quick Test tab
