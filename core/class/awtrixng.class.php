@@ -770,18 +770,66 @@ class awtrixng extends eqLogic {
         $icon = preg_replace('/\.(gif|jpg|jpeg|png|bmp)$/i', '', trim((string)$icon));
         if (empty($icon)) return '';
 
-        // Mapeo bidireccional / alias de iconos estándar de Awtrix
+        // Mapeo bidireccional inteligente de alias domésticos a iconos instalados en Awtrix
         $map = array(
+            // Riego / Macetas / Plantas -> plant-watering
+            'plant-watering' => 'plant-watering',
             '2284' => 'plant-watering',
+            '2273' => 'plant-watering',
             'riego' => 'plant-watering',
+            'regar' => 'plant-watering',
+            'maceta' => 'plant-watering',
+            'macetas' => 'plant-watering',
+            'planta' => 'plant-watering',
+            'plantas' => 'plant-watering',
+            'plant' => 'plant-watering',
             'watering' => 'plant-watering',
+            'arrosage' => 'plant-watering',
+            'plante' => 'plant-watering',
+            'fleur' => 'plant-watering',
+            'fleurs' => 'plant-watering',
+
+            // Agua / Fugas -> water-leaked
+            'water-leaked' => 'water-leaked',
+            '962' => 'water-leaked',
+            '1077' => 'water-leaked',
+            'agua' => 'water-leaked',
+            'water' => 'water-leaked',
+            'eau' => 'water-leaked',
+            'fuga' => 'water-leaked',
+            'fuite' => 'water-leaked',
+            'leak' => 'water-leaked',
+
+            // Temperatura -> thermometer2
+            'thermometer2' => 'thermometer2',
             '1425' => 'thermometer2',
             'temp' => 'thermometer2',
             'temperatura' => 'thermometer2',
-            '962' => 'water-leaked',
+            'temperature' => 'thermometer2',
+            'termo' => 'thermometer2',
+            'outdoor-temp' => 'outdoor-temp',
             '2355' => 'outdoor-temp',
+            'temp-high' => 'temp-high',
+            'temp-low2' => 'temp-low2',
+
+            // Puerta / Exterior -> outdoor
+            'outdoor' => 'outdoor',
+            '1841' => 'outdoor',
+            'puerta' => 'outdoor',
+            'door' => 'outdoor',
+            'porte' => 'outdoor',
+
+            // Batería -> battery-empty-2
+            'battery-empty-2' => 'battery-empty-2',
             '27229' => 'battery-empty-2',
-            '1841' => 'outdoor'
+            'bateria' => 'battery-empty-2',
+            'battery' => 'battery-empty-2',
+            'pile' => 'battery-empty-2',
+
+            // Navidad -> christmas
+            'christmas' => 'christmas',
+            'navidad' => 'christmas',
+            'noel' => 'christmas'
         );
         $lower = strtolower($icon);
         if (isset($map[$lower])) {
@@ -829,37 +877,56 @@ class awtrixng extends eqLogic {
     }
 
     public function dismissNotification() {
-        if ($this->isV1Api()) {
+        $dismissed = false;
+
+        // 1. Endpoints nativos de Awtrix NG v1 con método DELETE
+        $v1Endpoints = array(
+            'v1/notifications/dismiss',
+            'v1/notifications/active',
+            'v1/notifications'
+        );
+        foreach ($v1Endpoints as $ep) {
             try {
-                $this->apiRequest('v1/notifications', 'DELETE');
-                log::add('awtrixng', 'info', "Notificación descartada/borrada correctamente de la pantalla (v1 DELETE).");
-                return;
-            } catch (Exception $e) {
+                $this->apiRequest($ep, 'DELETE');
+                log::add('awtrixng', 'info', "Notificación descartada/detenida con éxito en {$ep} (DELETE)");
+                $dismissed = true;
+                break;
+            } catch (Exception $e) {}
+        }
+
+        // 2. Endpoints de compatibilidad Awtrix Light / Legacy (POST)
+        if (!$dismissed) {
+            $legacyEndpoints = array(
+                array('notify/dismiss', 'POST', array()),
+                array('notify', 'POST', array()),
+                array('notify', 'POST', array('text' => ''))
+            );
+            foreach ($legacyEndpoints as $lep) {
                 try {
-                    $this->apiRequest('v1/notifications/dismiss', 'DELETE');
-                    log::add('awtrixng', 'info', "Notificación descartada/borrada con endpoint dismiss (v1 DELETE).");
-                    return;
-                } catch (Exception $e2) {
-                    try {
-                        $this->apiRequest('v1/notifications', 'POST', array('text' => ''));
-                        return;
-                    } catch (Exception $e3) {}
+                    $this->apiRequest($lep[0], $lep[1], $lep[2]);
+                    log::add('awtrixng', 'info', "Notificación descartada/detenida en {$lep[0]}");
+                    $dismissed = true;
+                    break;
+                } catch (Exception $e) {}
+            }
+        }
+
+        // 3. Fallback Infalible: sobreescritura limpia en blanco de 100ms
+        // En cualquier firmware de Awtrix, un mensaje urgente en blanco sin hold y duración de 100ms
+        // desaloja de inmediato cualquier notificación fija bloqueada y devuelve el reloj al carrusel normal.
+        if (!$dismissed) {
+            try {
+                if ($this->isV1Api()) {
+                    $this->apiRequest('v1/notifications', 'POST', array('text' => ' ', 'durationMs' => 100, 'stack' => false));
+                } else {
+                    $this->apiRequest('notify', 'POST', array('text' => ' ', 'duration' => 1, 'stack' => false));
                 }
-            }
+                log::add('awtrixng', 'info', "Notificación fija cancelada mediante sobreescritura limpia de 100ms.");
+                $dismissed = true;
+            } catch (Exception $e) {}
         }
-        // Fallback Legacy API (/api/notify con payload vacío o texto vacío)
-        try {
-            $this->apiRequest('notify', 'POST', array());
-        } catch (Exception $e) {
-            try {
-                $this->apiRequest('notify', 'POST', array('text' => ''));
-            } catch (Exception $e2) {
-                try {
-                    $this->apiRequest('notify/dismiss', 'POST', array());
-                } catch (Exception $e3) {}
-            }
-        }
-        log::add('awtrixng', 'info', "Notificación descartada/borrada correctamente de la pantalla.");
+
+        return $dismissed;
     }
 
     public function sendNotification($title, $message, $options = array()) {

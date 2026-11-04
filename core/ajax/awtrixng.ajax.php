@@ -402,28 +402,29 @@ try {
             throw new Exception(__('Debes indicar la dirección IP o seleccionar un panel', __FILE__));
         }
 
-        $v1Url = "http://{$ip}:{$port}/api/v1/notifications/dismiss";
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $v1Url);
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, "{}");
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json; charset=utf-8'));
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 5);
-        if (!empty($password)) curl_setopt($ch, CURLOPT_USERPWD, 'admin:' . $password);
-        $res = curl_exec($ch);
-        $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);
+        // Intentar DELETE endpoints v1
+        $v1Endpoints = array('api/v1/notifications/dismiss', 'api/v1/notifications/active', 'api/v1/notifications');
+        $done = false;
+        foreach ($v1Endpoints as $ep) {
+            $ch = curl_init("http://{$ip}:{$port}/{$ep}");
+            curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'DELETE');
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 3);
+            if (!empty($password)) curl_setopt($ch, CURLOPT_USERPWD, 'admin:' . $password);
+            curl_exec($ch);
+            $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            curl_close($ch);
+            if ($code >= 200 && $code < 300) { $done = true; break; }
+        }
 
-        if ($code < 200 || $code >= 300) {
-            $v1Url2 = "http://{$ip}:{$port}/api/v1/notifications";
-            $ch = curl_init();
-            curl_setopt($ch, CURLOPT_URL, $v1Url2);
+        // Fallback: sobreescritura limpia en blanco de 100ms
+        if (!$done) {
+            $ch = curl_init("http://{$ip}:{$port}/api/v1/notifications");
             curl_setopt($ch, CURLOPT_POST, true);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode(array('text' => '', 'dismiss' => true)));
+            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode(array('text' => ' ', 'durationMs' => 100, 'stack' => false)));
             curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_TIMEOUT, 5);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 3);
             if (!empty($password)) curl_setopt($ch, CURLOPT_USERPWD, 'admin:' . $password);
             curl_exec($ch);
             curl_close($ch);
