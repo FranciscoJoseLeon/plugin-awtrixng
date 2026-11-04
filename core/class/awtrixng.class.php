@@ -976,7 +976,6 @@ class awtrixng extends eqLogic {
         $modeStr = ($hold ? 'FIJA (Hold)' : "duración {$durationSec}s") . " | [{$prioStr}]";
         log::add('awtrixng', 'info', "Notificación enviada a Awtrix [{$modeStr}]: '{$text}' (Icono: " . ($icon ?: 'ninguno') . ", Color: " . ($color ?: 'por defecto') . ")");
     }
-    }
 
     public function sendCustomApp($appName, $text, $options = array()) {
         $appName = trim($appName);
