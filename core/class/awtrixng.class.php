@@ -770,25 +770,22 @@ class awtrixng extends eqLogic {
         $icon = preg_replace('/\.(gif|jpg|jpeg|png|bmp)$/i', '', trim((string)$icon));
         if (empty($icon)) return '';
 
-        // Si el usuario escribe un alias en texto, mapearlo a su ID oficial de LaMetric / Awtrix
-        $nameToIdMap = array(
-            'plant-watering' => '2284',
-            'watering' => '2284',
-            'riego' => '2284',
-            'water' => '1077',
-            'agua' => '1077',
-            'gota' => '1077',
-            'thermometer2' => '1425',
-            'temp' => '1425',
-            'temperatura' => '1425',
-            'water-leaked' => '962',
-            'outdoor-temp' => '2355',
-            'battery-empty-2' => '27229',
-            'outdoor' => '1841'
+        // Mapeo bidireccional / alias de iconos estándar de Awtrix
+        $map = array(
+            '2284' => 'plant-watering',
+            'riego' => 'plant-watering',
+            'watering' => 'plant-watering',
+            '1425' => 'thermometer2',
+            'temp' => 'thermometer2',
+            'temperatura' => 'thermometer2',
+            '962' => 'water-leaked',
+            '2355' => 'outdoor-temp',
+            '27229' => 'battery-empty-2',
+            '1841' => 'outdoor'
         );
         $lower = strtolower($icon);
-        if (isset($nameToIdMap[$lower])) {
-            return $nameToIdMap[$lower];
+        if (isset($map[$lower])) {
+            return $map[$lower];
         }
         return $icon;
     }
@@ -989,7 +986,6 @@ class awtrixng extends eqLogic {
             }
             if (!empty($color)) {
                 $v1Payload['textColor'] = $color;
-                $v1Payload['color'] = $color;
             }
             if (!empty($options['sound'])) {
                 $v1Payload['sound'] = $options['sound'];
@@ -1067,7 +1063,6 @@ class awtrixng extends eqLogic {
             }
             if (!empty($color)) {
                 $v1Payload['textColor'] = $color;
-                $v1Payload['color'] = $color;
             }
             try {
                 $this->apiRequest('v1/apps/pushed/' . rawurlencode($appName), 'PUT', $v1Payload);
