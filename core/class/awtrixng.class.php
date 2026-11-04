@@ -1241,32 +1241,41 @@ class awtrixng extends eqLogic {
         $appName = trim($appName);
         if (empty($appName)) return;
 
-        // 1. Endpoint estándar universal Awtrix (Awtrix Light y Awtrix NG):
-        // POST /api/custom?name=xxx con payload JSON '{}' elimina la app de la memoria y la pantalla
-        try {
-            $this->apiRequest('custom?name=' . urlencode($appName), 'POST', '{}');
-            log::add('awtrixng', 'info', $this->getLogPrefix() . "App carrusel '{$appName}' eliminada de Awtrix (POST /api/custom)");
-        } catch (Exception $e) {
-            log::add('awtrixng', 'debug', $this->getLogPrefix() . "POST /api/custom?name={$appName} exception: " . $e->getMessage());
+        $names = array($appName);
+        $lower = strtolower($appName);
+        if ($lower !== $appName) {
+            $names[] = $lower;
         }
 
-        // Si el nombre tiene mayúsculas, probar también en minúsculas por si el panel lo guardó así
-        $lowerName = strtolower($appName);
-        if ($lowerName !== $appName) {
+        foreach ($names as $name) {
+            // 1. Endpoint Awtrix NG v1: DELETE /api/v1/apps/pushed/{name}
+            if ($this->isV1Api()) {
+                try {
+                    $this->apiRequest('v1/apps/pushed/' . rawurlencode($name), 'DELETE');
+                    log::add('awtrixng', 'info', $this->getLogPrefix() . "App carrusel v1 '{$name}' eliminada (DELETE /api/v1/apps/pushed)");
+                } catch (Exception $e) {
+                    // Ignore
+                }
+                try {
+                    $this->apiRequest('v1/apps/' . rawurlencode($name), 'DELETE');
+                } catch (Exception $e) {
+                    // Ignore
+                }
+            }
+
+            // 2. Endpoint universal Awtrix Light / Awtrix NG: POST /api/custom?name={name} con cuerpo '{}'
             try {
-                $this->apiRequest('custom?name=' . urlencode($lowerName), 'POST', '{}');
+                $this->apiRequest('custom?name=' . urlencode($name), 'POST', '{}');
+                log::add('awtrixng', 'info', $this->getLogPrefix() . "App carrusel '{$name}' eliminada (POST /api/custom)");
             } catch (Exception $e) {
                 // Ignore
             }
-        }
 
-        // 2. Si es v1 API, intentar también DELETE v1/apps/pushed/appName
-        if ($this->isV1Api()) {
+            // 3. Fallback adicional con cuerpo vacío
             try {
-                $this->apiRequest('v1/apps/pushed/' . rawurlencode($appName), 'DELETE');
-                log::add('awtrixng', 'info', $this->getLogPrefix() . "App carrusel v1 '{$appName}' eliminada de Awtrix (DELETE /api/v1/apps/pushed)");
+                $this->apiRequest('custom?name=' . urlencode($name), 'POST', '');
             } catch (Exception $e) {
-                // Ignore if endpoint not present on this firmware
+                // Ignore
             }
         }
     }

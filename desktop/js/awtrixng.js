@@ -1485,8 +1485,62 @@ $(document).on('change.awtrixng', '.appAttr_enable', function() {
     var isChecked = $(this).is(':checked');
     var appName = $.trim($tr.find('.appAttr_name').val());
     var eqId = getAwtrixCurrentEqLogicId();
+
+    // 1. Mantener sincronizado el input oculto y persistir en base de datos inmediatamente
+    var apps = collectPanelAppsFromTable();
+    $('#input_custom_apps_list').val(JSON.stringify(apps));
+    if (eqId) {
+        $.ajax({
+            type: 'POST',
+            url: 'plugins/awtrixng/core/ajax/awtrixng.ajax.php',
+            data: {
+                action: 'savePanelAppsList',
+                id: eqId,
+                custom_apps_list: JSON.stringify(apps)
+            }
+        });
+    }
+
+    // 2. Si se desmarca, enviar orden de borrado inmediata al reloj
     if (!isChecked && appName && eqId) {
-        // Al desmarcar, enviar orden inmediata al reloj para borrar la app del carrusel en vivo
+        $.ajax({
+            type: 'POST',
+            url: 'plugins/awtrixng/core/ajax/awtrixng.ajax.php',
+            data: {
+                action: 'deleteCustomApp',
+                id: eqId,
+                name: appName
+            },
+            success: function() {
+                $('#div_alert').showAlert({message: '{{App desactivada y eliminada del carrusel.}}', level: 'info'});
+            }
+        });
+    } else if (isChecked && eqId) {
+        $('#bt_syncPanelAppsNow').trigger('click');
+    }
+});
+
+$(document).on('click.awtrixng', '.bt_removePanelApp', function() {
+    var $tr = $(this).closest('tr');
+    var appName = $.trim($tr.find('.appAttr_name').val());
+    var eqId = getAwtrixCurrentEqLogicId();
+    $tr.remove();
+
+    var apps = collectPanelAppsFromTable();
+    $('#input_custom_apps_list').val(JSON.stringify(apps));
+    if (eqId) {
+        $.ajax({
+            type: 'POST',
+            url: 'plugins/awtrixng/core/ajax/awtrixng.ajax.php',
+            data: {
+                action: 'savePanelAppsList',
+                id: eqId,
+                custom_apps_list: JSON.stringify(apps)
+            }
+        });
+    }
+
+    if (appName && eqId) {
         $.ajax({
             type: 'POST',
             url: 'plugins/awtrixng/core/ajax/awtrixng.ajax.php',
@@ -1500,24 +1554,6 @@ $(document).on('change.awtrixng', '.appAttr_enable', function() {
             }
         });
     }
-});
-
-$(document).on('click.awtrixng', '.bt_removePanelApp', function() {
-    var $tr = $(this).closest('tr');
-    var appName = $.trim($tr.find('.appAttr_name').val());
-    var eqId = getAwtrixCurrentEqLogicId();
-    if (appName && eqId) {
-        $.ajax({
-            type: 'POST',
-            url: 'plugins/awtrixng/core/ajax/awtrixng.ajax.php',
-            data: {
-                action: 'deleteCustomApp',
-                id: eqId,
-                name: appName
-            }
-        });
-    }
-    $tr.remove();
 });
 
 $(document).on('input.awtrixng change.awtrixng', '.appAttr_picker', function() {
@@ -1996,7 +2032,9 @@ function saveEqLogic(_eqLogic) {
     if (!isset(_eqLogic.configuration)) {
         _eqLogic.configuration = {};
     }
-    _eqLogic.configuration.custom_apps_list = collectPanelAppsFromTable();
+    var apps = collectPanelAppsFromTable();
+    _eqLogic.configuration.custom_apps_list = apps;
+    $('#input_custom_apps_list').val(JSON.stringify(apps));
     return _eqLogic;
 }
 
