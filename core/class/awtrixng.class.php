@@ -1154,10 +1154,14 @@ class awtrixng extends eqLogic {
                 $v1Payload['effect'] = 'Rainbow';
             }
 
-            $this->apiRequest('v1/notifications', 'POST', $v1Payload);
-            $modeStr = ($hold ? 'FIJA (Hold)' : "duración {$durationSec}s") . " | [{$prioStr}]";
-            log::add('awtrixng', 'info', "Notificación v1 enviada a Awtrix [{$modeStr}]: '{$text}' (Icono: " . ($icon ?: 'ninguno') . ", Color: " . ($color ?: 'por defecto') . ")");
-            return;
+            try {
+                $this->apiRequest('v1/notifications', 'POST', $v1Payload);
+                $modeStr = ($hold ? 'FIJA (Hold)' : "duración {$durationSec}s") . " | [{$prioStr}]";
+                log::add('awtrixng', 'info', "Notificación v1 enviada a Awtrix [{$modeStr}]: '{$text}' (Icono: " . ($icon ?: 'ninguno') . ", Color: " . ($color ?: 'por defecto') . ")");
+                return;
+            } catch (Exception $e) {
+                log::add('awtrixng', 'debug', "Endpoint v1/notifications no respondió (" . $e->getMessage() . "), enviando por fallback legacy /api/notify");
+            }
         }
 
         // Fallback Legacy API (/api/notify) - only reached if api_version is configured as legacy
