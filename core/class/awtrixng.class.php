@@ -52,6 +52,8 @@ class awtrixng extends eqLogic {
     }
 
     public function postUpdate() {
+        $this->createCommands();
+        $this->fixCommandTypes();
         $this->refresh();
     }
 
@@ -1233,6 +1235,15 @@ class awtrixng extends eqLogic {
         $text = trim($text);
         if (class_exists('jeedom') && method_exists('jeedom', 'evaluateExpression')) {
             $text = jeedom::evaluateExpression($text);
+        }
+
+        // Detección inteligente de orden de borrado de la app del carrusel
+        $lowerText = strtolower(trim($text));
+        $deleteKeywords = array('delete', 'del', 'supprimer', 'borrar', 'quitar', 'clear', 'off', 'stop');
+        if (in_array($lowerText, $deleteKeywords) || ($text === '' && $existingApp === null)) {
+            $this->deleteCustomApp($appName);
+            log::add('awtrixng', 'info', $this->getLogPrefix() . "App carrusel '{$appName}' eliminada de la pantalla.");
+            return;
         }
 
         $color = isset($options['color']) ? $options['color'] : $this->getConfiguration('default_color', '');
