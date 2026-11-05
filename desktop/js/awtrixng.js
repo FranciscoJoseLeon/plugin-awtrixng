@@ -680,46 +680,94 @@ function updateScenarioSnippet() {
     var text = $('#test_msg_text').val() || '';
     var durMode = $('#test_msg_duration').val() || '12';
     var isUrgent = $('#test_msg_priority').val() === 'urgent';
+    var type = $('#scenario_snippet_type button.active').attr('data-type') || 'custom_app';
 
-    var durStr = '';
-    if (durMode === 'hold') {
-        durStr = 'fija';
-    } else if (parseInt(durMode, 10) > 12) {
-        var sec = parseInt(durMode, 10);
-        durStr = (sec >= 60) ? (sec / 60) + 'm' : sec + 's';
+    if (type === 'custom_app') {
+        $('#div_snippet_app_name').show();
+        $('#div_snippet_sinon_row').show();
+        var rawAppName = $.trim($('#input_snippet_app_name').val()) || 'placa_solar';
+        var appName = rawAppName.replace(/[^a-zA-Z0-9_-]/g, '_').replace(/_+/g, '_').replace(/^_+|_+$/g, '') || 'app';
+
+        var parts = [appName];
+        if (icon) parts.push(icon);
+        if (color && color.toUpperCase() !== '#FFFFFF') parts.push(color);
+
+        var titleStr = parts.join(' | ');
+
+        $('#snippet_scenario_cmd').text('#[...][' + eqName + '][{{App Carrusel (Publicar)}}]#');
+        $('#snippet_scenario_title').text(titleStr);
+        $('#snippet_scenario_msg').text(text || '{{Tu mensaje aquí}}');
+        $('#snippet_scenario_sinon').text('#[...][' + eqName + '][{{Eliminar App Carrusel}}]# -> ' + appName);
+    } else {
+        $('#div_snippet_app_name').hide();
+        $('#div_snippet_sinon_row').show();
+
+        var durStr = '';
+        if (durMode === 'hold') {
+            durStr = 'fija';
+        } else if (parseInt(durMode, 10) > 12) {
+            var sec = parseInt(durMode, 10);
+            durStr = (sec >= 60) ? (sec / 60) + 'm' : sec + 's';
+        }
+
+        var parts = [];
+        if (icon) parts.push(icon);
+        if (color && color.toUpperCase() !== '#FFFFFF') parts.push(color);
+        if (durStr) parts.push(durStr);
+        if (isUrgent) parts.push('urgente');
+
+        var titleStr = parts.join(' | ');
+
+        $('#snippet_scenario_cmd').text('#[...][' + eqName + '][{{Notificar (Popup)}}]#');
+        $('#snippet_scenario_title').text(titleStr || '{{(icono o vacío)}}');
+        $('#snippet_scenario_msg').text(text || '{{Tu mensaje aquí}}');
+        $('#snippet_scenario_sinon').text('#[...][' + eqName + '][{{Descartar Notificación}}]#');
     }
-
-    var parts = [];
-    if (icon) parts.push(icon);
-    if (color && color.toUpperCase() !== '#FFFFFF') parts.push(color);
-    if (durStr) parts.push(durStr);
-    if (isUrgent) parts.push('urgente');
-
-    var titleStr = parts.join(' | ');
-
-    $('#snippet_scenario_cmd').text('#[...][' + eqName + '][{{Notificar (Popup)}}]#');
-    $('#snippet_scenario_title').text(titleStr || '{{(icono o vacío)}}');
-    $('#snippet_scenario_msg').text(text || '{{Tu mensaje aquí}}');
 }
+
+$(document).on('click', '.bt_copy_snippet_part', function() {
+    var part = $(this).attr('data-part');
+    var val = '';
+    if (part === 'cmd') val = $('#snippet_scenario_cmd').text();
+    else if (part === 'title') val = $('#snippet_scenario_title').text();
+    else if (part === 'msg') val = $('#snippet_scenario_msg').text();
+    else if (part === 'sinon') {
+        var t = $('#snippet_scenario_sinon').text();
+        var arr = t.split('->');
+        val = arr.length > 1 ? $.trim(arr[1]) : t;
+    }
+    if (val && navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(val);
+        var $btn = $(this);
+        var originalHtml = $btn.html();
+        $btn.html('<i class="fas fa-check"></i> {{Copiado}}');
+        setTimeout(function() { $btn.html(originalHtml); }, 1500);
+    }
+});
+
+$(document).on('click', '#scenario_snippet_type button', function() {
+    $('#scenario_snippet_type button').removeClass('btn-primary active').addClass('btn-default');
+    $(this).removeClass('btn-default').addClass('btn-primary active');
+    updateScenarioSnippet();
+});
+
+$(document).on('input change', '#input_snippet_app_name', function() {
+    updateScenarioSnippet();
+});
 
 $(document).on('click', '#bt_copyScenarioSnippet', function() {
     var cmd = $('#snippet_scenario_cmd').text();
     var title = $('#snippet_scenario_title').text();
     var msg = $('#snippet_scenario_msg').text();
-    var full = "Action: " + cmd + "\nTitle: " + title + "\nMessage: " + msg;
+    var sinon = $('#snippet_scenario_sinon').text();
+    var full = "SI / ALORS:\nComando: " + cmd + "\nCampo 1 (Título / Opciones): " + title + "\nCampo 2 (Mensaje): " + msg + "\n\nSINON:\nComando: " + sinon;
     if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(full).then(function() {
-            $('#div_alert').showAlert({message: '{{¡Copiado al portapapeles! Listo para pegar en tu escenario.}}', level: 'success', emptyBefore: true});
-        });
-    } else {
-        var tempInput = $('<textarea>');
-        $('body').append(tempInput);
-        tempInput.val(full).select();
-        document.execCommand('copy');
-        tempInput.remove();
-        $('#div_alert').showAlert({message: '{{¡Copiado al portapapeles! Listo para pegar en tu escenario.}}', level: 'success', emptyBefore: true});
+        navigator.clipboard.writeText(full);
+        var $btn = $(this);
+        var originalHtml = $btn.html();
+        $btn.html('<i class="fas fa-check"></i> {{Copiado}}');
+        setTimeout(function() { $btn.html(originalHtml); }, 1500);
     }
-});
 
 $('#test_msg_picker').on('input change', function() {
     var col = $(this).val().toUpperCase();

@@ -608,20 +608,57 @@ foreach ($eqLogics as $eqLogicItem) {
                             </div>
 
                             <!-- Scenario Helper Box: Copy without any JSON -->
-                            <div class="well well-sm" style="margin-top: 18px; background: #1e293b; border: 1px solid #334155; border-radius: 8px; color: #e2e8f0; padding: 12px 14px;">
-                                <div style="font-weight: 600; font-size: 12px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between;">
-                                    <span style="color: #f8fafc;"><i class="fas fa-magic" style="color: #f59e0b;"></i> <strong>{{Cómo usar en Escenarios Jeedom}}</strong> <small style="color: #94a3b8; font-weight: normal;">({{100% directo, sin escribir JSON}})</small></span>
-                                    <button type="button" class="btn btn-xs btn-primary" id="bt_copyScenarioSnippet" title="{{Copiar valores al portapapeles}}">
-                                        <i class="far fa-copy"></i> {{Copiar}}
+                            <div class="well well-sm" style="margin-top: 18px; background: #1e293b; border: 1px solid #334155; border-radius: 8px; color: #e2e8f0; padding: 14px 16px;">
+                                <div style="font-weight: 600; font-size: 13px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+                                    <span style="color: #f8fafc;">
+                                        <i class="fas fa-magic" style="color: #f59e0b;"></i>
+                                        <strong>{{Asistente de Escenarios Jeedom}}</strong>
+                                        <small style="color: #94a3b8; font-weight: normal;">({{Copia y pega directamente en tu escenario}})</small>
+                                    </span>
+                                    <div class="btn-group btn-group-xs" role="group" id="scenario_snippet_type">
+                                        <button type="button" class="btn btn-primary active" data-type="custom_app">
+                                            <i class="fas fa-layer-group"></i> {{App Carrusel}}
+                                        </button>
+                                        <button type="button" class="btn btn-default" data-type="notify">
+                                            <i class="fas fa-bell"></i> {{Notificación Popup}}
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div id="div_snippet_app_name" style="margin-bottom: 10px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                                    <label style="font-size: 12px; color: #cbd5e1; margin: 0;">
+                                        <i class="fas fa-tag" style="color: #38bdf8;"></i> {{Nombre de la App (ID)}}:
+                                    </label>
+                                    <input type="text" id="input_snippet_app_name" class="form-control input-sm" value="placa_solar" placeholder="ej. placa_solar, termo, riego" style="max-width: 220px; background: #0f172a; border-color: #475569; color: #f8fafc;" />
+                                    <span style="font-size: 11px; color: #94a3b8;">{{(Sin espacios: ej. placa_solar)}}</span>
+                                </div>
+
+                                <div style="font-family: monospace; font-size: 12px; background: #0f172a; padding: 10px 14px; border-radius: 6px; border-left: 3px solid #10b981; line-height: 2;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                                        <div><strong style="color: #94a3b8;">{{Acción SI / ALORS}}:</strong> <span id="snippet_scenario_cmd" style="color: #38bdf8;">#[...][App Carrusel (Publicar)]#</span></div>
+                                        <button type="button" class="btn btn-xs btn-default bt_copy_snippet_part" data-part="cmd" style="padding: 1px 6px;" title="{{Copiar comando}}"><i class="far fa-copy"></i></button>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(251, 191, 36, 0.08); padding: 2px 6px; border-radius: 4px; margin: 4px 0;">
+                                        <div><strong style="color: #94a3b8;">{{Campo 1 (Título / Opciones)}}:</strong> <span id="snippet_scenario_title" style="color: #fbbf24; font-weight: bold;">placa_solar | thermometer2 | #FF2222</span></div>
+                                        <button type="button" class="btn btn-xs btn-warning bt_copy_snippet_part" data-part="title" style="padding: 1px 8px; font-weight: bold;" title="{{Copiar Campo 1 al portapapeles}}"><i class="far fa-copy"></i> {{Copiar Campo 1}}</button>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(74, 222, 128, 0.08); padding: 2px 6px; border-radius: 4px; margin: 4px 0;">
+                                        <div><strong style="color: #94a3b8;">{{Campo 2 (Mensaje / Texto)}}:</strong> <span id="snippet_scenario_msg" style="color: #4ade80;">Arrosage des fleurs</span></div>
+                                        <button type="button" class="btn btn-xs btn-success bt_copy_snippet_part" data-part="msg" style="padding: 1px 8px; font-weight: bold;" title="{{Copiar Campo 2 al portapapeles}}"><i class="far fa-copy"></i> {{Copiar Campo 2}}</button>
+                                    </div>
+                                    <div id="div_snippet_sinon_row" style="display: flex; justify-content: space-between; align-items: center; border-top: 1px dashed #334155; margin-top: 6px; padding-top: 4px;">
+                                        <div><strong style="color: #f87171;">{{Acción SINON (Para retirarla)}}:</strong> <span id="snippet_scenario_sinon" style="color: #fca5a5;">#[...][App Carrusel (Supprimer)]# -> placa_solar</span></div>
+                                        <button type="button" class="btn btn-xs btn-danger bt_copy_snippet_part" data-part="sinon" style="padding: 1px 6px;" title="{{Copiar nombre para borrar}}"><i class="far fa-copy"></i> {{Copiar}}</button>
+                                    </div>
+                                </div>
+
+                                <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 8px; flex-wrap: wrap; gap: 8px;">
+                                    <span style="font-size: 11px; color: #94a3b8;">
+                                        <i class="fas fa-check-circle" style="color: #10b981;"></i> {{Se actualiza en vivo según los valores que pruebes arriba.}}
+                                    </span>
+                                    <button type="button" class="btn btn-xs btn-primary" id="bt_copyScenarioSnippet" style="font-weight: bold;">
+                                        <i class="far fa-copy"></i> {{Copiar Todo el Escenario}}
                                     </button>
-                                </div>
-                                <div style="font-family: monospace; font-size: 12px; background: #0f172a; padding: 8px 12px; border-radius: 6px; border-left: 3px solid #10b981; line-height: 1.7;">
-                                    <div><strong style="color: #94a3b8;">{{Acción}}:</strong> <span id="snippet_scenario_cmd" style="color: #38bdf8;">#[...][Notificar (Popup)]#</span></div>
-                                    <div><strong style="color: #94a3b8;">{{Título}}:</strong> <span id="snippet_scenario_title" style="color: #fbbf24;">plant-watering</span></div>
-                                    <div><strong style="color: #94a3b8;">{{Mensaje}}:</strong> <span id="snippet_scenario_msg" style="color: #4ade80;">Regando las macetas</span></div>
-                                </div>
-                                <div style="font-size: 11px; color: #94a3b8; margin-top: 6px;">
-                                    <i class="fas fa-info-circle" style="color: #38bdf8;"></i> {{En el campo Mensaje puedes usar tags de Jeedom como}} <code>#[Azotea][Temp]# °C</code> {{o}} <code>#2997# W</code> {{y se evalúan automáticamente.}}
                                 </div>
                             </div>
 
