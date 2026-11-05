@@ -63,6 +63,23 @@ class awtrixng extends eqLogic {
      * - Sensores instalados físicamente (Batería, Luminosidad LDR, Temperatura, Humedad, Audio/TTS)
      * - Versión de firmware, hostname y estado inicial
      */
+    public static function curlQuick($url, $method = 'POST', $payload = array(), $password = '') {
+        $ch = curl_init($url);
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
+        if (!empty($payload)) {
+            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
+            curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+        }
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 2);
+        if (!empty($password)) {
+            curl_setopt($ch, CURLOPT_USERPWD, 'admin:' . $password);
+        }
+        $res = curl_exec($ch);
+        curl_close($ch);
+        return $res;
+    }
+
     public static function probeAndDetectHardware($ip, $port = 80, $password = '') {
         $ip = trim($ip);
         $port = intval($port) > 0 ? intval($port) : 80;

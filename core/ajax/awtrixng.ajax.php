@@ -120,64 +120,91 @@ try {
         if ($port <= 0) $port = 80;
         $cmd = trim(init('cmd'));
         $val = init('val');
-        $password = trim(init('password', ''));
-        if (empty($password) && !empty($ip)) {
+
+        $eqLogic = null;
+        $eqLogicId = intval(init('id', init('eqLogic_id')));
+        if ($eqLogicId > 0) {
+            $eqLogic = eqLogic::byId($eqLogicId);
+        }
+        if (!is_object($eqLogic) && !empty($ip)) {
             foreach (eqLogic::byType('awtrixng') as $eq) {
                 if ($eq->getConfiguration('ip') === $ip) {
-                    $password = trim($eq->getConfiguration('auth_password', ''));
-                    if (!empty($password)) break;
+                    $eqLogic = $eq;
+                    break;
                 }
             }
         }
+
+        if (is_object($eqLogic)) {
+            try {
+                switch ($cmd) {
+                    case 'power':
+                        $eqLogic->setPower(intval($val) === 1);
+                        break;
+                    case 'brightness':
+                        $rawBri = max(0, min(255, intval($val)));
+                        $pct = intval(round(($rawBri / 255.0) * 100));
+                        $eqLogic->setBrightness($pct);
+                        break;
+                    case 'autoBrightness':
+                        $abBool = (intval($val) === 1);
+                        try { $eqLogic->apiRequest('v1/settings', 'PATCH', array('autoBrightness' => $abBool)); } catch (Exception $e) {}
+                        try { $eqLogic->apiRequest('settings', 'POST', array('ABR' => $abBool)); } catch (Exception $e) {}
+                        break;
+                    case 'autoTransition':
+                        $atBool = (intval($val) === 1);
+                        try { $eqLogic->apiRequest('v1/settings', 'PATCH', array('autoTransition' => $atBool)); } catch (Exception $e) {}
+                        try { $eqLogic->apiRequest('settings', 'POST', array('ATRN' => $atBool)); } catch (Exception $e) {}
+                        break;
+                    case 'prev':
+                        $eqLogic->prevApp();
+                        break;
+                    case 'next':
+                        $eqLogic->nextApp();
+                        break;
+                    case 'dismiss':
+                        $eqLogic->dismissNotification();
+                        break;
+                }
+            } catch (Exception $e) {
+                log::add('awtrixng', 'debug', 'panelControl exception: ' . $e->getMessage());
+            }
+            ajax::success(array('ok' => true));
+        }
+
         if (empty($ip)) {
             throw new Exception(__('IP requerida', __FILE__));
         }
+
+        $password = trim(init('password', ''));
         $baseUrl = "http://{$ip}:{$port}";
-        $method = 'POST';
-        $ep = '';
-        $payload = null;
+        // Fallback genérico directo por cURL con endpoints v1 y legacy
         if ($cmd === 'power') {
-            $method = 'PATCH';
-            $ep = '/api/v1/display';
-            $payload = array('power' => intval($val) === 1);
+            $pwr = (intval($val) === 1);
+            awtrixng::curlQuick($baseUrl . '/api/v1/display', 'PATCH', array('power' => $pwr), $password);
+            awtrixng::curlQuick($baseUrl . '/api/power', 'POST', array('power' => $pwr), $password);
         } elseif ($cmd === 'brightness') {
-            $method = 'PATCH';
-            $ep = '/api/v1/settings';
-            $payload = array('brightness' => max(0, min(255, intval($val))));
+            $rawBri = max(0, min(255, intval($val)));
+            awtrixng::curlQuick($baseUrl . '/api/v1/settings', 'PATCH', array('brightness' => $rawBri), $password);
+            awtrixng::curlQuick($baseUrl . '/api/settings', 'POST', array('BRI' => $rawBri), $password);
         } elseif ($cmd === 'autoBrightness') {
-            $method = 'PATCH';
-            $ep = '/api/v1/settings';
-            $payload = array('autoBrightness' => intval($val) === 1);
+            $abBool = (intval($val) === 1);
+            awtrixng::curlQuick($baseUrl . '/api/v1/settings', 'PATCH', array('autoBrightness' => $abBool), $password);
+            awtrixng::curlQuick($baseUrl . '/api/settings', 'POST', array('ABR' => $abBool), $password);
         } elseif ($cmd === 'autoTransition') {
-            $method = 'PATCH';
-            $ep = '/api/v1/settings';
-            $payload = array('autoTransition' => intval($val) === 1);
+            $atBool = (intval($val) === 1);
+            awtrixng::curlQuick($baseUrl . '/api/v1/settings', 'PATCH', array('autoTransition' => $atBool), $password);
+            awtrixng::curlQuick($baseUrl . '/api/settings', 'POST', array('ATRN' => $atBool), $password);
         } elseif ($cmd === 'prev') {
-            $method = 'POST';
-            $ep = '/api/v1/apps/previous';
-            $payload = array();
+            awtrixng::curlQuick($baseUrl . '/api/v1/apps/previous', 'POST', array(), $password);
+            awtrixng::curlQuick($baseUrl . '/api/previousapp', 'POST', array(), $password);
         } elseif ($cmd === 'next') {
-            $method = 'POST';
-            $ep = '/api/v1/apps/next';
-            $payload = array();
+            awtrixng::curlQuick($baseUrl . '/api/v1/apps/next', 'POST', array(), $password);
+            awtrixng::curlQuick($baseUrl . '/api/nextapp', 'POST', array(), $password);
         } elseif ($cmd === 'dismiss') {
-            $method = 'DELETE';
-            $ep = '/api/v1/notifications/active';
-        }
-        if (!empty($ep)) {
-            $ch = curl_init($baseUrl . $ep);
-            curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
-            if ($payload !== null) {
-                curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
-                curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
-            }
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_TIMEOUT, 3);
-            if (!empty($password)) {
-                curl_setopt($ch, CURLOPT_USERPWD, 'admin:' . $password);
-            }
-            curl_exec($ch);
-            curl_close($ch);
+            awtrixng::curlQuick($baseUrl . '/api/v1/notifications/dismiss', 'DELETE', array(), $password);
+            awtrixng::curlQuick($baseUrl . '/api/v1/notifications/active', 'DELETE', array(), $password);
+            awtrixng::curlQuick($baseUrl . '/api/notify/dismiss', 'POST', array(), $password);
         }
         ajax::success(array('ok' => true));
     }
@@ -198,6 +225,7 @@ try {
         if (empty($ip)) {
             ajax::success(array('pixels' => array()));
         }
+        // 1. Probar endpoint Awtrix NG v1
         $ch = curl_init("http://{$ip}:{$port}/api/v1/display/screen");
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_TIMEOUT, 2);
@@ -207,6 +235,20 @@ try {
         $res = curl_exec($ch);
         $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
+
+        // 2. Fallback estándar Awtrix Light / Awtrix 3 (/api/screen)
+        if ($code !== 200 || empty($res)) {
+            $ch = curl_init("http://{$ip}:{$port}/api/screen");
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 2);
+            if (!empty($password)) {
+                curl_setopt($ch, CURLOPT_USERPWD, 'admin:' . $password);
+            }
+            $res = curl_exec($ch);
+            $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            curl_close($ch);
+        }
+
         if ($code === 200 && !empty($res)) {
             $decoded = json_decode($res, true);
             if (is_array($decoded)) {

@@ -594,12 +594,14 @@ $('#bt_simModeLive').on('click', function() {
 function sendSimulatorPanelControl(cmd, val) {
     var ip = $.trim($('#input_device_ip').val());
     var port = parseInt($('#input_device_port').val(), 10) || 80;
-    if (!ip) return;
+    var eqId = getAwtrixCurrentEqLogicId();
+    if (!ip && !eqId) return;
     $.ajax({
         type: 'POST',
         url: 'plugins/awtrixng/core/ajax/awtrixng.ajax.php',
         data: {
             action: 'panelControl',
+            id: eqId,
             ip: ip,
             port: port,
             password: $.trim($('#input_device_password').val() || ''),
