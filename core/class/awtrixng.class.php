@@ -926,17 +926,26 @@ class awtrixng extends eqLogic {
             'navidad' => 'christmas',
             'noel' => 'christmas',
 
-            // Solar / Placa solar / Sol
-            'solar' => 'solar',
-            'sol' => 'solar',
-            'sun' => 'solar',
-            'placa-solar' => 'solar',
-            'placa_solar' => 'solar',
-            'placa' => 'solar',
-            'placas' => 'solar',
-            'fotovoltaica' => 'solar',
-            'panneau-solaire' => 'solar',
-            'solaire' => 'solar'
+            // Solar / Placa solar / Autoconsumo -> haus-netzabgabe
+            'solar' => 'haus-netzabgabe',
+            'sol' => 'haus-netzabgabe',
+            'sun' => 'haus-netzabgabe',
+            'placa-solar' => 'haus-netzabgabe',
+            'placa_solar' => 'haus-netzabgabe',
+            'placasolar' => 'haus-netzabgabe',
+            'placa' => 'haus-netzabgabe',
+            'placas' => 'haus-netzabgabe',
+            'fotovoltaica' => 'haus-netzabgabe',
+            'panneau-solaire' => 'haus-netzabgabe',
+            'solaire' => 'haus-netzabgabe',
+            'haus-netzabgabe' => 'haus-netzabgabe',
+
+            // Energía / Consumo -> power-red
+            'power-red' => 'power-red',
+            'power' => 'power-red',
+            'energia' => 'power-red',
+            'potencia' => 'power-red',
+            'electricidad' => 'power-red'
         );
         $lower = strtolower($icon);
         if (isset($map[$lower])) {

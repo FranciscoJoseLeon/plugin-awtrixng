@@ -989,7 +989,9 @@ var AWTRIX_CATALOG_ICONS = [
     { slug: 'outdoor-temp', title: 'Clima / Sol', cat: 'weather', res: '8x8', desc: 'Temperatura exterior / Sol' },
     { slug: 'temp-high', title: 'Alerta Calor', cat: 'weather', res: '8x8', desc: 'Alerta temperatura alta' },
     { slug: 'temp-low2', title: 'Frío / Nieve', cat: 'weather', res: '8x8', desc: 'Alerta temperatura baja / frío' },
-    { slug: 'christmas', title: 'Árbol Navidad', cat: 'status', res: '8x8', desc: 'Festivo / Navidad' }
+    { slug: 'christmas', title: 'Árbol Navidad', cat: 'status', res: '8x8', desc: 'Festivo / Navidad' },
+    { slug: 'haus-netzabgabe', title: 'Placa Solar / Autoconsumo', cat: 'home', res: '8x8', desc: 'Producción solar y energía (solar, placas)' },
+    { slug: 'power-red', title: 'Consumo / Potencia', cat: 'status', res: '8x8', desc: 'Consumo eléctrico y energía (power)' }
 ];
 var awtrixInstalledIconsCache = [];
 var currentIconPickerTarget = null;
