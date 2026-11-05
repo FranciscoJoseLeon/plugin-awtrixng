@@ -954,29 +954,73 @@ class awtrixng extends eqLogic {
         if (empty($ip)) return array();
 
         $baseUrl = "http://{$ip}" . ($port != 80 ? ":{$port}" : "");
-        $ch = curl_init("{$baseUrl}/api/v1/files");
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 3);
-        if (!empty($password)) {
-            curl_setopt($ch, CURLOPT_USERPWD, 'admin:' . $password);
-        }
-        $res = curl_exec($ch);
-        $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);
+
+        // Probar endpoints de Awtrix NG v1 y el sistema de archivos de Awtrix Light (LittleFS / SPIFFS)
+        $endpoints = array(
+            '/api/v1/files',
+            '/list?dir=/ICONS',
+            '/list?dir=ICONS',
+            '/list?dir=/',
+            '/api/files'
+        );
 
         $icons = array();
-        if ($code === 200 && !empty($res)) {
-            $decoded = json_decode($res, true);
-            $files = isset($decoded['files']) && is_array($decoded['files']) ? $decoded['files'] : array();
-            foreach ($files as $f) {
-                if (!empty($f['name'])) {
-                    $name = (string)$f['name'];
-                    $slug = preg_replace('/\.(gif|jpg|jpeg|png|bmp)$/i', '', $name);
-                    $icons[] = array(
-                        'name' => $name,
-                        'slug' => $slug,
-                        'url' => "{$baseUrl}/ICONS/" . rawurlencode($name)
-                    );
+        $seen = array();
+
+        foreach ($endpoints as $ep) {
+            $ch = curl_init("{$baseUrl}{$ep}");
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 2);
+            if (!empty($password)) {
+                curl_setopt($ch, CURLOPT_USERPWD, 'admin:' . $password);
+            }
+            $res = curl_exec($ch);
+            $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            curl_close($ch);
+
+            if ($code === 200 && !empty($res)) {
+                $decoded = json_decode($res, true);
+                if (is_array($decoded)) {
+                    $files = array();
+                    if (isset($decoded['files']) && is_array($decoded['files'])) {
+                        $files = $decoded['files'];
+                    } elseif (isset($decoded[0])) {
+                        $files = $decoded;
+                    }
+                    foreach ($files as $f) {
+                        $rawName = '';
+                        if (is_array($f) && !empty($f['name'])) {
+                            $rawName = (string)$f['name'];
+                        } elseif (is_string($f)) {
+                            $rawName = $f;
+                        }
+                        if (empty($rawName)) continue;
+
+                        $filename = basename($rawName);
+                        // Filtrar únicamente archivos de imagen (.gif, .png, .bmp, .jpg) o IDs numéricos
+                        if (!preg_match('/\.(gif|png|bmp|jpg|jpeg)$/i', $filename) && !is_numeric($filename)) {
+                            continue;
+                        }
+                        $slug = preg_replace('/\.(gif|jpg|jpeg|png|bmp)$/i', '', $filename);
+                        if (isset($seen[$slug])) continue;
+                        $seen[$slug] = true;
+
+                        // Determinar ruta de acceso web a la imagen para vista previa en el navegador
+                        if (strpos($rawName, '/') === 0) {
+                            $url = "{$baseUrl}" . $rawName;
+                        } else {
+                            $url = "{$baseUrl}/ICONS/" . rawurlencode($filename);
+                        }
+
+                        $icons[] = array(
+                            'name' => $filename,
+                            'slug' => $slug,
+                            'url' => $url
+                        );
+                    }
+                    if (!empty($icons)) {
+                        break;
+                    }
                 }
             }
         }
