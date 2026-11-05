@@ -1200,6 +1200,36 @@ class awtrixng extends eqLogic {
             throw new Exception(__('Debes especificar el nombre de la app (en el título de la orden).', __FILE__));
         }
 
+        // Buscar si ya existe configurada en la lista del carrusel del panel para heredar icono, color y duración
+        $appsList = $this->getConfiguration('custom_apps_list', array());
+        if (is_string($appsList)) {
+            $decoded = json_decode($appsList, true);
+            $appsList = is_array($decoded) ? $decoded : array();
+        }
+        $existingApp = null;
+        if (is_array($appsList)) {
+            foreach ($appsList as $a) {
+                if (is_array($a) && isset($a['name']) && strtolower(trim($a['name'])) === strtolower($appName)) {
+                    $existingApp = $a;
+                    break;
+                }
+            }
+        }
+        if ($existingApp !== null) {
+            if (empty($options['icon']) && !empty($existingApp['icon'])) {
+                $options['icon'] = $existingApp['icon'];
+            }
+            if (empty($options['color']) && !empty($existingApp['color'])) {
+                $options['color'] = $existingApp['color'];
+            }
+            if (empty($options['duration']) && !empty($existingApp['duration'])) {
+                $options['duration'] = $existingApp['duration'];
+            }
+            if ($text === '' && !empty($existingApp['text'])) {
+                $text = $existingApp['text'];
+            }
+        }
+
         $text = trim($text);
         if (class_exists('jeedom') && method_exists('jeedom', 'evaluateExpression')) {
             $text = jeedom::evaluateExpression($text);
@@ -1233,9 +1263,7 @@ class awtrixng extends eqLogic {
                 log::add('awtrixng', 'info', "App carrusel v1 '{$appName}' actualizada en Awtrix con texto: '{$text}' (Color: " . ($color ?: 'por defecto') . ")");
                 return;
             } catch (Exception $e) {
-                if ($e->getCode() != 404) {
-                    throw $e;
-                }
+                log::add('awtrixng', 'debug', "Endpoint v1/apps/pushed falló (" . $e->getMessage() . "), recurriendo a fallback /api/custom");
             }
         }
 
@@ -2125,13 +2153,40 @@ class awtrixngCmd extends cmd {
                 break;
 
             case 'custom_app':
-                $appName = !empty($title) ? $title : 'custom';
+                $appName = trim((string)$title);
                 $extraOptions = array();
+                if (strpos($appName, '|') !== false) {
+                    $rawParts = explode('|', $appName);
+                    $appName = trim($rawParts[0]);
+                    if (isset($rawParts[1]) && trim($rawParts[1]) !== '') {
+                        $p1 = trim($rawParts[1]);
+                        if (preg_match('/^#?[0-9a-fA-F]{6}$/', $p1)) {
+                            $extraOptions['color'] = $p1;
+                        } else {
+                            $extraOptions['icon'] = $p1;
+                        }
+                    }
+                    if (isset($rawParts[2]) && trim($rawParts[2]) !== '') {
+                        $p2 = trim($rawParts[2]);
+                        if (preg_match('/^#?[0-9a-fA-F]{6}$/', $p2)) {
+                            $extraOptions['color'] = $p2;
+                        } elseif (is_numeric($p2)) {
+                            $extraOptions['duration'] = intval($p2);
+                        } else {
+                            $extraOptions['icon'] = $p2;
+                        }
+                    }
+                    if (isset($rawParts[3]) && trim($rawParts[3]) !== '') {
+                        $extraOptions['duration'] = intval($rawParts[3]);
+                    }
+                }
+                if (empty($appName)) $appName = 'custom';
                 if (is_string($message) && substr(trim($message), 0, 1) === '{') {
                     $json = json_decode($message, true);
                     if (is_array($json)) {
                         $msgText = isset($json['text']) ? $json['text'] : '';
-                        $eqLogic->sendCustomApp($appName, $msgText, $json);
+                        $merged = array_merge($extraOptions, $json);
+                        $eqLogic->sendCustomApp($appName, $msgText, $merged);
                         break;
                     }
                 }
