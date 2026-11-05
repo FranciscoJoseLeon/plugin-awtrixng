@@ -1202,6 +1202,12 @@ class awtrixng extends eqLogic {
             throw new Exception(__('Debes especificar el nombre de la app (en el título de la orden).', __FILE__));
         }
 
+        // Sanitizar el nombre de la app para Awtrix (no permite espacios ni caracteres raros)
+        $cleanAppName = preg_replace('/[^a-zA-Z0-9_-]/', '_', $appName);
+        $cleanAppName = preg_replace('/_+/', '_', $cleanAppName);
+        $cleanAppName = trim($cleanAppName, '_');
+        if (empty($cleanAppName)) $cleanAppName = 'custom';
+
         // Buscar si ya existe configurada en la lista del carrusel del panel para heredar icono, color y duración
         $appsList = $this->getConfiguration('custom_apps_list', array());
         if (is_string($appsList)) {
@@ -1211,9 +1217,12 @@ class awtrixng extends eqLogic {
         $existingApp = null;
         if (is_array($appsList)) {
             foreach ($appsList as $a) {
-                if (is_array($a) && isset($a['name']) && strtolower(trim($a['name'])) === strtolower($appName)) {
-                    $existingApp = $a;
-                    break;
+                if (is_array($a) && isset($a['name'])) {
+                    $n = strtolower(trim($a['name']));
+                    if ($n === strtolower($appName) || $n === strtolower($cleanAppName)) {
+                        $existingApp = $a;
+                        break;
+                    }
                 }
             }
         }
@@ -1270,8 +1279,8 @@ class awtrixng extends eqLogic {
                 $v1Payload['textColor'] = $color;
             }
             try {
-                $this->apiRequest('v1/apps/pushed/' . rawurlencode($appName), 'PUT', $v1Payload);
-                log::add('awtrixng', 'info', "App carrusel v1 '{$appName}' actualizada en Awtrix con texto: '{$text}' (Color: " . ($color ?: 'por defecto') . ")");
+                $this->apiRequest('v1/apps/pushed/' . rawurlencode($cleanAppName), 'PUT', $v1Payload);
+                log::add('awtrixng', 'info', "App carrusel v1 '{$cleanAppName}' actualizada en Awtrix con texto: '{$text}' (Color: " . ($color ?: 'por defecto') . ")");
                 return;
             } catch (Exception $e) {
                 log::add('awtrixng', 'debug', "Endpoint v1/apps/pushed falló (" . $e->getMessage() . "), recurriendo a fallback /api/custom");
@@ -1293,7 +1302,7 @@ class awtrixng extends eqLogic {
             $payload['rainbow'] = true;
         }
 
-        $this->apiRequest('custom?name=' . urlencode($appName), 'POST', $payload);
+        $this->apiRequest('custom?name=' . urlencode($cleanAppName), 'POST', $payload);
         log::add('awtrixng', 'info', "App carrusel '{$appName}' actualizada en Awtrix con texto: '{$text}' (Color: " . ($color ?: 'por defecto') . ")");
     }
 
@@ -1301,11 +1310,17 @@ class awtrixng extends eqLogic {
         $appName = trim($appName);
         if (empty($appName)) return;
 
-        $names = array($appName);
-        $lower = strtolower($appName);
-        if ($lower !== $appName) {
-            $names[] = $lower;
+        $cleanAppName = preg_replace('/[^a-zA-Z0-9_-]/', '_', $appName);
+        $cleanAppName = preg_replace('/_+/', '_', $cleanAppName);
+        $cleanAppName = trim($cleanAppName, '_');
+
+        $names = array();
+        if (!empty($cleanAppName)) $names[] = $cleanAppName;
+        if ($appName !== $cleanAppName) $names[] = $appName;
+        if (!empty($cleanAppName) && strtolower($cleanAppName) !== $cleanAppName) {
+            $names[] = strtolower($cleanAppName);
         }
+        $names = array_unique($names);
 
         foreach ($names as $name) {
             // 1. Endpoint Awtrix NG v1: DELETE /api/v1/apps/pushed/{name}
