@@ -675,9 +675,9 @@ $('#sim_ctl_1to1').on('click', function() {
 
 function updateScenarioSnippet() {
     var eqName = $('.eqLogicAttr[data-l1key=name]').val() || 'Salon Awtrix NG';
-    var icon = $.trim($('#test_msg_icon').val() || '');
-    var color = $.trim($('#test_msg_color').val() || '#00FF00');
-    var text = $('#test_msg_text').val() || '';
+    var icon = $.trim($('#input_snippet_icon').val() || $('#test_msg_icon').val() || '');
+    var color = $.trim($('#input_snippet_color').val() || $('#test_msg_color').val() || '#FFD700');
+    var text = $('#input_snippet_text').val() || $('#test_msg_text').val() || '';
     var durMode = $('#test_msg_duration').val() || '12';
     var isUrgent = $('#test_msg_priority').val() === 'urgent';
     var type = $('#scenario_snippet_type button.active').attr('data-type') || 'custom_app';
@@ -755,6 +755,113 @@ $(document).on('input change', '#input_snippet_app_name', function() {
     updateScenarioSnippet();
 });
 
+// Synchronize inputs between Scenario Assistant and Testeur
+$(document).on('input change', '#input_snippet_icon', function() {
+    var ic = $(this).val();
+    $('#test_msg_icon').val(ic);
+    if (typeof updatePreviewIconBox === 'function') updatePreviewIconBox(ic);
+    updateScenarioSnippet();
+});
+
+$(document).on('input change', '#input_snippet_color', function() {
+    var col = $(this).val().toUpperCase();
+    if (/^#[0-9A-F]{6}$/i.test(col)) {
+        $('#input_snippet_color_picker').val(col);
+        $('#test_msg_color').val(col);
+        $('#test_msg_picker').val(col);
+    }
+    updateScenarioSnippet();
+});
+
+$(document).on('input change', '#input_snippet_color_picker', function() {
+    var col = $(this).val().toUpperCase();
+    $('#input_snippet_color').val(col);
+    $('#test_msg_color').val(col);
+    $('#test_msg_picker').val(col);
+    updateScenarioSnippet();
+});
+
+$(document).on('input change', '#input_snippet_text', function() {
+    var txt = $(this).val();
+    $('#test_msg_text').val(txt);
+    updateScenarioSnippet();
+});
+
+// When changing upper test form inputs, sync to assistant as well
+$(document).on('input change', '#test_msg_icon', function() {
+    $('#input_snippet_icon').val($(this).val());
+    updateScenarioSnippet();
+});
+
+$(document).on('input change', '#test_msg_color', function() {
+    var col = $(this).val().toUpperCase();
+    $('#input_snippet_color').val(col);
+    if (/^#[0-9A-F]{6}$/i.test(col)) $('#input_snippet_color_picker').val(col);
+    updateScenarioSnippet();
+});
+
+$(document).on('input change', '#test_msg_text', function() {
+    $('#input_snippet_text').val($(this).val());
+    updateScenarioSnippet();
+});
+
+// Test button directly in scenario assistant
+$(document).on('click', '#bt_test_snippet_on_screen', function() {
+    var type = $('#scenario_snippet_type button.active').attr('data-type') || 'custom_app';
+    if (type === 'custom_app') {
+        var rawAppName = $.trim($('#input_snippet_app_name').val()) || 'placa_solar';
+        var appName = rawAppName.replace(/[^a-zA-Z0-9_-]/g, '_').replace(/_+/g, '_').replace(/^_+|_+$/g, '') || 'app';
+        var icon = $.trim($('#input_snippet_icon').val());
+        var color = $.trim($('#input_snippet_color').val()) || '#FFD700';
+        var text = $.trim($('#input_snippet_text').val());
+
+        var ip = $.trim($('#input_device_ip').val());
+        var port = parseInt($('#input_device_port').val(), 10) || 80;
+        var pwd = $.trim($('#input_device_password').val() || '');
+        var eqId = $('.eqLogicAttr[data-l1key=id]').val() || 0;
+
+        if (!ip) {
+            $('#div_alert').showAlert({message: '{{Debes introducir primero la IP de este panel Awtrix}}', level: 'danger', emptyBefore: true});
+            return;
+        }
+
+        var $btn = $(this);
+        $btn.find('i').removeClass('fa-play').addClass('fa-spinner fa-spin');
+
+        $.ajax({
+            type: 'POST',
+            url: 'plugins/awtrixng/core/ajax/awtrixng.ajax.php',
+            data: {
+                action: 'sendCustomApp',
+                ip: ip,
+                port: port,
+                password: pwd,
+                eqLogic_id: eqId,
+                name: appName,
+                text: text,
+                icon: icon,
+                color: color
+            },
+            dataType: 'json',
+            global: false,
+            success: function(data) {
+                $btn.find('i').removeClass('fa-spinner fa-spin').addClass('fa-play');
+                if (data.state === 'ok') {
+                    $('#div_alert').showAlert({message: '{{¡App enviada al reloj correctamente!}} (' + appName + ')', level: 'success', emptyBefore: true});
+                } else {
+                    $('#div_alert').showAlert({message: data.result || '{{Error al enviar app}}', level: 'danger', emptyBefore: true});
+                }
+            },
+            error: function() {
+                $btn.find('i').removeClass('fa-spinner fa-spin').addClass('fa-play');
+                $('#div_alert').showAlert({message: '{{Error de conexión con el reloj}}', level: 'danger', emptyBefore: true});
+            }
+        });
+    } else {
+        $('#bt_sendQuickNotification').click();
+    }
+});
+
 $(document).on('click', '#bt_copyScenarioSnippet', function() {
     var cmd = $('#snippet_scenario_cmd').text();
     var title = $('#snippet_scenario_title').text();
@@ -768,6 +875,7 @@ $(document).on('click', '#bt_copyScenarioSnippet', function() {
         $btn.html('<i class="fas fa-check"></i> {{Copiado}}');
         setTimeout(function() { $btn.html(originalHtml); }, 1500);
     }
+});
 
 $('#test_msg_picker').on('input change', function() {
     var col = $(this).val().toUpperCase();

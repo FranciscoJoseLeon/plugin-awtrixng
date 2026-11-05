@@ -607,13 +607,13 @@ foreach ($eqLogics as $eqLogicItem) {
                                 </div>
                             </div>
 
-                            <!-- Scenario Helper Box: Copy without any JSON -->
+                            <!-- Scenario Helper Box: Interactive scenario builder -->
                             <div class="well well-sm" style="margin-top: 18px; background: #1e293b; border: 1px solid #334155; border-radius: 8px; color: #e2e8f0; padding: 14px 16px;">
                                 <div style="font-weight: 600; font-size: 13px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
                                     <span style="color: #f8fafc;">
                                         <i class="fas fa-magic" style="color: #f59e0b;"></i>
                                         <strong>{{Asistente de Escenarios Jeedom}}</strong>
-                                        <small style="color: #94a3b8; font-weight: normal;">({{Copia y pega directamente en tu escenario}})</small>
+                                        <small style="color: #94a3b8; font-weight: normal;">({{Edita texto e icono, pruébalo y cópialo directamente al escenario}})</small>
                                     </span>
                                     <div class="btn-group btn-group-xs" role="group" id="scenario_snippet_type">
                                         <button type="button" class="btn btn-primary active" data-type="custom_app">
@@ -625,44 +625,99 @@ foreach ($eqLogics as $eqLogicItem) {
                                     </div>
                                 </div>
 
-                                <div id="div_snippet_app_name" style="margin-bottom: 10px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-                                    <label style="font-size: 12px; color: #cbd5e1; margin: 0;">
-                                        <i class="fas fa-tag" style="color: #38bdf8;"></i> {{Nombre de la App (ID)}}:
-                                    </label>
-                                    <input type="text" id="input_snippet_app_name" class="form-control input-sm" value="placa_solar" placeholder="ej. placa_solar, termo, riego" style="max-width: 220px; background: #0f172a; border-color: #475569; color: #f8fafc;" />
-                                    <span style="font-size: 11px; color: #94a3b8;">{{(Sin espacios: ej. placa_solar)}}</span>
+                                <!-- Interactive Editing Box for Scenario Assistant -->
+                                <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid #334155; border-radius: 6px; padding: 12px 14px; margin-bottom: 12px;">
+                                    <div class="row" style="margin-left: -5px; margin-right: -5px;">
+                                        <!-- App Name ID (Custom App) -->
+                                        <div class="col-xs-12 col-sm-4" id="div_snippet_app_name" style="padding: 0 5px; margin-bottom: 8px;">
+                                            <label style="font-size: 11px; color: #cbd5e1; margin-bottom: 3px; display: block;">
+                                                <i class="fas fa-tag" style="color: #38bdf8;"></i> {{Nombre App (ID)}}:
+                                            </label>
+                                            <input type="text" id="input_snippet_app_name" class="form-control input-sm" value="placa_solar" placeholder="ej. placa_solar, termo, riego" style="background: #0f172a; border-color: #475569; color: #f8fafc;" />
+                                        </div>
+
+                                        <!-- Icon Selector & Picker -->
+                                        <div class="col-xs-12 col-sm-5" style="padding: 0 5px; margin-bottom: 8px;">
+                                            <label style="font-size: 11px; color: #cbd5e1; margin-bottom: 3px; display: block;">
+                                                <i class="fas fa-icons" style="color: #f59e0b;"></i> {{Icono}}:
+                                            </label>
+                                            <div class="input-group input-group-sm">
+                                                <input type="text" id="input_snippet_icon" class="form-control input-sm" value="haus-netzabgabe" placeholder="ej. haus-netzabgabe, power-red" style="background: #0f172a; border-color: #475569; color: #f8fafc;" />
+                                                <span class="input-group-btn">
+                                                    <button type="button" class="btn btn-primary btn-sm bt_openIconPicker" data-target="#input_snippet_icon" title="{{Abrir catálogo interactivo de iconos}}">
+                                                        <i class="fas fa-icons"></i> {{Cambiar Icono}}
+                                                    </button>
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        <!-- Text Color -->
+                                        <div class="col-xs-12 col-sm-3" style="padding: 0 5px; margin-bottom: 8px;">
+                                            <label style="font-size: 11px; color: #cbd5e1; margin-bottom: 3px; display: block;">
+                                                <i class="fas fa-palette" style="color: #ec4899;"></i> {{Color}}:
+                                            </label>
+                                            <div class="input-group input-group-sm">
+                                                <input type="color" id="input_snippet_color_picker" value="#FFD700" style="width: 36px; height: 30px; padding: 1px; cursor: pointer; background: #0f172a; border-color: #475569;" />
+                                                <input type="text" id="input_snippet_color" class="form-control input-sm" value="#FFD700" style="background: #0f172a; border-color: #475569; color: #f8fafc; text-transform: uppercase; font-family: monospace;" />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Quick Installed Clock Icons Row -->
+                                    <div style="margin-top: 4px; margin-bottom: 10px;">
+                                        <div class="div_installed_panel_icons" data-target="#input_snippet_icon" style="display: flex; gap: 4px; flex-wrap: wrap; align-items: center;"></div>
+                                    </div>
+
+                                    <!-- Text / Message Input with Quick Test Button -->
+                                    <div>
+                                        <label style="font-size: 11px; color: #cbd5e1; margin-bottom: 3px; display: block;">
+                                            <i class="fas fa-comment-alt" style="color: #4ade80;"></i> {{Mensaje / Texto (admite tags Jeedom)}}:
+                                        </label>
+                                        <div class="input-group input-group-sm">
+                                            <input type="text" id="input_snippet_text" class="form-control input-sm" value="Solar: #[Azotea][8 - Placa solar][Puissance]# W" placeholder="{{Escribe el mensaje o tag ej. #[Azotea][Placa]# W o Regando jardín}}" style="background: #0f172a; border-color: #475569; color: #f8fafc;" />
+                                            <span class="input-group-btn">
+                                                <button type="button" class="btn btn-success btn-sm" id="bt_test_snippet_on_screen" title="{{Enviar este texto e icono directamente al reloj}}">
+                                                    <i class="fas fa-play"></i> {{Probar en Reloj}}
+                                                </button>
+                                            </span>
+                                        </div>
+                                        <div style="font-size: 11px; color: #94a3b8; margin-top: 4px;">
+                                            <i class="fas fa-info-circle" style="color: #38bdf8;"></i> {{Puedes escribir texto normal o insertar tags de Jeedom como}} <code>#[Azotea][Placa solar]# W</code>, <code>#[Salon][Temp]# °C</code> {{o}} <code>#value#</code>.
+                                        </div>
+                                    </div>
                                 </div>
 
+                                <!-- Output Box for Copying into Scenario -->
                                 <div style="font-family: monospace; font-size: 12px; background: #0f172a; padding: 10px 14px; border-radius: 6px; border-left: 3px solid #10b981; line-height: 2;">
                                     <div style="display: flex; justify-content: space-between; align-items: center;">
                                         <div><strong style="color: #94a3b8;">{{Acción SI / ALORS}}:</strong> <span id="snippet_scenario_cmd" style="color: #38bdf8;">#[...][App Carrusel (Publicar)]#</span></div>
                                         <button type="button" class="btn btn-xs btn-default bt_copy_snippet_part" data-part="cmd" style="padding: 1px 6px;" title="{{Copiar comando}}"><i class="far fa-copy"></i></button>
                                     </div>
-                                    <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(251, 191, 36, 0.08); padding: 2px 6px; border-radius: 4px; margin: 4px 0;">
-                                        <div><strong style="color: #94a3b8;">{{Campo 1 (Título / Opciones)}}:</strong> <span id="snippet_scenario_title" style="color: #fbbf24; font-weight: bold;">placa_solar | thermometer2 | #FF2222</span></div>
-                                        <button type="button" class="btn btn-xs btn-warning bt_copy_snippet_part" data-part="title" style="padding: 1px 8px; font-weight: bold;" title="{{Copiar Campo 1 al portapapeles}}"><i class="far fa-copy"></i> {{Copiar Campo 1}}</button>
+                                    <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(251, 191, 36, 0.08); padding: 3px 8px; border-radius: 4px; margin: 4px 0;">
+                                        <div><strong style="color: #94a3b8;">{{Campo 1 (Título / Opciones)}}:</strong> <span id="snippet_scenario_title" style="color: #fbbf24; font-weight: bold;">placa_solar | haus-netzabgabe | #FFD700</span></div>
+                                        <button type="button" class="btn btn-xs btn-warning bt_copy_snippet_part" data-part="title" style="padding: 2px 10px; font-weight: bold;" title="{{Copiar Campo 1 al portapapeles}}"><i class="far fa-copy"></i> {{Copiar Campo 1}}</button>
                                     </div>
-                                    <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(74, 222, 128, 0.08); padding: 2px 6px; border-radius: 4px; margin: 4px 0;">
-                                        <div><strong style="color: #94a3b8;">{{Campo 2 (Mensaje / Texto)}}:</strong> <span id="snippet_scenario_msg" style="color: #4ade80;">Arrosage des fleurs</span></div>
-                                        <button type="button" class="btn btn-xs btn-success bt_copy_snippet_part" data-part="msg" style="padding: 1px 8px; font-weight: bold;" title="{{Copiar Campo 2 al portapapeles}}"><i class="far fa-copy"></i> {{Copiar Campo 2}}</button>
+                                    <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(74, 222, 128, 0.08); padding: 3px 8px; border-radius: 4px; margin: 4px 0;">
+                                        <div><strong style="color: #94a3b8;">{{Campo 2 (Mensaje / Texto)}}:</strong> <span id="snippet_scenario_msg" style="color: #4ade80;">Solar: #[Azotea][8 - Placa solar][Puissance]# W</span></div>
+                                        <button type="button" class="btn btn-xs btn-success bt_copy_snippet_part" data-part="msg" style="padding: 2px 10px; font-weight: bold;" title="{{Copiar Campo 2 al portapapeles}}"><i class="far fa-copy"></i> {{Copiar Campo 2}}</button>
                                     </div>
                                     <div id="div_snippet_sinon_row" style="display: flex; justify-content: space-between; align-items: center; border-top: 1px dashed #334155; margin-top: 6px; padding-top: 4px;">
                                         <div><strong style="color: #f87171;">{{Acción SINON (Para retirarla)}}:</strong> <span id="snippet_scenario_sinon" style="color: #fca5a5;">#[...][App Carrusel (Supprimer)]# -> placa_solar</span></div>
-                                        <button type="button" class="btn btn-xs btn-danger bt_copy_snippet_part" data-part="sinon" style="padding: 1px 6px;" title="{{Copiar nombre para borrar}}"><i class="far fa-copy"></i> {{Copiar}}</button>
+                                        <button type="button" class="btn btn-xs btn-danger bt_copy_snippet_part" data-part="sinon" style="padding: 1px 8px; font-weight: bold;" title="{{Copiar nombre para borrar}}"><i class="far fa-copy"></i> {{Copiar para SINON}}</button>
                                     </div>
                                 </div>
 
-                                <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 8px; flex-wrap: wrap; gap: 8px;">
+                                <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 10px; flex-wrap: wrap; gap: 8px;">
                                     <span style="font-size: 11px; color: #94a3b8;">
-                                        <i class="fas fa-check-circle" style="color: #10b981;"></i> {{Se actualiza en vivo según los valores que pruebes arriba.}}
+                                        <i class="fas fa-check-circle" style="color: #10b981;"></i> {{Copia cada campo y pégalo directamente en la acción de tu escenario Jeedom.}}
                                     </span>
-                                    <button type="button" class="btn btn-xs btn-primary" id="bt_copyScenarioSnippet" style="font-weight: bold;">
+                                    <button type="button" class="btn btn-xs btn-primary" id="bt_copyScenarioSnippet" style="font-weight: bold; padding: 4px 10px;">
                                         <i class="far fa-copy"></i> {{Copiar Todo el Escenario}}
                                     </button>
                                 </div>
                             </div>
 
-                            <!-- Saved Preset Notification Commands List -->
+<!-- Saved Preset Notification Commands List -->
                             <div style="margin-top: 18px;">
                                 <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
                                     <span style="font-weight: 600; font-size: 13px; color: #f8fafc;">

@@ -258,6 +258,79 @@ try {
         ajax::success(array('pixels' => array()));
     }
 
+    if ($action == 'sendCustomApp') {
+        $ip = trim(init('ip'));
+        $port = intval(init('port', 80));
+        if ($port <= 0) $port = 80;
+        $name = trim(init('name', 'app'));
+        $text = trim(init('text', ''));
+        $icon = awtrixng::resolveIconName(init('icon', ''));
+        $color = trim(init('color', '#FFD700'));
+        $eqId = intval(init('eqLogic_id', 0));
+
+        $eq = null;
+        if ($eqId > 0) {
+            $eq = eqLogic::byId($eqId);
+        }
+        if (!is_object($eq) && !empty($ip)) {
+            foreach (eqLogic::byType('awtrixng') as $item) {
+                if ($item->getConfiguration('ip') === $ip) {
+                    $eq = $item;
+                    break;
+                }
+            }
+        }
+
+        if (is_object($eq)) {
+            $res = $eq->sendCustomApp($name, $text, $icon, $color);
+            ajax::success(array('status' => 'ok', 'result' => $res));
+        }
+
+        if (empty($ip)) {
+            throw new Exception(__('Debes introducir la dirección IP o hostname de tu pantalla Awtrix NG', __FILE__));
+        }
+
+        $password = trim(init('password', ''));
+        $payload = array('text' => $text);
+        if (!empty($icon)) $payload['icon'] = $icon;
+        if (!empty($color)) $payload['color'] = $color;
+
+        $slugName = preg_replace('/[^a-zA-Z0-9_-]/', '_', $name);
+        $slugName = trim(preg_replace('/_+/', '_', $slugName), '_');
+        if (empty($slugName)) $slugName = 'app';
+
+        $url = "http://{$ip}:{$port}/api/v1/apps/pushed/" . rawurlencode($slugName);
+        $ch = curl_init($url);
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'PUT');
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 4);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+        if (!empty($password)) {
+            curl_setopt($ch, CURLOPT_USERPWD, 'admin:' . $password);
+        }
+        $resp = curl_exec($ch);
+        $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+
+        if ($code >= 200 && $code < 300) {
+            ajax::success(array('status' => 'ok', 'result' => $resp));
+        } else {
+            $url2 = "http://{$ip}:{$port}/api/custom?name=" . rawurlencode($slugName);
+            $ch2 = curl_init($url2);
+            curl_setopt($ch2, CURLOPT_POST, true);
+            curl_setopt($ch2, CURLOPT_POSTFIELDS, json_encode($payload));
+            curl_setopt($ch2, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch2, CURLOPT_TIMEOUT, 4);
+            curl_setopt($ch2, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+            if (!empty($password)) curl_setopt($ch2, CURLOPT_USERPWD, 'admin:' . $password);
+            $resp2 = curl_exec($ch2);
+            $code2 = curl_getinfo($ch2, CURLINFO_HTTP_CODE);
+            curl_close($ch2);
+            ajax::success(array('status' => ($code2 >= 200 && $code2 < 300) ? 'ok' : 'error', 'result' => $resp2));
+        }
+    }
+
     if ($action == 'sendQuickNotification') {
         $ip = trim(init('ip'));
         $port = intval(init('port', 80));
