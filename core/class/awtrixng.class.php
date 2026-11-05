@@ -924,7 +924,19 @@ class awtrixng extends eqLogic {
             // Navidad -> christmas
             'christmas' => 'christmas',
             'navidad' => 'christmas',
-            'noel' => 'christmas'
+            'noel' => 'christmas',
+
+            // Solar / Placa solar / Sol
+            'solar' => 'solar',
+            'sol' => 'solar',
+            'sun' => 'solar',
+            'placa-solar' => 'solar',
+            'placa_solar' => 'solar',
+            'placa' => 'solar',
+            'placas' => 'solar',
+            'fotovoltaica' => 'solar',
+            'panneau-solaire' => 'solar',
+            'solaire' => 'solar'
         );
         $lower = strtolower($icon);
         if (isset($map[$lower])) {
