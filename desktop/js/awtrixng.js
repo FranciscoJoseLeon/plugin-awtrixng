@@ -1395,14 +1395,17 @@ $('#bt_sendBroadcastNotification').on('click', function() {
 // --- Panel-Specific Carousel Information Builder (#table_panel_apps) ---
 function addPanelAppRow(_app) {
     _app = _app || {};
-    var enabled = (_app.enable === undefined || _app.enable == 1) ? 'checked' : '';
+    var isEnabled = (_app.enable === undefined || _app.enable == 1 || _app.enable === true || _app.enable === '1');
+    var enabled = isEnabled ? 'checked' : '';
+    var rowClass = isEnabled ? 'panelAppRow' : 'panelAppRow panelAppRowDisabled';
+    var disabledStyle = isEnabled ? '' : 'opacity: 0.45; filter: grayscale(70%); transition: opacity 0.2s, filter 0.2s;';
     var name = _app.name || '';
     var icon = _app.icon || 'plant-watering';
     var color = (_app.color || '#00FF00').toUpperCase();
     var text = _app.text || '';
     var duration = _app.duration || 10;
 
-    var tr = '<tr class="panelAppRow">';
+    var tr = '<tr class="' + rowClass + '" style="' + disabledStyle + '">';
     tr += '<td style="text-align: center; vertical-align: middle;">';
     tr += '<input type="checkbox" class="appAttr_enable" ' + enabled + ' />';
     tr += '</td>';
@@ -1486,37 +1489,50 @@ $(document).on('change.awtrixng', '.appAttr_enable', function() {
     var appName = $.trim($tr.find('.appAttr_name').val());
     var eqId = getAwtrixCurrentEqLogicId();
 
-    // 1. Mantener sincronizado el input oculto y persistir en base de datos inmediatamente
+    // Efecto visual idéntico a las líneas de los escenarios de Jeedom
+    if (isChecked) {
+        $tr.removeClass('panelAppRowDisabled').css({
+            'opacity': '1',
+            'filter': 'none',
+            'transition': 'opacity 0.2s, filter 0.2s'
+        });
+    } else {
+        $tr.addClass('panelAppRowDisabled').css({
+            'opacity': '0.45',
+            'filter': 'grayscale(70%)',
+            'transition': 'opacity 0.2s, filter 0.2s'
+        });
+    }
+
+    // Actualizar input oculto y persistir de forma atómica en una sola llamada limpia
     var apps = collectPanelAppsFromTable();
     $('#input_custom_apps_list').val(JSON.stringify(apps));
+
     if (eqId) {
         $.ajax({
             type: 'POST',
             url: 'plugins/awtrixng/core/ajax/awtrixng.ajax.php',
             data: {
-                action: 'savePanelAppsList',
+                action: 'togglePanelApp',
                 id: eqId,
+                name: appName,
+                enable: isChecked ? 1 : 0,
                 custom_apps_list: JSON.stringify(apps)
-            }
-        });
-    }
-
-    // 2. Si se desmarca, enviar orden de borrado inmediata al reloj
-    if (!isChecked && appName && eqId) {
-        $.ajax({
-            type: 'POST',
-            url: 'plugins/awtrixng/core/ajax/awtrixng.ajax.php',
-            data: {
-                action: 'deleteCustomApp',
-                id: eqId,
-                name: appName
             },
-            success: function() {
-                $('#div_alert').showAlert({message: '{{App desactivada y eliminada del carrusel.}}', level: 'info'});
+            dataType: 'json',
+            error: function(request, status, error) {
+                handleAjaxError(request, status, error);
+            },
+            success: function(data) {
+                if (data.state != 'ok') {
+                    $('#div_alert').showAlert({message: data.result, level: 'danger'});
+                    return;
+                }
+                if (!isChecked) {
+                    $('#div_alert').showAlert({message: '{{App desactivada y eliminada del carrusel.}}', level: 'info'});
+                }
             }
         });
-    } else if (isChecked && eqId) {
-        $('#bt_syncPanelAppsNow').trigger('click');
     }
 });
 
@@ -1528,27 +1544,19 @@ $(document).on('click.awtrixng', '.bt_removePanelApp', function() {
 
     var apps = collectPanelAppsFromTable();
     $('#input_custom_apps_list').val(JSON.stringify(apps));
+
     if (eqId) {
         $.ajax({
             type: 'POST',
             url: 'plugins/awtrixng/core/ajax/awtrixng.ajax.php',
             data: {
-                action: 'savePanelAppsList',
+                action: 'togglePanelApp',
                 id: eqId,
+                name: appName,
+                enable: 0,
                 custom_apps_list: JSON.stringify(apps)
-            }
-        });
-    }
-
-    if (appName && eqId) {
-        $.ajax({
-            type: 'POST',
-            url: 'plugins/awtrixng/core/ajax/awtrixng.ajax.php',
-            data: {
-                action: 'deleteCustomApp',
-                id: eqId,
-                name: appName
             },
+            dataType: 'json',
             success: function() {
                 $('#div_alert').showAlert({message: '{{App desactivada y eliminada del carrusel.}}', level: 'info'});
             }

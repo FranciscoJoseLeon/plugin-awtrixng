@@ -552,6 +552,35 @@ try {
         ajax::success(array('status' => 'ok', 'synced_count' => $count));
     }
 
+    if ($action == 'togglePanelApp') {
+        $eqLogicId = intval(init('id', init('eqLogic_id')));
+        $eqLogic = eqLogic::byId($eqLogicId);
+        if (!is_object($eqLogic) || $eqLogic->getEqType_name() !== 'awtrixng') {
+            throw new Exception(__('Panel Awtrix no encontrado.', __FILE__));
+        }
+
+        $appName = trim(init('name', ''));
+        $enable = intval(init('enable', 1));
+        $appsJson = init('custom_apps_list', '');
+
+        if (!empty($appsJson)) {
+            $decoded = json_decode($appsJson, true);
+            if (is_array($decoded)) {
+                $eqLogic->setConfiguration('custom_apps_list', $decoded);
+                $eqLogic->_skipAutoDetectOnSave = true;
+                $eqLogic->save();
+            }
+        }
+
+        if ($enable === 0 && !empty($appName)) {
+            $eqLogic->deleteCustomApp($appName);
+        } else {
+            $eqLogic->syncPanelApps();
+        }
+
+        ajax::success(array('status' => 'ok', 'enabled' => $enable, 'app' => $appName));
+    }
+
     if ($action == 'savePanelAppsList') {
         $eqLogicId = intval(init('id'));
         if (!$eqLogicId) {
@@ -783,6 +812,9 @@ try {
         }
         ajax::success(array('status' => 'ok', 'uploaded_count' => $uploaded, 'errors' => $errors));
     }
+
+    throw new Exception(__('Acción desconocida : ', __FILE__) . $action);
+} catch (Exception $e) {
     ajax::error(displayException($e), $e->getCode());
 }
 ?>
