@@ -922,9 +922,14 @@ $(document).on('click', '.bt_deletePresetCmd', function() {
     });
 });
 
-function loadInstalledPanelIcons(ip, port) {
+function loadInstalledPanelIcons(ip, port, callback) {
     var $containers = $('.div_installed_panel_icons');
-    if (!ip) return;
+    if (!ip) ip = $.trim($('#input_device_ip').val());
+    if (!port) port = parseInt($('#input_device_port').val(), 10) || 80;
+    if (!ip) {
+        if (typeof callback === 'function') callback();
+        return;
+    }
     var pwd = $.trim($('#input_device_password').val() || '');
 
     $.ajax({
@@ -939,18 +944,28 @@ function loadInstalledPanelIcons(ip, port) {
         dataType: 'json',
         global: false,
         success: function(data) {
-            if (data.state !== 'ok' || !$.isArray(data.result) || data.result.length === 0) return;
-            awtrixInstalledIconsCache = data.result;
-            if (!$containers.length) return;
-            var html = '<span style="font-size: 11px; color: #706c65; margin-right: 4px;"><i class="fas fa-check-circle" style="color:#28a745;"></i> {{Iconos en tu reloj}}:</span>';
-            for (var i = 0; i < data.result.length; i++) {
-                var ic = data.result[i];
-                html += '<button type="button" class="btn btn-xs btn-default btn-pick-installed-icon" data-slug="' + ic.slug.replace(/"/g, '&quot;') + '" style="display: inline-flex; align-items: center; gap: 4px; padding: 2px 7px;" title="{{Usar icono}} ' + ic.slug + '">';
-                html += '<img src="' + ic.url + '" style="width: 14px; height: 14px; image-rendering: pixelated;" /> ';
-                html += '<span>' + ic.slug + '</span>';
-                html += '</button>';
+            if (data.state === 'ok' && $.isArray(data.result) && data.result.length > 0) {
+                awtrixInstalledIconsCache = data.result;
+                if ($containers.length) {
+                    var html = '<span style="font-size: 11px; color: #706c65; margin-right: 4px;"><i class="fas fa-check-circle" style="color:#28a745;"></i> {{Iconos en tu reloj}}:</span>';
+                    for (var i = 0; i < data.result.length; i++) {
+                        var ic = data.result[i];
+                        html += '<button type="button" class="btn btn-xs btn-default btn-pick-installed-icon" data-slug="' + ic.slug.replace(/"/g, '&quot;') + '" style="display: inline-flex; align-items: center; gap: 4px; padding: 2px 7px;" title="{{Usar icono}} ' + ic.slug + '">';
+                        html += '<img src="' + ic.url + '" style="width: 14px; height: 14px; image-rendering: pixelated;" /> ';
+                        html += '<span>' + ic.slug + '</span>';
+                        html += '</button>';
+                    }
+                    $containers.html(html);
+                }
             }
-            $containers.html(html);
+            if (typeof callback === 'function') {
+                callback();
+            }
+        },
+        error: function() {
+            if (typeof callback === 'function') {
+                callback();
+            }
         }
     });
 }
@@ -1003,6 +1018,31 @@ $(document).off('click', '.bt_openIconPicker').on('click.awtrixng', '.bt_openIco
     $('#icon_picker_category_filter button').removeClass('btn-primary active').addClass('btn-default');
     $('#icon_picker_category_filter button[data-cat=all]').removeClass('btn-default').addClass('btn-primary active');
     $('#modal_awtrix_icon_picker').modal('show');
+
+    // Recargar iconos en vivo desde el reloj para capturar los nuevos que se hayan descargado
+    var ip = $.trim($('#input_device_ip').val());
+    var port = parseInt($('#input_device_port').val(), 10) || 80;
+    if (ip) {
+        loadInstalledPanelIcons(ip, port, function() {
+            var activeCat = $('#icon_picker_category_filter button.active').attr('data-cat') || 'all';
+            var searchTxt = $('#icon_picker_search_input').val() || '';
+            renderIconPickerGrid(activeCat, searchTxt);
+        });
+    }
+});
+
+$('#bt_refresh_icons_from_clock').on('click', function() {
+    var $btn = $(this);
+    var ip = $.trim($('#input_device_ip').val());
+    var port = parseInt($('#input_device_port').val(), 10) || 80;
+    if (!ip) return;
+    $btn.find('i').addClass('fa-spin');
+    loadInstalledPanelIcons(ip, port, function() {
+        $btn.find('i').removeClass('fa-spin');
+        var activeCat = $('#icon_picker_category_filter button.active').attr('data-cat') || 'all';
+        var searchTxt = $('#icon_picker_search_input').val() || '';
+        renderIconPickerGrid(activeCat, searchTxt);
+    });
 });
 
 function renderIconPickerGrid(category, search) {

@@ -903,6 +903,9 @@ foreach ($eqLogics as $eqLogicItem) {
                         <button type="button" class="btn btn-sm btn-default btn-icon-cat" data-cat="weather">{{Clima}}</button>
                         <button type="button" class="btn btn-sm btn-default btn-icon-cat" data-cat="status">{{Estado / Alertas}}</button>
                     </div>
+                    <button type="button" class="btn btn-sm btn-info" id="bt_refresh_icons_from_clock" title="{{Recargar inmediatamente los iconos recién descargados en el reloj}}">
+                        <i class="fas fa-sync"></i> {{Actualizar del Reloj}}
+                    </button>
                 </div>
 
                 <div id="icon_picker_notice" class="alert alert-info" style="padding: 8px 12px; font-size: 12px; margin-bottom: 12px; border-radius: 8px;">
