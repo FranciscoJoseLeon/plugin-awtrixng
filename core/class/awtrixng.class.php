@@ -821,11 +821,20 @@ class awtrixng extends eqLogic {
     }
 
     /**
-     * Helper to parse and normalize color input (Hex string #00FF00, named colors, or RGB array)
+     * Helper to parse and normalize color input (Hex string #00FF00, named colors, RGB array [255,0,0] or string)
      */
     protected function normalizeColor($color) {
         if (empty($color)) return null;
-        $color = trim($color);
+
+        if (is_array($color)) {
+            if (count($color) >= 3) {
+                return sprintf('#%02X%02X%02X', max(0, min(255, intval($color[0]))), max(0, min(255, intval($color[1]))), max(0, min(255, intval($color[2]))));
+            }
+            return null;
+        }
+
+        $color = trim((string)$color);
+        if ($color === '') return null;
 
         // Predefined friendly colors
         $namedColors = array(
@@ -843,7 +852,12 @@ class awtrixng extends eqLogic {
             'white' => '#FFFFFF',
             'blanco' => '#FFFFFF',
             'purple' => '#9370DB',
-            'morado' => '#9370DB'
+            'morado' => '#9370DB',
+            'pink' => '#FF69B4',
+            'rosa' => '#FF69B4',
+            'gray' => '#808080',
+            'grey' => '#808080',
+            'gris' => '#808080'
         );
 
         $lower = strtolower($color);
@@ -851,11 +865,23 @@ class awtrixng extends eqLogic {
             return $namedColors[$lower];
         }
 
-        if (preg_match('/^#?[0-9a-fA-F]{6}$/', $color)) {
-            return '#' . strtoupper(ltrim($color, '#'));
+        // Handle legacy RGB array formats [255,0,0], [255, 0, 0], 255,0,0 or rgb(255,0,0)
+        if (preg_match('/^\[?\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\]?$/', $color, $m) ||
+            preg_match('/^rgb\s*\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$/i', $color, $m)) {
+            return sprintf('#%02X%02X%02X', max(0, min(255, intval($m[1]))), max(0, min(255, intval($m[2]))), max(0, min(255, intval($m[3]))));
         }
 
-        return $color;
+        // Handle #RGB (3-char hex)
+        if (preg_match('/^#?([0-9a-fA-F])([0-9a-fA-F])([0-9a-fA-F])$/', $color, $m)) {
+            return '#' . strtoupper($m[1] . $m[1] . $m[2] . $m[2] . $m[3] . $m[3]);
+        }
+
+        // Handle #RRGGBB (6-char hex)
+        if (preg_match('/^#?([0-9a-fA-F]{6})$/', $color, $m)) {
+            return '#' . strtoupper($m[1]);
+        }
+
+        return null;
     }
 
     /**
@@ -1037,56 +1063,46 @@ class awtrixng extends eqLogic {
     }
 
     public function dismissNotification() {
-        $dismissed = false;
-
-        // 1. Endpoints nativos de Awtrix NG v1 con método DELETE
-        $v1Endpoints = array(
-            'v1/notifications/dismiss',
-            'v1/notifications/active',
-            'v1/notifications'
-        );
-        foreach ($v1Endpoints as $ep) {
+        if ($this->isV1Api()) {
             try {
-                $this->apiRequest($ep, 'DELETE');
-                log::add('awtrixng', 'info', "Notificación descartada/detenida con éxito en {$ep} (DELETE)");
-                $dismissed = true;
-                break;
-            } catch (Exception $e) {}
-        }
+                $this->apiRequest('v1/notifications/active', 'DELETE');
+                log::add('awtrixng', 'info', "Notificación descartada/detenida con éxito en Awtrix NG (DELETE /api/v1/notifications/active)");
+                return true;
+            } catch (Exception $e) {
+                log::add('awtrixng', 'debug', "Endpoint v1/notifications/active devolvió: " . $e->getMessage());
+            }
 
-        // 2. Endpoints de compatibilidad Awtrix Light / Legacy (POST)
-        if (!$dismissed) {
-            $legacyEndpoints = array(
-                array('notify/dismiss', 'POST', array()),
-                array('notify', 'POST', array()),
-                array('notify', 'POST', array('text' => ''))
-            );
-            foreach ($legacyEndpoints as $lep) {
-                try {
-                    $this->apiRequest($lep[0], $lep[1], $lep[2]);
-                    log::add('awtrixng', 'info', "Notificación descartada/detenida en {$lep[0]}");
-                    $dismissed = true;
-                    break;
-                } catch (Exception $e) {}
+            // Fallback: sobreescritura limpia en blanco de 100ms
+            try {
+                $this->apiRequest('v1/notifications', 'POST', array('text' => ' ', 'durationMs' => 100, 'stack' => false));
+                log::add('awtrixng', 'info', "Notificación cancelada mediante sobreescritura limpia de 100ms.");
+                return true;
+            } catch (Exception $e) {
+                return false;
             }
         }
 
-        // 3. Fallback Infalible: sobreescritura limpia en blanco de 100ms
-        // En cualquier firmware de Awtrix, un mensaje urgente en blanco sin hold y duración de 100ms
-        // desaloja de inmediato cualquier notificación fija bloqueada y devuelve el reloj al carrusel normal.
-        if (!$dismissed) {
+        // Endpoints de compatibilidad Awtrix Light / Legacy (POST)
+        $legacyEndpoints = array(
+            array('notify/dismiss', 'POST', array()),
+            array('notify', 'POST', array()),
+            array('notify', 'POST', array('text' => ''))
+        );
+        foreach ($legacyEndpoints as $lep) {
             try {
-                if ($this->isV1Api()) {
-                    $this->apiRequest('v1/notifications', 'POST', array('text' => ' ', 'durationMs' => 100, 'stack' => false));
-                } else {
-                    $this->apiRequest('notify', 'POST', array('text' => ' ', 'duration' => 1, 'stack' => false));
-                }
-                log::add('awtrixng', 'info', "Notificación fija cancelada mediante sobreescritura limpia de 100ms.");
-                $dismissed = true;
+                $this->apiRequest($lep[0], $lep[1], $lep[2]);
+                log::add('awtrixng', 'info', "Notificación descartada/detenida en {$lep[0]}");
+                return true;
             } catch (Exception $e) {}
         }
 
-        return $dismissed;
+        try {
+            $this->apiRequest('notify', 'POST', array('text' => ' ', 'duration' => 1, 'stack' => false));
+            log::add('awtrixng', 'info', "Notificación fija legacy cancelada mediante sobreescritura de 1s.");
+            return true;
+        } catch (Exception $e) {}
+
+        return false;
     }
 
     public function sendNotification($title, $message, $options = array()) {
@@ -1227,7 +1243,8 @@ class awtrixng extends eqLogic {
                 log::add('awtrixng', 'info', "Notificación v1 enviada a Awtrix [{$modeStr}]: '{$text}' (Icono: " . ($icon ?: 'ninguno') . ", Color: " . ($color ?: 'por defecto') . ")");
                 return;
             } catch (Exception $e) {
-                log::add('awtrixng', 'debug', "Endpoint v1/notifications no respondió (" . $e->getMessage() . "), enviando por fallback legacy /api/notify");
+                log::add('awtrixng', 'error', "Error al enviar notificación v1 a Awtrix: " . $e->getMessage());
+                throw $e;
             }
         }
 
@@ -1348,7 +1365,8 @@ class awtrixng extends eqLogic {
                 log::add('awtrixng', 'info', "App carrusel v1 '{$cleanAppName}' actualizada en Awtrix con texto: '{$text}' (Color: " . ($color ?: 'por defecto') . ")");
                 return;
             } catch (Exception $e) {
-                log::add('awtrixng', 'debug', "Endpoint v1/apps/pushed falló (" . $e->getMessage() . "), recurriendo a fallback /api/custom");
+                log::add('awtrixng', 'error', "Error al actualizar app carrusel v1 '{$cleanAppName}': " . $e->getMessage());
+                throw $e;
             }
         }
 
@@ -1387,33 +1405,23 @@ class awtrixng extends eqLogic {
         }
         $names = array_unique($names);
 
-        foreach ($names as $name) {
-            // 1. Endpoint Awtrix NG v1: DELETE /api/v1/apps/pushed/{name}
-            if ($this->isV1Api()) {
-                try {
-                    $this->apiRequest('v1/apps/pushed/' . rawurlencode($name), 'DELETE');
-                    log::add('awtrixng', 'info', $this->getLogPrefix() . "App carrusel v1 '{$name}' eliminada (DELETE /api/v1/apps/pushed)");
-                } catch (Exception $e) {
-                    // Ignore
-                }
+        if ($this->isV1Api()) {
+            foreach ($names as $name) {
                 try {
                     $this->apiRequest('v1/apps/' . rawurlencode($name), 'DELETE');
+                    log::add('awtrixng', 'info', $this->getLogPrefix() . "App carrusel v1 '{$name}' eliminada (DELETE /api/v1/apps)");
                 } catch (Exception $e) {
-                    // Ignore
+                    // Ignorar si la app ya no estaba presente o ya fue eliminada
                 }
             }
+            return;
+        }
 
-            // 2. Endpoint universal Awtrix Light / Awtrix NG: POST /api/custom?name={name} con cuerpo '{}'
+        // Firmware Legacy Awtrix Light: POST /api/custom?name={name} con cuerpo '{}'
+        foreach ($names as $name) {
             try {
                 $this->apiRequest('custom?name=' . urlencode($name), 'POST', '{}');
-                log::add('awtrixng', 'info', $this->getLogPrefix() . "App carrusel '{$name}' eliminada (POST /api/custom)");
-            } catch (Exception $e) {
-                // Ignore
-            }
-
-            // 3. Fallback adicional con cuerpo vacío
-            try {
-                $this->apiRequest('custom?name=' . urlencode($name), 'POST', '');
+                log::add('awtrixng', 'info', $this->getLogPrefix() . "App carrusel legacy '{$name}' eliminada (POST /api/custom)");
             } catch (Exception $e) {
                 // Ignore
             }

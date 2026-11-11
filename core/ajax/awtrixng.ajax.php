@@ -202,7 +202,6 @@ try {
             awtrixng::curlQuick($baseUrl . '/api/v1/apps/next', 'POST', array(), $password);
             awtrixng::curlQuick($baseUrl . '/api/nextapp', 'POST', array(), $password);
         } elseif ($cmd === 'dismiss') {
-            awtrixng::curlQuick($baseUrl . '/api/v1/notifications/dismiss', 'DELETE', array(), $password);
             awtrixng::curlQuick($baseUrl . '/api/v1/notifications/active', 'DELETE', array(), $password);
             awtrixng::curlQuick($baseUrl . '/api/notify/dismiss', 'POST', array(), $password);
         }
