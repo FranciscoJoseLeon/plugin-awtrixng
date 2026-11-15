@@ -937,7 +937,8 @@
         "Timbre de Casa (Ding-Dong)": "Timbre de Casa (Ding-Dong)",
         "Tono arcade retro de Pacman.": "Tono arcade retro de Pacman.",
         "Tono oscilante bitonal de alta intensidad.": "Tono oscilante bitonal de alta intensidad.",
-        "Éxito / Tarea Completada": "Éxito / Tarea Completada"
+        "Éxito / Tarea Completada": "Éxito / Tarea Completada",
+        "El comando TTS (voz) solo está disponible en firmware AWTRIX NG (no soportado por AWTRIX 3).": "El comando TTS (voz) solo está disponible en firmware AWTRIX NG (no soportado por AWTRIX 3)."
     },
     "plugins/awtrixng/core/ajax/awtrixng.ajax.php": {
         "401 - Acceso no autorizado": "401 - Acceso no autorizado",

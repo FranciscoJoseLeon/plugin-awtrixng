@@ -142,7 +142,7 @@ class awtrixng extends eqLogic {
         if (isset($v1Capabilities['display']['width'])) $width = intval($v1Capabilities['display']['width']);
         elseif (isset($raw['display']['width'])) $width = intval($raw['display']['width']);
         elseif (isset($v1Display['width'])) $width = intval($v1Display['width']);
-        elseif (isset($raw['matrix']['width'])) $width = intval($raw['matrix']['width']);
+        elseif (isset($raw['matrix']) && is_array($raw['matrix']) && isset($raw['matrix']['width'])) $width = intval($raw['matrix']['width']);
         elseif (isset($raw['width'])) $width = intval($raw['width']);
         elseif (isset($legacySettings['WIDTH'])) $width = intval($legacySettings['WIDTH']);
         elseif (isset($legacySettings['MATRIX_WIDTH'])) $width = intval($legacySettings['MATRIX_WIDTH']);
@@ -150,7 +150,7 @@ class awtrixng extends eqLogic {
         if (isset($v1Capabilities['display']['height'])) $height = intval($v1Capabilities['display']['height']);
         elseif (isset($raw['display']['height'])) $height = intval($raw['display']['height']);
         elseif (isset($v1Display['height'])) $height = intval($v1Display['height']);
-        elseif (isset($raw['matrix']['height'])) $height = intval($raw['matrix']['height']);
+        elseif (isset($raw['matrix']) && is_array($raw['matrix']) && isset($raw['matrix']['height'])) $height = intval($raw['matrix']['height']);
         elseif (isset($raw['height'])) $height = intval($raw['height']);
         elseif (isset($legacySettings['HEIGHT'])) $height = intval($legacySettings['HEIGHT']);
 
@@ -225,7 +225,7 @@ class awtrixng extends eqLogic {
         $hasAudioTts = ($model === '52x16') || !empty($v1Capabilities['audio']['speech']) || !empty($v1Capabilities['audio']['mp3']) || !empty($raw['audio']) || !empty($raw['tts']);
 
         // --- Identidad, Firmware y Estado ---
-        $firmware = 'Awtrix NG';
+        $firmware = ($apiVersion === 'legacy') ? 'Awtrix 3 (Legacy)' : 'Awtrix NG';
         if (isset($raw['firmware']['version'])) $firmware = (string)$raw['firmware']['version'];
         elseif (isset($raw['version'])) $firmware = (string)$raw['version'];
 
@@ -270,6 +270,7 @@ class awtrixng extends eqLogic {
         if (isset($raw['matrixPower'])) $powerState = $raw['matrixPower'] ? 1 : 0;
         elseif (isset($v1Display['power'])) $powerState = $v1Display['power'] ? 1 : 0;
         elseif (isset($raw['display']['power'])) $powerState = $raw['display']['power'] ? 1 : 0;
+        elseif (isset($raw['matrix']) && is_bool($raw['matrix'])) $powerState = $raw['matrix'] ? 1 : 0;
         elseif (isset($legacySettings['SLEEP'])) $powerState = $legacySettings['SLEEP'] ? 0 : 1;
 
         return array(
@@ -795,11 +796,16 @@ class awtrixng extends eqLogic {
             } catch (Exception $e) {}
         }
 
-        // Fallback Legacy API
+        // Fallback Legacy API (AWTRIX 3)
         if (strpos($sound, ':') !== false) {
             $this->apiRequest('rtttl', 'POST', $sound);
         } elseif (preg_match('/\.mp3$/i', $sound)) {
-            $this->apiRequest('mp3', 'POST', array('file' => $sound));
+            $cleanSound = preg_replace('/\.mp3$/i', '', $sound);
+            try {
+                $this->apiRequest('sound', 'POST', array('sound' => $cleanSound));
+            } catch (Exception $e) {
+                $this->apiRequest('mp3', 'POST', array('file' => $sound));
+            }
         } else {
             $this->apiRequest('sound', 'POST', array('sound' => $sound));
         }
@@ -809,14 +815,10 @@ class awtrixng extends eqLogic {
     public function sendTTS($text) {
         $text = trim($text);
         if (empty($text)) return;
-        if ($this->isV1Api()) {
-            try {
-                $this->apiRequest('v1/audio/play', 'POST', array('speech' => $text));
-                log::add('awtrixng', 'info', "Voz TTS enviada a Awtrix: '{$text}'");
-                return;
-            } catch (Exception $e) {}
+        if (!$this->isV1Api()) {
+            throw new Exception(__('El comando TTS (voz) solo está disponible en firmware AWTRIX NG (no soportado por AWTRIX 3).', __FILE__));
         }
-        $this->apiRequest('speech', 'POST', array('text' => $text));
+        $this->apiRequest('v1/audio/play', 'POST', array('speech' => $text));
         log::add('awtrixng', 'info', "Voz TTS enviada a Awtrix: '{$text}'");
     }
 
@@ -1960,30 +1962,41 @@ class awtrixng extends eqLogic {
         if (empty($ip)) return array();
 
         $baseUrl = "http://{$ip}" . ($port != 80 ? ":{$port}" : "");
-        $ch = curl_init("{$baseUrl}/api/v1/files");
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 3);
-        if (!empty($password)) curl_setopt($ch, CURLOPT_USERPWD, 'admin:' . $password);
-        $res = curl_exec($ch);
-        $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);
+        $endpoints = $this->isV1Api()
+            ? array("{$baseUrl}/api/v1/files", "{$baseUrl}/list?dir=/MELODIES", "{$baseUrl}/list?dir=/")
+            : array("{$baseUrl}/list?dir=/MELODIES", "{$baseUrl}/list?dir=/");
 
         $audioFiles = array();
-        if ($code === 200 && !empty($res)) {
-            $decoded = json_decode($res, true);
-            $files = isset($decoded['files']) && is_array($decoded['files']) ? $decoded['files'] : array();
-            foreach ($files as $f) {
-                if (!empty($f['name'])) {
-                    $name = (string)$f['name'];
-                    if (preg_match('/\.(mp3|wav|ogg)$/i', $name)) {
+        $seen = array();
+        foreach ($endpoints as $ep) {
+            $ch = curl_init($ep);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 3);
+            if (!empty($password)) curl_setopt($ch, CURLOPT_USERPWD, 'admin:' . $password);
+            $res = curl_exec($ch);
+            $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            curl_close($ch);
+
+            if ($code === 200 && !empty($res)) {
+                $decoded = json_decode($res, true);
+                if (!is_array($decoded)) continue;
+                $files = isset($decoded['files']) && is_array($decoded['files']) ? $decoded['files'] : (isset($decoded[0]) ? $decoded : array());
+                foreach ($files as $f) {
+                    $rawName = is_array($f) ? (isset($f['name']) ? (string)$f['name'] : '') : (is_string($f) ? $f : '');
+                    if (empty($rawName)) continue;
+                    $name = basename($rawName);
+                    if (preg_match('/\.(mp3|wav|ogg)$/i', $name) && !isset($seen[$name])) {
+                        $seen[$name] = true;
+                        $size = is_array($f) && isset($f['size']) ? intval($f['size']) : 0;
                         $audioFiles[] = array(
                             'name' => $name,
                             'slug' => preg_replace('/\.(mp3|wav|ogg)$/i', '', $name),
-                            'size' => isset($f['size']) ? intval($f['size']) : 0,
-                            'size_str' => isset($f['size']) ? round(intval($f['size']) / 1024, 1) . ' KB' : ''
+                            'size' => $size,
+                            'size_str' => $size > 0 ? round($size / 1024, 1) . ' KB' : ''
                         );
                     }
                 }
+                if (!empty($audioFiles)) break;
             }
         }
         return $audioFiles;
