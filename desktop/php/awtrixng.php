@@ -440,7 +440,7 @@ foreach ($eqLogics as $eqLogicItem) {
                             <span><i class="fas fa-tv" style="color: #5bc0de;"></i> {{Pantalla actual del dispositivo}} <small id="awtrix_tester_live_dims" style="color: #888;"></small></span>
                             <span id="awtrix_tester_live_status" style="color: #888;">{{Esperando datos...}}</span>
                         </div>
-                        <canvas id="awtrix_tester_live_canvas" width="384" height="96" style="width: 100%; max-width: 640px; height: auto; aspect-ratio: 32 / 8; image-rendering: pixelated; display: block; margin: 0 auto; background: #000000; border-radius: 4px;"></canvas>
+                        <canvas id="awtrix_tester_live_canvas" width="384" height="96" style="max-width: 100%; height: auto; aspect-ratio: 32 / 8; image-rendering: pixelated; display: block; margin: 0 auto; background: #000000; border-radius: 4px;"></canvas>
                     </div>
 
                     <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 8px;">

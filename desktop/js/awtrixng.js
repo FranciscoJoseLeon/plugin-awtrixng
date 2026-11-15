@@ -2861,7 +2861,9 @@ window.awtrixTesterContext = {
     width: 32,
     height: 8,
     hasAudioTts: true,
-    liveTimer: null
+    liveTimer: null,
+    liveInFlight: false,
+    liveToken: 0
 };
 
 function awtrixGetCmdTesterMeta(logicalId, ctx) {
@@ -2983,14 +2985,23 @@ function awtrixGetCmdTesterMeta(logicalId, ctx) {
     };
 }
 
-function awtrixPollTesterLiveScreen() {
-    if (!$('#awtrix_tester_live_canvas').length || !$('#awtrix_tester_live_canvas').is(':visible')) return;
+function awtrixPollTesterLiveScreen(onDone) {
+    if (!$('#awtrix_tester_live_canvas').length || !$('#awtrix_tester_live_canvas').is(':visible')) {
+        if (typeof onDone === 'function') onDone();
+        return;
+    }
     var ip = $.trim($('#input_device_ip').val());
     var port = parseInt($('#input_device_port').val(), 10) || 80;
     if (!ip) {
         $('#awtrix_tester_live_status').text('{{Sin IP configurada}}');
+        if (typeof onDone === 'function') onDone();
         return;
     }
+    if (window.awtrixTesterContext.liveInFlight) {
+        if (typeof onDone === 'function') onDone();
+        return;
+    }
+    window.awtrixTesterContext.liveInFlight = true;
 
     $.ajax({
         type: 'POST',
@@ -3006,13 +3017,18 @@ function awtrixPollTesterLiveScreen() {
         global: false,
         success: function(data) {
             var canvas = document.getElementById('awtrix_tester_live_canvas');
-            if (!canvas) return;
-            if (data.state === 'ok' && data.result && $.isArray(data.result.pixels) && data.result.pixels.length > 0) {
+            if (canvas && data.state === 'ok' && data.result && $.isArray(data.result.pixels) && data.result.pixels.length > 0) {
                 var w = data.result.width || window.awtrixTesterContext.width || parseInt($('#input_matrix_width').val(), 10) || 32;
                 var h = data.result.height || window.awtrixTesterContext.height || parseInt($('#input_matrix_height').val(), 10) || 8;
-                if (!data.result.width && data.result.pixels.length === 832) { w = 52; h = 16; }
+                if (!data.result.width) {
+                    if (data.result.pixels.length === 832) { w = 52; h = 16; }
+                    else if (data.result.pixels.length % 8 === 0 && data.result.pixels.length !== w * h) {
+                        w = data.result.pixels.length / 8;
+                        h = 8;
+                    }
+                }
                 renderAwtrixPixelsToCanvas(canvas, data.result.pixels, w, h);
-                $('#awtrix_tester_live_dims').text('(' + w + '×' + h + ')');
+                $('#awtrix_tester_live_dims').text('(' + w + '×' + h + ' · ' + (w * h) + ' LEDs)');
                 var now = new Date();
                 var hh = ('0' + now.getHours()).slice(-2);
                 var mm = ('0' + now.getMinutes()).slice(-2);
@@ -3024,22 +3040,38 @@ function awtrixPollTesterLiveScreen() {
         },
         error: function() {
             $('#awtrix_tester_live_status').text('{{Sin conexión con el panel}}');
+        },
+        complete: function() {
+            window.awtrixTesterContext.liveInFlight = false;
+            if (typeof onDone === 'function') onDone();
         }
     });
 }
 
-function awtrixStartTesterLiveTimer() {
+function awtrixStopTesterLiveTimer() {
+    window.awtrixTesterContext.liveToken++;
     if (window.awtrixTesterContext.liveTimer) {
-        clearInterval(window.awtrixTesterContext.liveTimer);
+        clearTimeout(window.awtrixTesterContext.liveTimer);
         window.awtrixTesterContext.liveTimer = null;
     }
+}
+
+function awtrixStartTesterLiveTimer() {
+    awtrixStopTesterLiveTimer();
+    var token = window.awtrixTesterContext.liveToken;
+
+    function tick() {
+        if (token !== window.awtrixTesterContext.liveToken) return;
+        if ($('#btn_awtrix_tester_live_toggle').data('live') != 1) return;
+        awtrixPollTesterLiveScreen(function() {
+            if (token !== window.awtrixTesterContext.liveToken) return;
+            if ($('#btn_awtrix_tester_live_toggle').data('live') != 1) return;
+            window.awtrixTesterContext.liveTimer = setTimeout(tick, 120);
+        });
+    }
+
     if ($('#btn_awtrix_tester_live_toggle').data('live') == 1) {
-        awtrixPollTesterLiveScreen();
-        window.awtrixTesterContext.liveTimer = setInterval(function() {
-            if ($('#btn_awtrix_tester_live_toggle').data('live') == 1) {
-                awtrixPollTesterLiveScreen();
-            }
-        }, 1500);
+        tick();
     }
 }
 
@@ -3145,6 +3177,11 @@ function awtrixInitCmdTester(_eqLogic) {
     });
 
     $box.show();
+    var liveCanvas = document.getElementById('awtrix_tester_live_canvas');
+    if (liveCanvas) {
+        renderAwtrixPixelsToCanvas(liveCanvas, new Array(w * h).fill(0), w, h);
+        $('#awtrix_tester_live_dims').text('(' + w + '×' + h + ' · ' + (w * h) + ' LEDs)');
+    }
     awtrixUpdateCmdTesterUI();
     awtrixStartTesterLiveTimer();
 }
@@ -3159,10 +3196,7 @@ $(document).off('click.awtrixTester', '#btn_awtrix_tester_live_toggle').on('clic
     if (isOn) {
         $btn.data('live', 0).removeClass('btn-success').addClass('btn-default').html('<i class="fas fa-broadcast-tower"></i> ' + '{{En Vivo: OFF}}');
         $('#awtrix_tester_live_status').text('{{Pausado}}');
-        if (window.awtrixTesterContext.liveTimer) {
-            clearInterval(window.awtrixTesterContext.liveTimer);
-            window.awtrixTesterContext.liveTimer = null;
-        }
+        awtrixStopTesterLiveTimer();
     } else {
         $btn.data('live', 1).removeClass('btn-default').addClass('btn-success').html('<i class="fas fa-broadcast-tower"></i> ' + '{{En Vivo: ON}}');
         awtrixStartTesterLiveTimer();
