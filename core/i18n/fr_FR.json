@@ -768,7 +768,18 @@
         "Sincroniza todas las aplicaciones de carrusel configuradas en Información del Panel.": "Synchronise toutes les applications du carrousel configurées dans Informations du panneau.",
         "Vuelve a la aplicación anterior del carrusel.": "Revient à l’application précédente du carrousel.",
         "Cambiar modelo": "Changer de modèle",
-        "Ocultar otros modelos": "Masquer les autres modèles"
+        "Ocultar otros modelos": "Masquer les autres modèles",
+        "Color (por defecto)": "Couleur (par défaut)",
+        "Rojo": "Rouge",
+        "Naranja": "Orange",
+        "Amarillo": "Jaune",
+        "Verde": "Vert",
+        "Cian": "Cyan",
+        "Azul": "Bleu",
+        "Morado": "Violet",
+        "Arcoíris": "Arc-en-ciel",
+        "Icono (sin icono)": "Icône (sans icône)",
+        "Elegir sonido disponible...": "Choisir un son disponible..."
     },
     "plugins/awtrixng/desktop/modal/modal.awtrixng.php": {
         "401 - Acceso no autorizado": "401 - Accès non autorisé",

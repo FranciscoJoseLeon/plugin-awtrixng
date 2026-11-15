@@ -450,13 +450,29 @@ foreach ($eqLogics as $eqLogicItem) {
 
                     <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 8px;">
                         <select class="form-control input-sm" id="sel_awtrix_cmd_tester" style="min-width: 240px; max-width: 340px;"></select>
-                        <div id="div_awtrix_cmd_tester_inputs" style="flex: 1; min-width: 220px; display: flex; gap: 6px; align-items: center;">
-                            <input type="text" class="form-control input-sm" id="in_awtrix_cmd_tester_msg" placeholder="{{Valor o parámetro...}}" style="display: none; width: 100%;" />
+                        <div id="div_awtrix_cmd_tester_inputs" style="flex: 1; min-width: 220px; display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
+                            <select class="form-control input-sm" id="sel_awtrix_cmd_tester_opt" style="display: none; max-width: 260px;"></select>
+                            <input type="text" class="form-control input-sm" id="in_awtrix_cmd_tester_msg" placeholder="{{Valor o parámetro...}}" style="display: none; flex: 1; min-width: 180px;" />
                             <input type="number" class="form-control input-sm" id="in_awtrix_cmd_tester_slider" min="0" max="100" value="50" style="display: none; max-width: 120px;" />
                         </div>
                         <button type="button" class="btn btn-sm btn-primary" id="btn_awtrix_cmd_tester_run">
                             <i class="fas fa-play"></i> {{Probar ahora}}
                         </button>
+                    </div>
+                    <div id="div_awtrix_cmd_tester_extra" style="display: none; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 8px;">
+                        <select class="form-control input-sm" id="sel_awtrix_cmd_tester_icon" style="max-width: 220px;"></select>
+                        <select class="form-control input-sm" id="sel_awtrix_cmd_tester_color" style="max-width: 180px;">
+                            <option value="">{{Color (por defecto)}}</option>
+                            <option value="#FFFFFF">{{Blanco}} (#FFFFFF)</option>
+                            <option value="#FF0000">{{Rojo}} (#FF0000)</option>
+                            <option value="#FF7700">{{Naranja}} (#FF7700)</option>
+                            <option value="#FFD700">{{Amarillo}} (#FFD700)</option>
+                            <option value="#00FF00">{{Verde}} (#00FF00)</option>
+                            <option value="#00FFFF">{{Cian}} (#00FFFF)</option>
+                            <option value="#0077FF">{{Azul}} (#0077FF)</option>
+                            <option value="#AA00FF">{{Morado}} (#AA00FF)</option>
+                            <option value="rainbow">{{Arcoíris}}</option>
+                        </select>
                     </div>
                     <div id="div_awtrix_cmd_tester_help" class="alert alert-info" style="margin-bottom: 0; padding: 8px 12px; font-size: 12px; display: none;"></div>
                     <div id="div_awtrix_cmd_tester_presets" style="display: none; gap: 6px; flex-wrap: wrap; margin-top: 8px;"></div>

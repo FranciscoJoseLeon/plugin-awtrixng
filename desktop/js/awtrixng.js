@@ -3098,6 +3098,92 @@ function awtrixStartTesterLiveTimer() {
     }
 }
 
+function awtrixLoadTesterSounds(callback) {
+    if (window.awtrixTesterContext.soundsLoaded) {
+        if (typeof callback === 'function') callback(window.awtrixTesterContext.sounds || []);
+        return;
+    }
+    var eqId = getAwtrixCurrentEqLogicId();
+    var ip = $.trim($('#input_device_ip').val());
+    if (!eqId && !ip) {
+        if (typeof callback === 'function') callback([]);
+        return;
+    }
+    $.ajax({
+        type: 'POST',
+        url: 'plugins/awtrixng/core/ajax/awtrixng.ajax.php',
+        data: { action: 'getSoundLibrary', id: eqId, eqLogic_id: eqId, ip: ip },
+        dataType: 'json',
+        global: false,
+        success: function(data) {
+            var list = [];
+            if (data.state === 'ok' && data.result) {
+                var r = data.result;
+                if ($.isArray(r.mp3_files)) {
+                    r.mp3_files.forEach(function(f) {
+                        var name = (typeof f === 'string') ? f : (f.name || f.file || '');
+                        if (name) list.push({ label: 'MP3: ' + name, value: name });
+                    });
+                }
+                if ($.isArray(r.rtttl_melodies)) {
+                    r.rtttl_melodies.forEach(function(m) {
+                        if (m && m.rtttl) list.push({ label: 'RTTTL: ' + (m.name || m.id), value: m.rtttl });
+                    });
+                }
+                if ($.isArray(r.custom_rtttls)) {
+                    r.custom_rtttls.forEach(function(m) {
+                        if (m && m.rtttl) list.push({ label: 'Custom RTTTL: ' + (m.name || m.id), value: m.rtttl });
+                    });
+                }
+            }
+            window.awtrixTesterContext.sounds = list;
+            window.awtrixTesterContext.soundsLoaded = true;
+            if (typeof callback === 'function') callback(list);
+        },
+        error: function() {
+            if (typeof callback === 'function') callback([]);
+        }
+    });
+}
+
+function awtrixPopulateTesterIcons() {
+    var $sel = $('#sel_awtrix_cmd_tester_icon').empty();
+    $sel.append($('<option value=""></option>').text('{{Icono (sin icono)}}'));
+    var icons = (typeof awtrixInstalledIconsCache !== 'undefined' && $.isArray(awtrixInstalledIconsCache)) ? awtrixInstalledIconsCache : [];
+    icons.forEach(function(ic) {
+        var name = (typeof ic === 'string') ? ic : (ic.name || ic.id || '');
+        if (name) {
+            $sel.append($('<option></option>').val(name).text(name));
+        }
+    });
+}
+
+function awtrixApplyExtraToTesterJson(logicalId) {
+    var iconVal = $('#sel_awtrix_cmd_tester_icon').val() || '';
+    var colVal = $('#sel_awtrix_cmd_tester_color').val() || '';
+    var raw = $.trim($('#in_awtrix_cmd_tester_msg').val());
+    var obj = {};
+    if (raw && raw.charAt(0) === '{') {
+        try { obj = JSON.parse(raw); } catch (e) { obj = {}; }
+    } else if (raw) {
+        obj.text = raw;
+    }
+    if (!obj.text) obj.text = 'Jeedom';
+    if (logicalId === 'custom_app' && !obj.name) obj.name = 'test_app';
+    if (iconVal) obj.icon = iconVal; else delete obj.icon;
+    if (colVal === 'rainbow') {
+        obj.rainbow = true;
+        delete obj.color;
+    } else if (colVal) {
+        obj.color = colVal;
+        delete obj.rainbow;
+    } else {
+        delete obj.color;
+        delete obj.rainbow;
+    }
+    $('#in_awtrix_cmd_tester_msg').val(JSON.stringify(obj));
+}
+
 function awtrixUpdateCmdTesterUI() {
     var $sel = $('#sel_awtrix_cmd_tester');
     var $opt = $sel.find('option:selected');
@@ -3107,6 +3193,8 @@ function awtrixUpdateCmdTesterUI() {
 
     $('#in_awtrix_cmd_tester_msg').hide().val('');
     $('#in_awtrix_cmd_tester_slider').hide();
+    $('#sel_awtrix_cmd_tester_opt').hide().empty();
+    $('#div_awtrix_cmd_tester_extra').hide();
 
     if (subType === 'slider') {
         var minV = $opt.data('min');
@@ -3120,6 +3208,22 @@ function awtrixUpdateCmdTesterUI() {
         $('#in_awtrix_cmd_tester_msg')
             .attr('placeholder', meta.placeholder || '{{Valor o parámetro...}}')
             .show();
+
+        if (logicalId === 'play_sound') {
+            var $optSel = $('#sel_awtrix_cmd_tester_opt');
+            $optSel.append($('<option value=""></option>').text('{{Elegir sonido disponible...}}')).show();
+            awtrixLoadTesterSounds(function(list) {
+                if ($('#sel_awtrix_cmd_tester').find('option:selected').data('logicalid') !== 'play_sound') return;
+                $optSel.empty().append($('<option value=""></option>').text('{{Elegir sonido disponible...}}'));
+                list.forEach(function(item) {
+                    $optSel.append($('<option></option>').val(item.value).text(item.label));
+                });
+            });
+        } else if (logicalId === 'notify' || logicalId === 'custom_app') {
+            awtrixPopulateTesterIcons();
+            $('#sel_awtrix_cmd_tester_color').val('');
+            $('#div_awtrix_cmd_tester_extra').css('display', 'flex');
+        }
     }
 
     $('#div_awtrix_cmd_tester_help').html('<i class="fas fa-info-circle"></i> ' + meta.desc).show();
@@ -3211,6 +3315,18 @@ function awtrixInitCmdTester(_eqLogic) {
 
 $(document).off('change.awtrixTester', '#sel_awtrix_cmd_tester').on('change.awtrixTester', '#sel_awtrix_cmd_tester', function() {
     awtrixUpdateCmdTesterUI();
+});
+
+$(document).off('change.awtrixTester', '#sel_awtrix_cmd_tester_opt').on('change.awtrixTester', '#sel_awtrix_cmd_tester_opt', function() {
+    var v = $(this).val();
+    if (v) {
+        $('#in_awtrix_cmd_tester_msg').val(v);
+    }
+});
+
+$(document).off('change.awtrixTester', '#sel_awtrix_cmd_tester_icon, #sel_awtrix_cmd_tester_color').on('change.awtrixTester', '#sel_awtrix_cmd_tester_icon, #sel_awtrix_cmd_tester_color', function() {
+    var logicalId = $('#sel_awtrix_cmd_tester').find('option:selected').data('logicalid') || '';
+    awtrixApplyExtraToTesterJson(logicalId);
 });
 
 $(document).off('click.awtrixTester', '#btn_awtrix_tester_live_toggle').on('click.awtrixTester', '#btn_awtrix_tester_live_toggle', function() {

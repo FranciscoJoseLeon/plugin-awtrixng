@@ -768,7 +768,18 @@
         "Sincroniza todas las aplicaciones de carrusel configuradas en Información del Panel.": "Syncs all carousel apps configured in Panel Info.",
         "Vuelve a la aplicación anterior del carrusel.": "Returns to the previous carousel app.",
         "Cambiar modelo": "Change model",
-        "Ocultar otros modelos": "Hide other models"
+        "Ocultar otros modelos": "Hide other models",
+        "Color (por defecto)": "Color (default)",
+        "Rojo": "Red",
+        "Naranja": "Orange",
+        "Amarillo": "Yellow",
+        "Verde": "Green",
+        "Cian": "Cyan",
+        "Azul": "Blue",
+        "Morado": "Purple",
+        "Arcoíris": "Rainbow",
+        "Icono (sin icono)": "Icon (no icon)",
+        "Elegir sonido disponible...": "Choose available sound..."
     },
     "plugins/awtrixng/desktop/modal/modal.awtrixng.php": {
         "401 - Acceso no autorizado": "401 - Unauthorized access",
