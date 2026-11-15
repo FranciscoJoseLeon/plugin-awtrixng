@@ -927,6 +927,18 @@ try {
         ajax::success(array('status' => 'ok', 'uploaded_count' => $uploaded, 'errors' => $errors));
     }
 
+    if ($action == 'reloadAllCommands') {
+        ajax::success(awtrixng::reloadAllCommands());
+    }
+
+    if ($action == 'refreshAllPanels') {
+        ajax::success(awtrixng::refreshAllPanels());
+    }
+
+    if ($action == 'syncAllApps') {
+        ajax::success(awtrixng::syncAllApps());
+    }
+
     throw new Exception(__('Acción desconocida : ', __FILE__) . $action);
 } catch (Exception $e) {
     ajax::error(displayException($e), $e->getCode());

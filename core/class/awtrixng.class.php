@@ -2119,6 +2119,61 @@ class awtrixng extends eqLogic {
         $this->save();
         return true;
     }
+
+    /**
+     * Recarga los comandos por defecto en todos los paneles sin borrar configuraciones ni escenarios.
+     */
+    public static function reloadAllCommands() {
+        $updated = 0;
+        $errors = array();
+        foreach (eqLogic::byType('awtrixng') as $eqLogic) {
+            try {
+                $eqLogic->createDefaultCommands();
+                $updated++;
+            } catch (Exception $e) {
+                $errors[] = $eqLogic->getHumanName() . ': ' . $e->getMessage();
+            }
+        }
+        log::add('awtrixng', 'info', "Mantenimiento: comandos recargados en {$updated} panel(es).");
+        return array('updated' => $updated, 'errors' => $errors);
+    }
+
+    /**
+     * Refresca estado, hardware y versión de firmware/API en todos los paneles habilitados.
+     */
+    public static function refreshAllPanels() {
+        $refreshed = 0;
+        $errors = array();
+        foreach (eqLogic::byType('awtrixng', true) as $eqLogic) {
+            try {
+                $eqLogic->autoDetectAndConfigure(true);
+                $eqLogic->refresh();
+                $refreshed++;
+            } catch (Exception $e) {
+                $errors[] = $eqLogic->getHumanName() . ': ' . $e->getMessage();
+            }
+        }
+        log::add('awtrixng', 'info', "Mantenimiento: {$refreshed} panel(es) refrescados y re-detectados.");
+        return array('refreshed' => $refreshed, 'errors' => $errors);
+    }
+
+    /**
+     * Sincroniza las aplicaciones de carrusel en todos los paneles habilitados.
+     */
+    public static function syncAllApps() {
+        $synced = 0;
+        $errors = array();
+        foreach (eqLogic::byType('awtrixng', true) as $eqLogic) {
+            try {
+                $eqLogic->syncPanelApps();
+                $synced++;
+            } catch (Exception $e) {
+                $errors[] = $eqLogic->getHumanName() . ': ' . $e->getMessage();
+            }
+        }
+        log::add('awtrixng', 'info', "Mantenimiento: carrusel sincronizado en {$synced} panel(es).");
+        return array('synced' => $synced, 'errors' => $errors);
+    }
 }
 
 class awtrixngCmd extends cmd {

@@ -2276,6 +2276,8 @@ function printEqLogic(_eqLogic) {
         }, 100);
     }
 
+    awtrixInitCmdTester(_eqLogic);
+
     // Show auto-detected hardware summary if already detected for this panel
     if (_eqLogic && _eqLogic.configuration && _eqLogic.configuration.hardware_auto_detected == 1) {
         var c = _eqLogic.configuration;
@@ -2844,5 +2846,221 @@ $('#bt_installAllMP3sToClock').on('click', function() {
                 }
             }
         });
+    });
+});
+
+function awtrixGetCmdTesterMeta(logicalId) {
+    var meta = {
+        refresh: {
+            desc: '{{Actualiza manualmente el estado, sensores, versión de firmware y app actual del panel (compatible AWTRIX NG y AWTRIX 3).}}',
+            presets: []
+        },
+        power_on: {
+            desc: '{{Enciende la matriz LED del panel (compatible AWTRIX NG y AWTRIX 3).}}',
+            presets: []
+        },
+        power_off: {
+            desc: '{{Apaga la matriz LED del panel manteniendo el dispositivo conectado (compatible AWTRIX NG y AWTRIX 3).}}',
+            presets: []
+        },
+        toggle_power: {
+            desc: '{{Alterna el estado de encendido/apagado de la pantalla (compatible AWTRIX NG y AWTRIX 3).}}',
+            presets: []
+        },
+        set_brightness: {
+            desc: '{{Ajusta el brillo de la matriz LED de 0 a 100 (compatible AWTRIX NG y AWTRIX 3).}}',
+            presets: [
+                { label: '10%', value: '10' },
+                { label: '40%', value: '40' },
+                { label: '75%', value: '75' },
+                { label: '100%', value: '100' }
+            ]
+        },
+        set_volume: {
+            desc: '{{Ajusta el volumen del altavoz integrado de 0 a 100 (compatible AWTRIX NG y AWTRIX 3).}}',
+            presets: [
+                { label: '0% (Silencio)', value: '0' },
+                { label: '30%', value: '30' },
+                { label: '60%', value: '60' },
+                { label: '100%', value: '100' }
+            ]
+        },
+        next_app: {
+            desc: '{{Pasa a la siguiente aplicación del carrusel en la pantalla (compatible AWTRIX NG y AWTRIX 3).}}',
+            presets: []
+        },
+        prev_app: {
+            desc: '{{Vuelve a la aplicación anterior del carrusel (compatible AWTRIX NG y AWTRIX 3).}}',
+            presets: []
+        },
+        reboot: {
+            desc: '{{Reinicia el firmware del panel (compatible AWTRIX NG y AWTRIX 3).}}',
+            presets: []
+        },
+        notify: {
+            desc: '{{Muestra una notificación temporal en pantalla. Acepta texto simple o JSON completo de notificación (compatible AWTRIX NG y AWTRIX 3).}}',
+            placeholder: '{{Texto o JSON de notificación...}}',
+            presets: [
+                { label: '{{Texto simple}}', value: 'Hola desde Jeedom' },
+                { label: '{{Con icono y color}}', value: '{"text":"Puerta abierta","icon":"alert","color":"#FF5500","duration":8}' },
+                { label: '{{Arcoíris + sonido}}', value: '{"text":"¡Alerta!","rainbow":true,"sound":"beep","hold":false}' }
+            ]
+        },
+        dismiss_notif: {
+            desc: '{{Descarta la notificación activa en pantalla y vuelve al carrusel (compatible AWTRIX NG y AWTRIX 3).}}',
+            presets: []
+        },
+        play_sound: {
+            desc: '{{Reproduce una melodía RTTTL o un archivo MP3 del panel. En AWTRIX 3 los MP3 usan /api/sound y los RTTTL /api/rtttl automáticamente.}}',
+            placeholder: '{{Nombre de sonido, archivo .mp3 o cadena RTTTL...}}',
+            presets: [
+                { label: 'beep.mp3', value: 'beep' },
+                { label: 'RTTTL Mario', value: 'mario:d=4,o=5,b=100:16e6,16e6,32p,8e6,16c6,8e6,8g6,8p,8g' },
+                { label: 'RTTTL Corto', value: 'beep:d=4,o=5,b=120:c6' }
+            ]
+        },
+        tts: {
+            desc: '{{Reproduce texto por voz (TTS). Solo disponible en firmware AWTRIX NG; AWTRIX 3 devolverá aviso de incompatibilidad.}}',
+            placeholder: '{{Texto a pronunciar...}}',
+            presets: [
+                { label: '{{Saludo}}', value: 'Hola, sistema Jeedom operativo' },
+                { label: '{{Aviso puerta}}', value: 'Atención, la puerta principal está abierta' }
+            ]
+        },
+        custom_app: {
+            desc: '{{Crea o actualiza una aplicación personalizada en el carrusel mediante JSON o texto (compatible AWTRIX NG y AWTRIX 3).}}',
+            placeholder: '{{JSON de app personalizada...}}',
+            presets: [
+                { label: '{{Ejemplo Salón}}', value: '{"name":"salon","text":"22.5 C","icon":"thermometer","color":"#00FFAA"}' }
+            ]
+        },
+        delete_app: {
+            desc: '{{Elimina una aplicación personalizada del carrusel indicando su nombre (compatible AWTRIX NG y AWTRIX 3).}}',
+            placeholder: '{{Nombre de la app a eliminar...}}',
+            presets: [
+                { label: 'salon', value: 'salon' }
+            ]
+        },
+        sync_apps: {
+            desc: '{{Sincroniza todas las aplicaciones de carrusel configuradas en la pestaña Información del Panel (compatible AWTRIX NG y AWTRIX 3).}}',
+            presets: []
+        }
+    };
+    return meta[logicalId] || {
+        desc: '{{Ejecuta este comando directamente sobre el panel seleccionado.}}',
+        placeholder: '{{Valor o parámetro...}}',
+        presets: []
+    };
+}
+
+function awtrixUpdateCmdTesterUI() {
+    var $sel = $('#sel_awtrix_cmd_tester');
+    var $opt = $sel.find('option:selected');
+    var subType = $opt.data('subtype') || 'other';
+    var logicalId = $opt.data('logicalid') || '';
+    var meta = awtrixGetCmdTesterMeta(logicalId);
+
+    $('#in_awtrix_cmd_tester_msg').hide().val('');
+    $('#in_awtrix_cmd_tester_slider').hide();
+
+    if (subType === 'slider') {
+        var minV = $opt.data('min');
+        var maxV = $opt.data('max');
+        $('#in_awtrix_cmd_tester_slider')
+            .attr('min', minV !== undefined && minV !== '' ? minV : 0)
+            .attr('max', maxV !== undefined && maxV !== '' ? maxV : 100)
+            .val(50)
+            .show();
+    } else if (subType === 'message') {
+        $('#in_awtrix_cmd_tester_msg')
+            .attr('placeholder', meta.placeholder || '{{Valor o parámetro...}}')
+            .show();
+    }
+
+    $('#div_awtrix_cmd_tester_help').html('<i class="fas fa-info-circle"></i> ' + meta.desc).show();
+
+    var $presets = $('#div_awtrix_cmd_tester_presets').empty();
+    if (meta.presets && meta.presets.length > 0) {
+        meta.presets.forEach(function(p) {
+            var $btn = $('<button type="button" class="btn btn-xs btn-default"></button>')
+                .text(p.label)
+                .on('click', function() {
+                    if (subType === 'slider') {
+                        $('#in_awtrix_cmd_tester_slider').val(p.value);
+                    } else {
+                        $('#in_awtrix_cmd_tester_msg').val(p.value).focus();
+                    }
+                });
+            $presets.append($btn);
+        });
+        $presets.css('display', 'flex');
+    } else {
+        $presets.hide();
+    }
+}
+
+function awtrixInitCmdTester(_eqLogic) {
+    var $box = $('#awtrix_cmd_tester_box');
+    var $sel = $('#sel_awtrix_cmd_tester');
+    $sel.empty();
+
+    if (!_eqLogic || !_eqLogic.cmd || !_eqLogic.cmd.length) {
+        $box.hide();
+        return;
+    }
+
+    var actionCmds = _eqLogic.cmd.filter(function(c) {
+        return c.type === 'action';
+    });
+
+    if (!actionCmds.length) {
+        $box.hide();
+        return;
+    }
+
+    actionCmds.forEach(function(c) {
+        var label = c.name + (c.logicalId ? ' (' + c.logicalId + ')' : '');
+        var $opt = $('<option></option>')
+            .val(c.id)
+            .text(label)
+            .data('subtype', c.subType || 'other')
+            .data('logicalid', c.logicalId || '')
+            .data('min', c.configuration && c.configuration.minValue !== undefined ? c.configuration.minValue : '')
+            .data('max', c.configuration && c.configuration.maxValue !== undefined ? c.configuration.maxValue : '');
+        $sel.append($opt);
+    });
+
+    $box.show();
+    awtrixUpdateCmdTesterUI();
+}
+
+$(document).off('change.awtrixTester', '#sel_awtrix_cmd_tester').on('change.awtrixTester', '#sel_awtrix_cmd_tester', function() {
+    awtrixUpdateCmdTesterUI();
+});
+
+$(document).off('click.awtrixTester', '#btn_awtrix_cmd_tester_run').on('click.awtrixTester', '#btn_awtrix_cmd_tester_run', function() {
+    var $sel = $('#sel_awtrix_cmd_tester');
+    var cmdId = $sel.val();
+    if (!cmdId) return;
+
+    var $opt = $sel.find('option:selected');
+    var subType = $opt.data('subtype') || 'other';
+    var execValue = {};
+
+    if (subType === 'slider') {
+        execValue = { slider: $('#in_awtrix_cmd_tester_slider').val() };
+    } else if (subType === 'message') {
+        execValue = { title: '', message: $('#in_awtrix_cmd_tester_msg').val() };
+    }
+
+    jeedom.cmd.execute({
+        id: cmdId,
+        value: execValue,
+        error: function(error) {
+            $('#div_alert').showAlert({message: error.message || error, level: 'danger'});
+        },
+        success: function() {
+            $('#div_alert').showAlert({message: '{{Comando ejecutado correctamente}}', level: 'success'});
+        }
     });
 });

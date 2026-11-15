@@ -50,6 +50,28 @@ if (!isConnect()) {
             </div>
         </div>
     </fieldset>
+    <fieldset>
+        <legend><i class="fas fa-tools"></i> {{Modo Mantenimiento}}</legend>
+        <div class="form-group">
+            <label class="col-sm-3 control-label">{{Acciones Globales de Mantenimiento}}</label>
+            <div class="col-sm-8">
+                <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px;">
+                    <a class="btn btn-sm btn-info" id="bt_cfg_reloadAllCommands"><i class="fas fa-terminal"></i> {{Recargar comandos (Todos los Paneles)}}</a>
+                    <a class="btn btn-sm btn-warning" id="bt_cfg_refreshAllPanels"><i class="fas fa-sync-alt"></i> {{Refrescar y Re-detectar Firmware (Todos)}}</a>
+                    <a class="btn btn-sm btn-success" id="bt_cfg_syncAllApps"><i class="fas fa-layer-group"></i> {{Sincronizar Carrusel (Todos los Paneles)}}</a>
+                </div>
+                <span class="help-block" style="margin-bottom: 0;">{{Recarga los comandos por defecto sin perder escenarios ni configuraciones, fuerza la detección de firmware (AWTRIX NG / AWTRIX 3) o sincroniza las apps de carrusel en todos los paneles habilitados.}}</span>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-sm-11 col-sm-offset-1">
+                <div class="alert alert-warning" style="margin-top: 8px; margin-bottom: 0; font-size: 12px;">
+                    <i class="fas fa-exclamation-triangle"></i> <strong>{{Aviso Legal y Exención de Responsabilidad}}</strong>:
+                    {{Este plugin es un desarrollo comunitario independiente y se ofrece «TAL CUAL», sin garantías de ningún tipo. Puede contener errores o comportamientos inesperados (tanto con firmware AWTRIX NG como con AWTRIX 3). Los autores no se hacen responsables de posibles fallos de funcionamiento, pérdida de datos, bloqueos de pantalla ni de ningún daño directo o indirecto derivado de su uso. Úsalo bajo tu propia responsabilidad y realiza copias de seguridad periódicas.}}
+                </div>
+            </div>
+        </div>
+    </fieldset>
 </form>
 
 <script>
@@ -78,5 +100,48 @@ $('#bt_cfg_backupAll').on('click', function() {
             $('#div_alert').showAlert({message: '{{Copia de seguridad guardada en el servidor y descargada correctamente: }} ' + filename, level: 'success'});
         }
     });
+});
+
+function awtrixRunMaintenanceAction($btn, action, okPrefix) {
+    var oldHtml = $btn.html();
+    $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> ' + '{{Ejecutando...}}');
+    $.ajax({
+        type: 'POST',
+        url: 'plugins/awtrixng/core/ajax/awtrixng.ajax.php',
+        data: { action: action },
+        dataType: 'json',
+        error: function(request, status, error) {
+            $btn.prop('disabled', false).html(oldHtml);
+            handleAjaxError(request, status, error);
+        },
+        success: function(data) {
+            $btn.prop('disabled', false).html(oldHtml);
+            if (data.state != 'ok') {
+                $('#div_alert').showAlert({message: data.result, level: 'danger'});
+                return;
+            }
+            var res = data.result || {};
+            var count = res.updated !== undefined ? res.updated : (res.refreshed !== undefined ? res.refreshed : (res.synced || 0));
+            var msg = okPrefix + ' (' + count + ')';
+            if (res.errors && res.errors.length > 0) {
+                msg += ' — {{Errores}}: ' + res.errors.join(' | ');
+                $('#div_alert').showAlert({message: msg, level: 'warning'});
+            } else {
+                $('#div_alert').showAlert({message: msg, level: 'success'});
+            }
+        }
+    });
+}
+
+$('#bt_cfg_reloadAllCommands').on('click', function() {
+    awtrixRunMaintenanceAction($(this), 'reloadAllCommands', '{{Comandos recargados correctamente en paneles}}');
+});
+
+$('#bt_cfg_refreshAllPanels').on('click', function() {
+    awtrixRunMaintenanceAction($(this), 'refreshAllPanels', '{{Paneles refrescados y re-detectados}}');
+});
+
+$('#bt_cfg_syncAllApps').on('click', function() {
+    awtrixRunMaintenanceAction($(this), 'syncAllApps', '{{Carrusel sincronizado en paneles}}');
 });
 </script>

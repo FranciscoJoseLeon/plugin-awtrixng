@@ -413,6 +413,26 @@ foreach ($eqLogics as $eqLogicItem) {
 
                     </fieldset>
                 </form>
+
+                <!-- Interactive Command Tester -->
+                <div class="well well-sm" id="awtrix_cmd_tester_box" style="margin-top: 15px; border-left: 4px solid #5bc0de; display: none;">
+                    <div style="margin-bottom: 8px;">
+                        <h4 style="margin: 0 0 4px 0;"><i class="fas fa-vial text-info"></i> {{Prueba los comandos disponibles}}</h4>
+                        <span class="help-block" style="margin: 0; font-size: 12px;">{{Selecciona cualquier comando de la lista para ver su utilidad, compatibilidad (AWTRIX NG / AWTRIX 3) y probarlo directamente en este panel.}}</span>
+                    </div>
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 8px;">
+                        <select class="form-control input-sm" id="sel_awtrix_cmd_tester" style="min-width: 240px; max-width: 340px;"></select>
+                        <div id="div_awtrix_cmd_tester_inputs" style="flex: 1; min-width: 220px; display: flex; gap: 6px; align-items: center;">
+                            <input type="text" class="form-control input-sm" id="in_awtrix_cmd_tester_msg" placeholder="{{Valor o parámetro...}}" style="display: none; width: 100%;" />
+                            <input type="number" class="form-control input-sm" id="in_awtrix_cmd_tester_slider" min="0" max="100" value="50" style="display: none; max-width: 120px;" />
+                        </div>
+                        <button type="button" class="btn btn-sm btn-primary" id="btn_awtrix_cmd_tester_run">
+                            <i class="fas fa-play"></i> {{Probar ahora}}
+                        </button>
+                    </div>
+                    <div id="div_awtrix_cmd_tester_help" class="alert alert-info" style="margin-bottom: 0; padding: 8px 12px; font-size: 12px; display: none;"></div>
+                    <div id="div_awtrix_cmd_tester_presets" style="display: none; gap: 6px; flex-wrap: wrap; margin-top: 8px;"></div>
+                </div>
             </div>
 
             <!-- Tab 2: Panel-Specific Information / Carousel Apps -->
