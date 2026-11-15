@@ -1,18 +1,14 @@
-# Changelog Plugin Awtrix NG / Light
+# Journal des Modifications (Changelog) - Plugin Awtrix NG / Awtrix 3
 
->**IMPORTANT**
+> **IMPORTANT**
 >
->S'il n'y a pas d'information sur la mise à jour, c'est que celle-ci concerne uniquement de la mise à jour de documentation, de traduction ou de texte.
+> S'il n'y a pas d'information spécifique sur une mise à jour, il s'agit uniquement d'améliorations de documentation, de traductions ou de textes mineurs.
 
-# Version 0.9.0 (04/11/2026) - Version Bêta / RC
+## Version 0.9.0 (15/11/2026) - Version Bêta
 
-- Version préliminaire pour tests et validation communautaire du plugin Awtrix NG pour Jeedom v4.
-- Compatibilité native avec horloges matricielles LED 32×8 (Ulanzi TC001 et matrices DIY WS2812B), 52×16 (Ulanzi TC002) et DIY (32×8 à 128×8).
-- Auto-détection du matériel, de la taille d'écran et des capteurs physiques (Batterie, Lux LDR, Température, Humidité, Audio/TTS).
-- Simulateur de matrice LED 1:1 fidèle au panneau configuré avec châssis de commandes et mode streaming "En Direct" (/api/v1/display/screen).
-- Sélecteur visuel d'icônes avec filtrage intelligent de résolution (masque les icônes 16×16 HD sur les écrans à 8 lignes).
-- Publication simplifiée de notifications (Zero-JSON) et bouton "Sauvegarder comme Commande" pour créer des actions en 1 clic.
-- Carrousel continu pour faire défiler les capteurs Jeedom sans scénarios complexes.
-- Sauvegarde et restauration (Backup / Restore) au format JSON et copie de configuration entre panneaux.
-- Communication 100% directe en HTTP REST API (sans broker MQTT requis).
-- Documentation complète en français, espagnol et anglais.
+- **Compatibilité complète AWTRIX NG et AWTRIX 3 / Legacy** : détection automatique du firmware et de la matrice, routage audio intelligent (`/api/sound` pour MP3 et `/api/rtttl` pour RTTTL sur AWTRIX 3), capture d'écran en direct (`/api/v1/display/screen` et `/api/screen`) et message clair pour `tts` (exclusif AWTRIX NG).
+- **Widget personnalisé sur le Dashboard** (thème sombre + accent ambre LED) : lien direct vers le panneau, statut, badge firmware/résolution, télémétrie disponible, app active, contrôles rapides (app précédente, allumer/éteindre, fermer notification, app suivante), luminosité et sélecteur de toutes les commandes avec liste des sons.
+- **Testeur interactif de commandes et Visualiseur en direct par panneau** : adapté au firmware et à la résolution exacte (`32×8`, `52×16`, `DIY`), avec rafraîchissement fluide et listes déroulantes pour les sons disponibles, les icônes installées et les couleurs.
+- **Sélecteur de modèle simplifié** : n'affiche que le modèle correspondant au panneau avec le bouton **Changer de modèle**.
+- **Mode Maintenance et Clause de non-responsabilité** : rechargement global des commandes, re-détection du firmware et synchronisation du carrousel sur tous les panneaux depuis la configuration du plugin.
+- **Traductions et manuels complets** en espagnol, français et anglais.

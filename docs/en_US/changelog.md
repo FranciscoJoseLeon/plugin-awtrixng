@@ -1,18 +1,14 @@
-# Changelog Plugin Awtrix NG / Light
+# Changelog - Awtrix NG / Awtrix 3 Plugin
 
->**IMPORTANT**
+> **IMPORTANT**
 >
->If there is no specific information about an update, it only concerns minor documentation, translation, or text improvements.
+> If there is no specific information about an update, it is solely due to documentation, translation, or minor text improvements.
 
-# Version 0.9.0 (04/11/2026) - Beta / Release Candidate
+## Version 0.9.0 (2026-11-15) - Beta Release
 
-- Preliminary community testing release of the Awtrix NG plugin for Jeedom v4.
-- Native compatibility with 32×8 LED pixel matrix clocks (Ulanzi TC001, DIY WS2812B), 52×16 (Ulanzi TC002), and custom DIY sizes (32×8 to 128×8).
-- Automatic hardware, screen size, and physical sensor detection (Battery, LDR Lux, Temperature, Humidity, Audio/TTS).
-- Authentic 1:1 hardware matrix simulator with interactive control chassis and live pixel streaming (/api/v1/display/screen).
-- Visual Icon Picker with automatic resolution filtering (hides 16×16 HD icons on 8-row displays).
-- Simplified notification workflow (Zero-JSON) and "Save as Command" button to create 1-click Jeedom action buttons.
-- Continuous carousel information builder for rotating Jeedom sensor data without complex scenarios.
-- Panel-to-panel configuration copying and complete JSON backup/restore tool.
-- 100% native HTTP REST API communication (no MQTT broker required).
-- Complete documentation available in English, Spanish, and French.
+- **Full AWTRIX NG & AWTRIX 3 / Legacy Compatibility**: automatic firmware and matrix detection, smart audio routing (`/api/sound` for MP3 and `/api/rtttl` for RTTTL on AWTRIX 3), live screen capture (`/api/v1/display/screen` and `/api/screen`), and clear notice for `tts` (AWTRIX NG only).
+- **Custom Dashboard Widget** (dark chassis + amber LED accent): direct link to panel, online status, firmware/resolution badge, available telemetry, current app, quick controls (previous app, display power toggle, dismiss notification, next app), brightness slider, and universal command selector with sound dropdown.
+- **Per-Panel Interactive Command Tester & Live Visualizer**: tailored to each panel's firmware and exact pixel resolution (`32×8`, `52×16`, `DIY`), featuring smooth non-overlapping live refresh and dropdowns for available sounds, installed icons, and colors.
+- **Streamlined Model Selector**: shows only the active panel model with a **Change model** toggle button.
+- **Maintenance Mode & Disclaimer**: global command reload, firmware re-detection, and carousel sync across all panels from plugin configuration.
+- **Complete trilingual translations & manuals** in Spanish, French, and English.
