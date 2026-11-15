@@ -1,0 +1,40 @@
+name: Awtrix API & Firmware Watcher
+
+on:
+  schedule:
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+
+jobs:
+  check-awtrix-api:
+    name: Check Awtrix NG & Awtrix 3 API updates
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Check Blueforcer/awtrix-ng and Blueforcer/awtrix3
+        id: checker
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python tools/check_api_updates.py
+
+      - name: Create issue on Awtrix API changes
+        if: steps.checker.outputs.changes_detected == 'true'
+        uses: peter-evans/create-issue-from-file@v5
+        with:
+          title: "🔔 [Awtrix API] Cambios detectados (${{ steps.checker.outputs.summary_tags }})"
+          content-filepath: ./tools/last_api_report.md
+          labels: |
+            api-update
+          assignees: ${{ github.repository_owner }}
