@@ -2128,7 +2128,8 @@ class awtrixng extends eqLogic {
         $errors = array();
         foreach (eqLogic::byType('awtrixng') as $eqLogic) {
             try {
-                $eqLogic->createDefaultCommands();
+                $eqLogic->createCommands();
+                $eqLogic->fixCommandTypes();
                 $updated++;
             } catch (Exception $e) {
                 $errors[] = $eqLogic->getHumanName() . ': ' . $e->getMessage();
