@@ -1,0 +1,305 @@
+<div class="eqLogic eqLogic-widget awtrix-widget #custom_layout# #eqLogic_class#" data-eqType="#eqType#" data-eqLogic_id="#id#" data-version="#version#" data-translate-category="#translate_category#" data-category="#category#" data-tags="#tags#" style="width: #width#;height: #height#;#style#">
+    <center class="widget-name">
+        <span class="warning" title="#alert_name#">
+            <i class='#alert_icon#'></i>
+        </span>
+        <span class="cmd refresh pull-right cursor" data-cmd_id="#refresh_id#">
+            <i class="fas fa-sync"></i>
+        </span>
+        <span class="reportModeVisible">#name_display# <span class="object_name">#object_name#</span></span>
+        <a href="#eqLogic_href#" class="reportModeHidden">#name_display# <span class="object_name">#object_name#</span></a>
+    </center>
+
+    <div class="awtrix-card-content">
+        <!-- CABECERA: ESTADO Y FIRMWARE -->
+        <div class="awtrix-header-row">
+            <div class="awtrix-status-badge">#status_display#</div>
+            <div class="awtrix-fw-badge">#fw_badge#</div>
+        </div>
+
+        <!-- TELEMETRÍA DEL PANEL (solo sensores disponibles) -->
+        <div class="awtrix-telemetry-row" style="#telemetry_style#">
+            #telemetry_badges#
+        </div>
+
+        <!-- APP ACTUAL Y CONTROLES RÁPIDOS DE PANTALLA -->
+        <div class="awtrix-display-section">
+            <div class="awtrix-app-info" title="{{Aplicación actual en pantalla}}">
+                <i class="fas fa-tv" style="color: #F59E0B;"></i>
+                <span class="awtrix-current-app">#current_app#</span>
+            </div>
+            <div class="awtrix-display-controls">
+                <button type="button" class="btn btn-default btn-circle btn-sm cmd-btn-awtrix" data-cmd_id="#prev_app_id#" title="{{App anterior}}">
+                    <i class="fas fa-step-backward"></i>
+                </button>
+                <button type="button" class="btn btn-warning btn-circle cmd-btn-awtrix #power_btn_class#" data-cmd_id="#toggle_power_id#" title="{{Encender / Apagar pantalla}}">
+                    <i class="fas fa-power-off"></i>
+                </button>
+                <button type="button" class="btn btn-default btn-circle btn-sm cmd-btn-awtrix" data-cmd_id="#dismiss_notif_id#" title="{{Descartar notificación}}">
+                    <i class="fas fa-bell-slash"></i>
+                </button>
+                <button type="button" class="btn btn-default btn-circle btn-sm cmd-btn-awtrix" data-cmd_id="#next_app_id#" title="{{Siguiente app}}">
+                    <i class="fas fa-step-forward"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- CONTROL DE BRILLO -->
+        <div class="awtrix-slider-row" title="{{Brillo de la matriz LED}}">
+            <i class="fas fa-sun awtrix-slider-icon"></i>
+            <input type="range" class="awtrix-brightness-slider" min="0" max="100" value="#brightness#" data-cmd_id="#set_brightness_id#" />
+            <span class="awtrix-slider-val">#brightness#%</span>
+        </div>
+
+        <!-- SELECTOR DE TODOS LOS COMANDOS DEL PANEL -->
+        <div class="awtrix-quick-action-row">
+            <div style="display: flex; gap: 4px; align-items: center;">
+                <select class="form-control input-sm awtrix-widget-cmd-select" style="flex: 1;" title="{{Seleccionar comando}}">
+                    #cmd_options#
+                </select>
+                <a href="#eqLogic_href#" class="btn btn-xs btn-default awtrix-btn-help-link reportModeHidden" title="{{Ayuda, configuración y visualizador}}">
+                    <i class="fas fa-question-circle"></i>
+                </a>
+            </div>
+            <div class="input-group input-group-sm" style="margin-top: 4px;">
+                <input type="text" class="form-control awtrix-input-text" placeholder="{{Texto o JSON de notificación...}}" />
+                <select class="form-control awtrix-input-select" style="display: none;"></select>
+                <input type="number" class="form-control awtrix-input-slider" min="0" max="100" value="#brightness#" style="display: none;" />
+                <div class="input-group-btn">
+                    <button type="button" class="btn btn-warning awtrix-btn-run-selected" title="{{Ejecutar comando}}">
+                        <i class="fas fa-play"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .awtrix-widget {
+            background: linear-gradient(145deg, rgba(35, 33, 30, 0.96), rgba(20, 19, 18, 0.98)) !important;
+            border-radius: 12px !important;
+            border-top: 3px solid #F59E0B !important;
+            color: #EAE6DF !important;
+            padding: 8px 12px !important;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.35);
+        }
+        .awtrix-card-content {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 5px;
+        }
+        .awtrix-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 6px;
+        }
+        .awtrix-telemetry-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            justify-content: center;
+        }
+        .awtrix-tel-pill {
+            background: rgba(245, 158, 11, 0.12);
+            border: 1px solid rgba(245, 158, 11, 0.28);
+            color: #FCD34D;
+            border-radius: 10px;
+            padding: 1px 7px;
+            font-size: 10.5px;
+        }
+        .awtrix-display-section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 6px;
+            text-align: center;
+        }
+        .awtrix-app-info {
+            font-size: 11px;
+            margin-bottom: 5px;
+            color: #D6CFC5;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .awtrix-display-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+        }
+        .cmd-btn-awtrix {
+            border-radius: 50% !important;
+            width: 32px;
+            height: 32px;
+            padding: 0 !important;
+            line-height: 32px !important;
+        }
+        .cmd-btn-awtrix.awtrix-power-on {
+            background-color: #F59E0B !important;
+            border-color: #F59E0B !important;
+            color: #111 !important;
+            width: 36px;
+            height: 36px;
+            line-height: 36px !important;
+        }
+        .cmd-btn-awtrix.awtrix-power-off {
+            background-color: #44403C !important;
+            border-color: #57534E !important;
+            color: #D6D3D1 !important;
+            width: 36px;
+            height: 36px;
+            line-height: 36px !important;
+        }
+        .awtrix-slider-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+        }
+        .awtrix-slider-icon {
+            color: #F59E0B;
+        }
+        .awtrix-brightness-slider {
+            flex-grow: 1;
+            height: 4px;
+            accent-color: #F59E0B;
+            cursor: pointer;
+        }
+        .awtrix-slider-val {
+            min-width: 34px;
+            text-align: right;
+            font-weight: bold;
+            color: #F59E0B;
+        }
+        .awtrix-quick-action-row .awtrix-widget-cmd-select {
+            background: rgba(255, 255, 255, 0.12) !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            color: #FFF !important;
+            border-radius: 4px !important;
+            font-size: 11px !important;
+            height: 26px !important;
+            padding: 2px 6px !important;
+        }
+        .awtrix-quick-action-row .awtrix-widget-cmd-select option,
+        .awtrix-quick-action-row .awtrix-input-select option {
+            background: #23211E;
+            color: #FFF;
+        }
+        .awtrix-quick-action-row .awtrix-btn-help-link {
+            background: rgba(245, 158, 11, 0.15) !important;
+            border: 1px solid rgba(245, 158, 11, 0.35) !important;
+            color: #F59E0B !important;
+            height: 26px;
+            line-height: 22px;
+            padding: 1px 7px;
+            border-radius: 4px !important;
+        }
+        .awtrix-quick-action-row .awtrix-btn-help-link:hover {
+            background: rgba(245, 158, 11, 0.3) !important;
+            color: #FFF !important;
+        }
+        .awtrix-quick-action-row .form-control.awtrix-input-text,
+        .awtrix-quick-action-row .form-control.awtrix-input-select,
+        .awtrix-quick-action-row .form-control.awtrix-input-slider {
+            background: rgba(255, 255, 255, 0.1) !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            color: #FFF !important;
+            border-radius: 4px 0 0 4px !important;
+        }
+    </style>
+
+    <script>
+        (function() {
+            var $widget = $('.awtrix-widget[data-eqLogic_id=#id#]');
+
+            function syncAwtrixWidgetCmdInput() {
+                var $opt = $widget.find('.awtrix-widget-cmd-select option:selected');
+                var sub = $opt.attr('data-subtype') || 'other';
+                var ph = $opt.attr('data-placeholder') || '';
+                var optsRaw = $opt.attr('data-options') || '';
+                var $txt = $widget.find('.awtrix-input-text');
+                var $selOpt = $widget.find('.awtrix-input-select');
+                var $sld = $widget.find('.awtrix-input-slider');
+                $txt.hide();
+                $selOpt.hide().empty();
+                $sld.hide();
+
+                if (optsRaw) {
+                    try {
+                        var parsed = JSON.parse(optsRaw);
+                        if (Array.isArray(parsed) && parsed.length > 0) {
+                            parsed.forEach(function(item) {
+                                $selOpt.append($('<option></option>').val(item.value).text(item.label));
+                            });
+                            $selOpt.show();
+                            return;
+                        }
+                    } catch (e) {}
+                }
+
+                if (sub === 'message') {
+                    $txt.attr('placeholder', ph).show();
+                } else if (sub === 'slider') {
+                    $sld.show();
+                }
+            }
+
+            syncAwtrixWidgetCmdInput();
+
+            $widget.find('.awtrix-widget-cmd-select').off('change').on('change', function() {
+                syncAwtrixWidgetCmdInput();
+            });
+
+            $widget.find('.cmd-btn-awtrix').off('click').on('click', function() {
+                var cmdId = $(this).attr('data-cmd_id');
+                if (cmdId) {
+                    jeedom.cmd.execute({id: cmdId});
+                }
+            });
+
+            $widget.find('.awtrix-brightness-slider').off('change').on('change', function() {
+                var cmdId = $(this).attr('data-cmd_id');
+                var val = $(this).val();
+                $(this).siblings('.awtrix-slider-val').text(val + '%');
+                if (cmdId) {
+                    jeedom.cmd.execute({id: cmdId, value: {slider: val}});
+                }
+            });
+
+            function runSelectedAwtrixWidgetCmd() {
+                var $opt = $widget.find('.awtrix-widget-cmd-select option:selected');
+                var cmdId = $opt.val();
+                var sub = $opt.attr('data-subtype') || 'other';
+                if (!cmdId) return;
+
+                var $selOpt = $widget.find('.awtrix-input-select');
+                if ($selOpt.is(':visible')) {
+                    var optVal = $selOpt.val();
+                    if (!optVal) return;
+                    jeedom.cmd.execute({id: cmdId, value: {title: '', message: optVal}});
+                } else if (sub === 'message') {
+                    var $txt = $widget.find('.awtrix-input-text');
+                    var text = $txt.val().trim();
+                    if (!text) return;
+                    jeedom.cmd.execute({id: cmdId, value: {title: '', message: text}});
+                    $txt.val('');
+                } else if (sub === 'slider') {
+                    var sVal = $widget.find('.awtrix-input-slider').val();
+                    jeedom.cmd.execute({id: cmdId, value: {slider: sVal}});
+                } else {
+                    jeedom.cmd.execute({id: cmdId});
+                }
+            }
+
+            $widget.find('.awtrix-btn-run-selected').off('click').on('click', runSelectedAwtrixWidgetCmd);
+            $widget.find('.awtrix-input-text').off('keypress').on('keypress', function(e) {
+                if (e.which === 13) {
+                    e.preventDefault();
+                    runSelectedAwtrixWidgetCmd();
+                }
+            });
+        })();
+    </script>
+</div>

@@ -1062,7 +1062,20 @@
         "Tono arcade retro de Pacman.": "Tono arcade retro de Pacman.",
         "Tono oscilante bitonal de alta intensidad.": "Tono oscilante bitonal de alta intensidad.",
         "Éxito / Tarea Completada": "Éxito / Tarea Completada",
-        "El comando TTS (voz) solo está disponible en firmware AWTRIX NG (no soportado por AWTRIX 3).": "El comando TTS (voz) solo está disponible en firmware AWTRIX NG (no soportado por AWTRIX 3)."
+        "El comando TTS (voz) solo está disponible en firmware AWTRIX NG (no soportado por AWTRIX 3).": "El comando TTS (voz) solo está disponible en firmware AWTRIX NG (no soportado por AWTRIX 3).",
+        "Aplicación actual en pantalla": "Aplicación actual en pantalla",
+        "App anterior": "App anterior",
+        "Encender / Apagar pantalla": "Encender / Apagar pantalla",
+        "Descartar notificación": "Descartar notificación",
+        "Siguiente app": "Siguiente app",
+        "Brillo de la matriz LED": "Brillo de la matriz LED",
+        "Seleccionar comando": "Seleccionar comando",
+        "Ayuda, configuración y visualizador": "Ayuda, configuración y visualizador",
+        "Ejecutar comando": "Ejecutar comando",
+        "Reloj / Carrusel": "Reloj / Carrusel",
+        "Online": "En línea",
+        "Offline": "Desconectado",
+        "Sonido MP3 o RTTTL...": "Sonido MP3 o RTTTL..."
     },
     "plugins/awtrixng/core/ajax/awtrixng.ajax.php": {
         "401 - Acceso no autorizado": "401 - Acceso no autorizado",
@@ -1107,5 +1120,20 @@
         "Solo se admiten archivos de audio .mp3 o .wav": "Solo se admiten archivos de audio .mp3 o .wav",
         "Sonido enviado al reloj": "Sonido enviado al reloj"
     },
-    "App desactivada y eliminada del carrusel.": "App desactivada y eliminada del carrusel."
+    "App desactivada y eliminada del carrusel.": "App desactivada y eliminada del carrusel.",
+    "plugins/awtrixng/core/template/dashboard/awtrixng.html": {
+        "Aplicación actual en pantalla": "Aplicación actual en pantalla",
+        "App anterior": "App anterior",
+        "Encender / Apagar pantalla": "Encender / Apagar pantalla",
+        "Descartar notificación": "Descartar notificación",
+        "Siguiente app": "Siguiente app",
+        "Brillo de la matriz LED": "Brillo de la matriz LED",
+        "Seleccionar comando": "Seleccionar comando",
+        "Ayuda, configuración y visualizador": "Ayuda, configuración y visualizador",
+        "Ejecutar comando": "Ejecutar comando",
+        "Reloj / Carrusel": "Reloj / Carrusel",
+        "Online": "En línea",
+        "Offline": "Desconectado",
+        "Sonido MP3 o RTTTL...": "Sonido MP3 o RTTTL..."
+    }
 }

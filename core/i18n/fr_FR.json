@@ -1062,7 +1062,20 @@
         "Tono arcade retro de Pacman.": "Tonalité d'arcade rétro Pacman.",
         "Tono oscilante bitonal de alta intensidad.": "Tonalité oscillante bitonale de haute intensité.",
         "Éxito / Tarea Completada": "Succès / Tâche Terminée",
-        "El comando TTS (voz) solo está disponible en firmware AWTRIX NG (no soportado por AWTRIX 3).": "La commande TTS (voix) est uniquement disponible sur le firmware AWTRIX NG (non supportée par AWTRIX 3)."
+        "El comando TTS (voz) solo está disponible en firmware AWTRIX NG (no soportado por AWTRIX 3).": "La commande TTS (voix) est uniquement disponible sur le firmware AWTRIX NG (non supportée par AWTRIX 3).",
+        "Aplicación actual en pantalla": "Application actuelle à l’écran",
+        "App anterior": "App précédente",
+        "Encender / Apagar pantalla": "Allumer / Éteindre l’écran",
+        "Descartar notificación": "Fermer la notification",
+        "Siguiente app": "App suivante",
+        "Brillo de la matriz LED": "Luminosité de la matrice LED",
+        "Seleccionar comando": "Sélectionner une commande",
+        "Ayuda, configuración y visualizador": "Aide, configuration et visualiseur",
+        "Ejecutar comando": "Exécuter la commande",
+        "Reloj / Carrusel": "Horloge / Carrousel",
+        "Online": "En ligne",
+        "Offline": "Hors ligne",
+        "Sonido MP3 o RTTTL...": "Son MP3 ou RTTTL..."
     },
     "plugins/awtrixng/core/ajax/awtrixng.ajax.php": {
         "401 - Acceso no autorizado": "401 - Accès non autorisé",
@@ -1107,5 +1120,20 @@
         "Solo se admiten archivos de audio .mp3 o .wav": "Seuls les fichiers audio .mp3 ou .wav sont acceptés",
         "Sonido enviado al reloj": "Son envoyé à l'horloge"
     },
-    "App desactivada y eliminada del carrusel.": "App désactivée et supprimée du carrousel."
+    "App desactivada y eliminada del carrusel.": "App désactivée et supprimée du carrousel.",
+    "plugins/awtrixng/core/template/dashboard/awtrixng.html": {
+        "Aplicación actual en pantalla": "Application actuelle à l’écran",
+        "App anterior": "App précédente",
+        "Encender / Apagar pantalla": "Allumer / Éteindre l’écran",
+        "Descartar notificación": "Fermer la notification",
+        "Siguiente app": "App suivante",
+        "Brillo de la matriz LED": "Luminosité de la matrice LED",
+        "Seleccionar comando": "Sélectionner une commande",
+        "Ayuda, configuración y visualizador": "Aide, configuration et visualiseur",
+        "Ejecutar comando": "Exécuter la commande",
+        "Reloj / Carrusel": "Horloge / Carrousel",
+        "Online": "En ligne",
+        "Offline": "Hors ligne",
+        "Sonido MP3 o RTTTL...": "Son MP3 ou RTTTL..."
+    }
 }

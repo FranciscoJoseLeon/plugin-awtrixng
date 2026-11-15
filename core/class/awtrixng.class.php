@@ -2175,6 +2175,120 @@ class awtrixng extends eqLogic {
         log::add('awtrixng', 'info', "Mantenimiento: carrusel sincronizado en {$synced} panel(es).");
         return array('synced' => $synced, 'errors' => $errors);
     }
+
+    public function toHtml($_version = 'dashboard') {
+        $replace = $this->preToHtml($_version);
+        if (!is_array($replace)) {
+            return $replace;
+        }
+        $version = jeedom::versionAlias($_version);
+        if ($version !== 'dashboard') {
+            return parent::toHtml($_version);
+        }
+        $replace['#eqLogic_href#'] = $this->getLinkToConfiguration();
+
+        $onlineCmd = $this->getCmd('info', 'online');
+        $isOnline = (!is_object($onlineCmd) || $onlineCmd->execCmd() == 1);
+        $replace['#status_display#'] = $isOnline
+            ? '<span class="label label-success" style="font-size:10px;"><i class="fas fa-wifi"></i> ' . __('Online', __FILE__) . '</span>'
+            : '<span class="label label-danger" style="font-size:10px;"><i class="fas fa-times-circle"></i> ' . __('Offline', __FILE__) . '</span>';
+
+        $apiVer = $this->getConfiguration('api_version', 'v1');
+        $isLegacy = ($apiVer === 'legacy');
+        $w = intval($this->getConfiguration('matrix_width', 32)) ?: 32;
+        $h = intval($this->getConfiguration('matrix_height', 8)) ?: 8;
+        $fwLabel = ($isLegacy ? 'AWTRIX 3' : 'AWTRIX NG') . " · {$w}×{$h}";
+        $fwClass = $isLegacy ? 'label-warning' : 'label-info';
+        $replace['#fw_badge#'] = '<span class="label ' . $fwClass . '" style="font-size:10px;">' . htmlspecialchars($fwLabel) . '</span>';
+
+        $powerCmd = $this->getCmd('info', 'power_state');
+        $isPowerOn = (!is_object($powerCmd) || $powerCmd->execCmd() == 1);
+        $replace['#power_btn_class#'] = $isPowerOn ? 'awtrix-power-on' : 'awtrix-power-off';
+
+        $briCmd = $this->getCmd('info', 'brightness_state');
+        $replace['#brightness#'] = is_object($briCmd) ? intval($briCmd->execCmd()) : 50;
+
+        $appCmd = $this->getCmd('info', 'current_app');
+        $curApp = is_object($appCmd) ? trim((string)$appCmd->execCmd()) : '';
+        $replace['#current_app#'] = ($curApp !== '') ? htmlspecialchars($curApp) : __('Reloj / Carrusel', __FILE__);
+
+        // Telemetry pills (only if command has a value)
+        $telPills = '';
+        $telDefs = array(
+            array('battery', 'fas fa-battery-three-quarters', '%'),
+            array('temperature', 'fas fa-thermometer-half', '°C'),
+            array('humidity', 'fas fa-tint', '%'),
+            array('lux', 'fas fa-sun', ' lx'),
+        );
+        foreach ($telDefs as $td) {
+            $tCmd = $this->getCmd('info', $td[0]);
+            if (is_object($tCmd)) {
+                $val = $tCmd->execCmd();
+                if ($val !== '' && $val !== null) {
+                    $telPills .= '<span class="awtrix-tel-pill"><i class="' . $td[1] . '"></i> ' . htmlspecialchars((string)$val) . $td[2] . '</span>';
+                }
+            }
+        }
+        $replace['#telemetry_badges#'] = $telPills;
+        $replace['#telemetry_style#'] = ($telPills === '') ? 'display:none;' : '';
+
+        $quickIds = array('refresh', 'prev_app', 'toggle_power', 'dismiss_notif', 'next_app', 'set_brightness');
+        foreach ($quickIds as $qid) {
+            $qObj = $this->getCmd('action', $qid);
+            $replace['#' . $qid . '_id#'] = is_object($qObj) ? $qObj->getId() : '';
+        }
+
+        // Sound options for play_sound dropdown
+        $soundOpts = array();
+        if (method_exists(__CLASS__, 'getBuiltinRtttls')) {
+            foreach (self::getBuiltinRtttls() as $m) {
+                if (!empty($m['rtttl'])) {
+                    $soundOpts[] = array('label' => 'RTTTL: ' . ($m['name'] ?? $m['id']), 'value' => $m['rtttl']);
+                }
+            }
+        }
+        foreach ($this->getCustomRtttls() as $cm) {
+            if (!empty($cm['rtttl'])) {
+                $soundOpts[] = array('label' => 'Custom: ' . ($cm['name'] ?? $cm['id']), 'value' => $cm['rtttl']);
+            }
+        }
+        $soundOptsJson = !empty($soundOpts) ? json_encode($soundOpts, JSON_UNESCAPED_UNICODE) : '';
+
+        $placeholders = array(
+            'notify' => __('Texto o JSON de notificación...', __FILE__),
+            'tts' => __('Texto a pronunciar...', __FILE__),
+            'play_sound' => __('Sonido MP3 o RTTTL...', __FILE__),
+            'custom_app' => __('JSON de app personalizada...', __FILE__),
+            'delete_app' => __('Nombre de la app a eliminar...', __FILE__),
+            'set_brightness' => '0 - 100',
+            'set_volume' => '0 - 100',
+        );
+
+        $cmdOptionsHtml = '';
+        $allActions = $this->getCmd('action');
+        if (is_array($allActions)) {
+            foreach ($allActions as $actCmd) {
+                $lid = $actCmd->getLogicalId();
+                if ($isLegacy && $lid === 'tts') {
+                    continue;
+                }
+                $sub = $actCmd->getSubType();
+                $ph = isset($placeholders[$lid]) ? $placeholders[$lid] : __('Valor o parámetro...', __FILE__);
+                $selected = ($lid === 'notify') ? ' selected' : '';
+                $optsAttr = ($lid === 'play_sound' && $soundOptsJson !== '')
+                    ? ' data-options="' . htmlspecialchars($soundOptsJson, ENT_QUOTES, 'UTF-8') . '"'
+                    : '';
+                $cmdOptionsHtml .= '<option value="' . intval($actCmd->getId()) . '" data-subtype="' . htmlspecialchars($sub) . '" data-logical_id="' . htmlspecialchars($lid) . '" data-placeholder="' . htmlspecialchars($ph) . '"' . $optsAttr . $selected . '>' . htmlspecialchars($actCmd->getName()) . '</option>';
+            }
+        }
+        $replace['#cmd_options#'] = $cmdOptionsHtml;
+
+        $tpl = translate::exec(
+            getTemplate('core', $version, 'awtrixng', 'awtrixng'),
+            'plugins/awtrixng/core/template/' . $version . '/awtrixng.html'
+        );
+        return $this->postToHtml($_version, template_replace($replace, $tpl));
+    }
 }
 
 class awtrixngCmd extends cmd {

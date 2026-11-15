@@ -1062,7 +1062,20 @@
         "Tono arcade retro de Pacman.": "Retro Pacman arcade tune.",
         "Tono oscilante bitonal de alta intensidad.": "High-intensity two-tone oscillating siren.",
         "Éxito / Tarea Completada": "Success / Task Completed",
-        "El comando TTS (voz) solo está disponible en firmware AWTRIX NG (no soportado por AWTRIX 3).": "TTS (voice) command is only available on AWTRIX NG firmware (not supported by AWTRIX 3)."
+        "El comando TTS (voz) solo está disponible en firmware AWTRIX NG (no soportado por AWTRIX 3).": "TTS (voice) command is only available on AWTRIX NG firmware (not supported by AWTRIX 3).",
+        "Aplicación actual en pantalla": "Current app on display",
+        "App anterior": "Previous app",
+        "Encender / Apagar pantalla": "Turn display on / off",
+        "Descartar notificación": "Dismiss notification",
+        "Siguiente app": "Next app",
+        "Brillo de la matriz LED": "LED matrix brightness",
+        "Seleccionar comando": "Select command",
+        "Ayuda, configuración y visualizador": "Help, configuration and visualizer",
+        "Ejecutar comando": "Execute command",
+        "Reloj / Carrusel": "Clock / Carousel",
+        "Online": "Online",
+        "Offline": "Offline",
+        "Sonido MP3 o RTTTL...": "MP3 or RTTTL sound..."
     },
     "plugins/awtrixng/core/ajax/awtrixng.ajax.php": {
         "401 - Acceso no autorizado": "401 - Unauthorized access",
@@ -1107,5 +1120,20 @@
         "Solo se admiten archivos de audio .mp3 o .wav": "Only .mp3 or .wav audio files are allowed",
         "Sonido enviado al reloj": "Sound sent to clock"
     },
-    "App desactivada y eliminada del carrusel.": "App disabled and removed from carousel."
+    "App desactivada y eliminada del carrusel.": "App disabled and removed from carousel.",
+    "plugins/awtrixng/core/template/dashboard/awtrixng.html": {
+        "Aplicación actual en pantalla": "Current app on display",
+        "App anterior": "Previous app",
+        "Encender / Apagar pantalla": "Turn display on / off",
+        "Descartar notificación": "Dismiss notification",
+        "Siguiente app": "Next app",
+        "Brillo de la matriz LED": "LED matrix brightness",
+        "Seleccionar comando": "Select command",
+        "Ayuda, configuración y visualizador": "Help, configuration and visualizer",
+        "Ejecutar comando": "Execute command",
+        "Reloj / Carrusel": "Clock / Carousel",
+        "Online": "Online",
+        "Offline": "Offline",
+        "Sonido MP3 o RTTTL...": "MP3 or RTTTL sound..."
+    }
 }
