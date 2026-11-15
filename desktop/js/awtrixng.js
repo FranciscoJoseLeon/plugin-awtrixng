@@ -261,8 +261,7 @@ function hexToRgb24(hex) {
 }
 
 // Exact Awtrix NG He() renderer: 12px per LED cell (11px cell + 1px black gap on #000)
-function renderAwtrixCanvasPixels(pixels, width, height) {
-    var canvas = document.getElementById('awtrix_matrix_canvas');
+function renderAwtrixPixelsToCanvas(canvas, pixels, width, height) {
     if (!canvas) return;
     var cellSize = 12;
     var s = 11;
@@ -271,7 +270,6 @@ function renderAwtrixCanvasPixels(pixels, width, height) {
         canvas.height = height * cellSize;
         canvas.style.aspectRatio = width + ' / ' + height;
     }
-    $('#preview_led_count').text('(' + width + '×' + height + ' · ' + (width * height) + ' LEDs)');
 
     var ctx = canvas.getContext('2d');
     ctx.fillStyle = '#000000';
@@ -285,6 +283,13 @@ function renderAwtrixCanvasPixels(pixels, width, height) {
         }
         ctx.fillRect((o % width) * cellSize, ((o / width) | 0) * cellSize, s, s);
     }
+}
+
+function renderAwtrixCanvasPixels(pixels, width, height) {
+    var canvas = document.getElementById('awtrix_matrix_canvas');
+    if (!canvas) return;
+    $('#preview_led_count').text('(' + width + '×' + height + ' · ' + (width * height) + ' LEDs)');
+    renderAwtrixPixelsToCanvas(canvas, pixels, width, height);
 }
 
 function drawSimulatedMatrixFrame() {
@@ -2849,26 +2854,38 @@ $('#bt_installAllMP3sToClock').on('click', function() {
     });
 });
 
-function awtrixGetCmdTesterMeta(logicalId) {
+window.awtrixTesterContext = {
+    isLegacy: false,
+    apiVersion: 'v1',
+    firmware: '',
+    width: 32,
+    height: 8,
+    hasAudioTts: true,
+    liveTimer: null
+};
+
+function awtrixGetCmdTesterMeta(logicalId, ctx) {
+    var isLegacy = ctx && ctx.isLegacy;
+    var fwLabel = isLegacy ? 'AWTRIX 3 / Legacy' : 'AWTRIX NG';
     var meta = {
         refresh: {
-            desc: '{{Actualiza manualmente el estado, sensores, versión de firmware y app actual del panel (compatible AWTRIX NG y AWTRIX 3).}}',
+            desc: '{{Actualiza manualmente estado, sensores, versión de firmware y app actual en este}} ' + fwLabel + '.',
             presets: []
         },
         power_on: {
-            desc: '{{Enciende la matriz LED del panel (compatible AWTRIX NG y AWTRIX 3).}}',
+            desc: '{{Enciende la matriz LED de este}} ' + fwLabel + '.',
             presets: []
         },
         power_off: {
-            desc: '{{Apaga la matriz LED del panel manteniendo el dispositivo conectado (compatible AWTRIX NG y AWTRIX 3).}}',
+            desc: '{{Apaga la matriz LED manteniendo el dispositivo conectado.}}',
             presets: []
         },
         toggle_power: {
-            desc: '{{Alterna el estado de encendido/apagado de la pantalla (compatible AWTRIX NG y AWTRIX 3).}}',
+            desc: '{{Alterna el estado de encendido/apagado de la pantalla.}}',
             presets: []
         },
         set_brightness: {
-            desc: '{{Ajusta el brillo de la matriz LED de 0 a 100 (compatible AWTRIX NG y AWTRIX 3).}}',
+            desc: '{{Ajusta el brillo de la matriz LED de 0 a 100.}}',
             presets: [
                 { label: '10%', value: '10' },
                 { label: '40%', value: '40' },
@@ -2877,7 +2894,7 @@ function awtrixGetCmdTesterMeta(logicalId) {
             ]
         },
         set_volume: {
-            desc: '{{Ajusta el volumen del altavoz integrado de 0 a 100 (compatible AWTRIX NG y AWTRIX 3).}}',
+            desc: '{{Ajusta el volumen del altavoz integrado de 0 a 100.}}',
             presets: [
                 { label: '0% (Silencio)', value: '0' },
                 { label: '30%', value: '30' },
@@ -2886,41 +2903,52 @@ function awtrixGetCmdTesterMeta(logicalId) {
             ]
         },
         next_app: {
-            desc: '{{Pasa a la siguiente aplicación del carrusel en la pantalla (compatible AWTRIX NG y AWTRIX 3).}}',
+            desc: '{{Pasa a la siguiente aplicación del carrusel en la pantalla.}}',
             presets: []
         },
         prev_app: {
-            desc: '{{Vuelve a la aplicación anterior del carrusel (compatible AWTRIX NG y AWTRIX 3).}}',
+            desc: '{{Vuelve a la aplicación anterior del carrusel.}}',
             presets: []
         },
         reboot: {
-            desc: '{{Reinicia el firmware del panel (compatible AWTRIX NG y AWTRIX 3).}}',
+            desc: '{{Reinicia el firmware de este}} ' + fwLabel + '.',
             presets: []
         },
         notify: {
-            desc: '{{Muestra una notificación temporal en pantalla. Acepta texto simple o JSON completo de notificación (compatible AWTRIX NG y AWTRIX 3).}}',
+            desc: isLegacy
+                ? '{{Muestra una notificación en AWTRIX 3 (/api/notify). Acepta texto simple o JSON con icon, color, duration, rainbow, rtttl, sound, hold.}}'
+                : '{{Muestra una notificación en AWTRIX NG (/api/v1/notify). Acepta texto simple o JSON con text, icon, color, duration, rainbow, sound, hold, progress.}}',
             placeholder: '{{Texto o JSON de notificación...}}',
             presets: [
                 { label: '{{Texto simple}}', value: 'Hola desde Jeedom' },
                 { label: '{{Con icono y color}}', value: '{"text":"Puerta abierta","icon":"alert","color":"#FF5500","duration":8}' },
-                { label: '{{Arcoíris + sonido}}', value: '{"text":"¡Alerta!","rainbow":true,"sound":"beep","hold":false}' }
+                { label: '{{Arcoíris + sonido}}', value: isLegacy
+                    ? '{"text":"¡Alerta!","rainbow":true,"rtttl":"beep:d=4,o=5,b=120:c6","hold":false}'
+                    : '{"text":"¡Alerta!","rainbow":true,"sound":"beep","hold":false}'
+                }
             ]
         },
         dismiss_notif: {
-            desc: '{{Descarta la notificación activa en pantalla y vuelve al carrusel (compatible AWTRIX NG y AWTRIX 3).}}',
+            desc: '{{Descarta la notificación activa en pantalla y vuelve al carrusel.}}',
             presets: []
         },
         play_sound: {
-            desc: '{{Reproduce una melodía RTTTL o un archivo MP3 del panel. En AWTRIX 3 los MP3 usan /api/sound y los RTTTL /api/rtttl automáticamente.}}',
+            desc: isLegacy
+                ? '{{Reproduce sonido en AWTRIX 3: los .mp3 usan /api/sound y las melodías RTTTL usan /api/rtttl automáticamente.}}'
+                : '{{Reproduce una melodía RTTTL o archivo MP3 mediante AWTRIX NG.}}',
             placeholder: '{{Nombre de sonido, archivo .mp3 o cadena RTTTL...}}',
-            presets: [
+            presets: isLegacy ? [
+                { label: 'alarm.mp3', value: 'alarm.mp3' },
+                { label: 'RTTTL Mario', value: 'mario:d=4,o=5,b=100:16e6,16e6,32p,8e6,16c6,8e6,8g6,8p,8g' },
+                { label: 'RTTTL Corto', value: 'beep:d=4,o=5,b=120:c6' }
+            ] : [
                 { label: 'beep.mp3', value: 'beep' },
                 { label: 'RTTTL Mario', value: 'mario:d=4,o=5,b=100:16e6,16e6,32p,8e6,16c6,8e6,8g6,8p,8g' },
                 { label: 'RTTTL Corto', value: 'beep:d=4,o=5,b=120:c6' }
             ]
         },
         tts: {
-            desc: '{{Reproduce texto por voz (TTS). Solo disponible en firmware AWTRIX NG; AWTRIX 3 devolverá aviso de incompatibilidad.}}',
+            desc: '{{Reproduce texto por voz (TTS) en AWTRIX NG.}}',
             placeholder: '{{Texto a pronunciar...}}',
             presets: [
                 { label: '{{Saludo}}', value: 'Hola, sistema Jeedom operativo' },
@@ -2928,29 +2956,91 @@ function awtrixGetCmdTesterMeta(logicalId) {
             ]
         },
         custom_app: {
-            desc: '{{Crea o actualiza una aplicación personalizada en el carrusel mediante JSON o texto (compatible AWTRIX NG y AWTRIX 3).}}',
+            desc: isLegacy
+                ? '{{Crea o actualiza una app personalizada en AWTRIX 3 (/api/custom?name=...).}}'
+                : '{{Crea o actualiza una app personalizada en AWTRIX NG (/api/v1/apps/custom).}}',
             placeholder: '{{JSON de app personalizada...}}',
             presets: [
                 { label: '{{Ejemplo Salón}}', value: '{"name":"salon","text":"22.5 C","icon":"thermometer","color":"#00FFAA"}' }
             ]
         },
         delete_app: {
-            desc: '{{Elimina una aplicación personalizada del carrusel indicando su nombre (compatible AWTRIX NG y AWTRIX 3).}}',
+            desc: '{{Elimina una aplicación personalizada del carrusel indicando su nombre.}}',
             placeholder: '{{Nombre de la app a eliminar...}}',
             presets: [
                 { label: 'salon', value: 'salon' }
             ]
         },
         sync_apps: {
-            desc: '{{Sincroniza todas las aplicaciones de carrusel configuradas en la pestaña Información del Panel (compatible AWTRIX NG y AWTRIX 3).}}',
+            desc: '{{Sincroniza todas las aplicaciones de carrusel configuradas en Información del Panel.}}',
             presets: []
         }
     };
     return meta[logicalId] || {
-        desc: '{{Ejecuta este comando directamente sobre el panel seleccionado.}}',
+        desc: '{{Ejecuta este comando directamente sobre este panel.}}',
         placeholder: '{{Valor o parámetro...}}',
         presets: []
     };
+}
+
+function awtrixPollTesterLiveScreen() {
+    if (!$('#awtrix_tester_live_canvas').length || !$('#awtrix_tester_live_canvas').is(':visible')) return;
+    var ip = $.trim($('#input_device_ip').val());
+    var port = parseInt($('#input_device_port').val(), 10) || 80;
+    if (!ip) {
+        $('#awtrix_tester_live_status').text('{{Sin IP configurada}}');
+        return;
+    }
+
+    $.ajax({
+        type: 'POST',
+        url: 'plugins/awtrixng/core/ajax/awtrixng.ajax.php',
+        data: {
+            action: 'getLiveScreen',
+            ip: ip,
+            port: port,
+            password: $.trim($('#input_device_password').val() || ''),
+            api_version: window.awtrixTesterContext.apiVersion || 'v1'
+        },
+        dataType: 'json',
+        global: false,
+        success: function(data) {
+            var canvas = document.getElementById('awtrix_tester_live_canvas');
+            if (!canvas) return;
+            if (data.state === 'ok' && data.result && $.isArray(data.result.pixels) && data.result.pixels.length > 0) {
+                var w = data.result.width || window.awtrixTesterContext.width || parseInt($('#input_matrix_width').val(), 10) || 32;
+                var h = data.result.height || window.awtrixTesterContext.height || parseInt($('#input_matrix_height').val(), 10) || 8;
+                if (!data.result.width && data.result.pixels.length === 832) { w = 52; h = 16; }
+                renderAwtrixPixelsToCanvas(canvas, data.result.pixels, w, h);
+                $('#awtrix_tester_live_dims').text('(' + w + '×' + h + ')');
+                var now = new Date();
+                var hh = ('0' + now.getHours()).slice(-2);
+                var mm = ('0' + now.getMinutes()).slice(-2);
+                var ss = ('0' + now.getSeconds()).slice(-2);
+                $('#awtrix_tester_live_status').text('{{En vivo}} · ' + hh + ':' + mm + ':' + ss);
+            } else {
+                $('#awtrix_tester_live_status').text('{{Sin respuesta de pantalla}}');
+            }
+        },
+        error: function() {
+            $('#awtrix_tester_live_status').text('{{Sin conexión con el panel}}');
+        }
+    });
+}
+
+function awtrixStartTesterLiveTimer() {
+    if (window.awtrixTesterContext.liveTimer) {
+        clearInterval(window.awtrixTesterContext.liveTimer);
+        window.awtrixTesterContext.liveTimer = null;
+    }
+    if ($('#btn_awtrix_tester_live_toggle').data('live') == 1) {
+        awtrixPollTesterLiveScreen();
+        window.awtrixTesterContext.liveTimer = setInterval(function() {
+            if ($('#btn_awtrix_tester_live_toggle').data('live') == 1) {
+                awtrixPollTesterLiveScreen();
+            }
+        }, 1500);
+    }
 }
 
 function awtrixUpdateCmdTesterUI() {
@@ -2958,7 +3048,7 @@ function awtrixUpdateCmdTesterUI() {
     var $opt = $sel.find('option:selected');
     var subType = $opt.data('subtype') || 'other';
     var logicalId = $opt.data('logicalid') || '';
-    var meta = awtrixGetCmdTesterMeta(logicalId);
+    var meta = awtrixGetCmdTesterMeta(logicalId, window.awtrixTesterContext);
 
     $('#in_awtrix_cmd_tester_msg').hide().val('');
     $('#in_awtrix_cmd_tester_slider').hide();
@@ -3009,8 +3099,32 @@ function awtrixInitCmdTester(_eqLogic) {
         return;
     }
 
+    var cfg = _eqLogic.configuration || {};
+    var apiVer = cfg.api_version || 'v1';
+    var isLegacy = (apiVer === 'legacy');
+    var w = parseInt(cfg.matrix_width, 10) || 32;
+    var h = parseInt(cfg.matrix_height, 10) || 8;
+    var fw = cfg.detected_firmware || '';
+
+    window.awtrixTesterContext.apiVersion = apiVer;
+    window.awtrixTesterContext.isLegacy = isLegacy;
+    window.awtrixTesterContext.firmware = fw;
+    window.awtrixTesterContext.width = w;
+    window.awtrixTesterContext.height = h;
+    window.awtrixTesterContext.hasAudioTts = (cfg.has_audio_tts === undefined || cfg.has_audio_tts == 1);
+
+    var badgeText = (isLegacy ? 'AWTRIX 3 / Legacy' : 'AWTRIX NG (' + apiVer + ')')
+        + (fw ? ' · v' + fw : '')
+        + ' · ' + w + '×' + h;
+    $('#awtrix_tester_fw_badge')
+        .text(badgeText)
+        .removeClass('label-info label-warning')
+        .addClass(isLegacy ? 'label-warning' : 'label-info');
+
     var actionCmds = _eqLogic.cmd.filter(function(c) {
-        return c.type === 'action';
+        if (c.type !== 'action') return false;
+        if (isLegacy && c.logicalId === 'tts') return false;
+        return true;
     });
 
     if (!actionCmds.length) {
@@ -3032,10 +3146,31 @@ function awtrixInitCmdTester(_eqLogic) {
 
     $box.show();
     awtrixUpdateCmdTesterUI();
+    awtrixStartTesterLiveTimer();
 }
 
 $(document).off('change.awtrixTester', '#sel_awtrix_cmd_tester').on('change.awtrixTester', '#sel_awtrix_cmd_tester', function() {
     awtrixUpdateCmdTesterUI();
+});
+
+$(document).off('click.awtrixTester', '#btn_awtrix_tester_live_toggle').on('click.awtrixTester', '#btn_awtrix_tester_live_toggle', function() {
+    var $btn = $(this);
+    var isOn = ($btn.data('live') == 1);
+    if (isOn) {
+        $btn.data('live', 0).removeClass('btn-success').addClass('btn-default').html('<i class="fas fa-broadcast-tower"></i> ' + '{{En Vivo: OFF}}');
+        $('#awtrix_tester_live_status').text('{{Pausado}}');
+        if (window.awtrixTesterContext.liveTimer) {
+            clearInterval(window.awtrixTesterContext.liveTimer);
+            window.awtrixTesterContext.liveTimer = null;
+        }
+    } else {
+        $btn.data('live', 1).removeClass('btn-default').addClass('btn-success').html('<i class="fas fa-broadcast-tower"></i> ' + '{{En Vivo: ON}}');
+        awtrixStartTesterLiveTimer();
+    }
+});
+
+$(document).off('click.awtrixTester', '#btn_awtrix_tester_live_refresh').on('click.awtrixTester', '#btn_awtrix_tester_live_refresh', function() {
+    awtrixPollTesterLiveScreen();
 });
 
 $(document).off('click.awtrixTester', '#btn_awtrix_cmd_tester_run').on('click.awtrixTester', '#btn_awtrix_cmd_tester_run', function() {
@@ -3061,6 +3196,7 @@ $(document).off('click.awtrixTester', '#btn_awtrix_cmd_tester_run').on('click.aw
         },
         success: function() {
             $('#div_alert').showAlert({message: '{{Comando ejecutado correctamente}}', level: 'success'});
+            setTimeout(awtrixPollTesterLiveScreen, 450);
         }
     });
 });

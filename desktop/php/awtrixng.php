@@ -414,12 +414,35 @@ foreach ($eqLogics as $eqLogicItem) {
                     </fieldset>
                 </form>
 
-                <!-- Interactive Command Tester -->
+                <!-- Interactive Command Tester & Live Visualizer -->
                 <div class="well well-sm" id="awtrix_cmd_tester_box" style="margin-top: 15px; border-left: 4px solid #5bc0de; display: none;">
-                    <div style="margin-bottom: 8px;">
-                        <h4 style="margin: 0 0 4px 0;"><i class="fas fa-vial text-info"></i> {{Prueba los comandos disponibles}}</h4>
-                        <span class="help-block" style="margin: 0; font-size: 12px;">{{Selecciona cualquier comando de la lista para ver su utilidad, compatibilidad (AWTRIX NG / AWTRIX 3) y probarlo directamente en este panel.}}</span>
+                    <div style="margin-bottom: 10px; display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 8px;">
+                        <div>
+                            <h4 style="margin: 0 0 4px 0;">
+                                <i class="fas fa-vial text-info"></i> {{Prueba los comandos disponibles}}
+                                <span id="awtrix_tester_fw_badge" class="label label-info" style="font-size: 11px; margin-left: 6px; vertical-align: middle;"></span>
+                            </h4>
+                            <span class="help-block" style="margin: 0; font-size: 12px;">{{Comandos personalizados según el firmware y hardware de este panel, con visualizador en vivo de lo que muestra ahora mismo el dispositivo.}}</span>
+                        </div>
+                        <div style="display: flex; gap: 6px; align-items: center;">
+                            <button type="button" class="btn btn-xs btn-success" id="btn_awtrix_tester_live_toggle" data-live="1">
+                                <i class="fas fa-broadcast-tower"></i> {{En Vivo: ON}}
+                            </button>
+                            <button type="button" class="btn btn-xs btn-default" id="btn_awtrix_tester_live_refresh" title="{{Actualizar captura ahora}}">
+                                <i class="fas fa-sync-alt"></i>
+                            </button>
+                        </div>
                     </div>
+
+                    <!-- Live Device Screen Visualizer -->
+                    <div id="awtrix_tester_live_wrap" style="background: #141413; border-radius: 8px; padding: 8px 10px; margin-bottom: 12px; border: 1px solid #2b2b29;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; font-size: 11px; color: #bbb;">
+                            <span><i class="fas fa-tv" style="color: #5bc0de;"></i> {{Pantalla actual del dispositivo}} <small id="awtrix_tester_live_dims" style="color: #888;"></small></span>
+                            <span id="awtrix_tester_live_status" style="color: #888;">{{Esperando datos...}}</span>
+                        </div>
+                        <canvas id="awtrix_tester_live_canvas" width="384" height="96" style="width: 100%; max-width: 640px; height: auto; aspect-ratio: 32 / 8; image-rendering: pixelated; display: block; margin: 0 auto; background: #000000; border-radius: 4px;"></canvas>
+                    </div>
+
                     <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 8px;">
                         <select class="form-control input-sm" id="sel_awtrix_cmd_tester" style="min-width: 240px; max-width: 340px;"></select>
                         <div id="div_awtrix_cmd_tester_inputs" style="flex: 1; min-width: 220px; display: flex; gap: 6px; align-items: center;">

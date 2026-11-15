@@ -221,23 +221,17 @@ try {
         $port = intval(init('port', 80));
         if ($port <= 0) $port = 80;
         $password = trim(init('password', ''));
+        $apiVersion = trim(init('api_version', ''));
         if (empty($ip)) {
             ajax::success(array('pixels' => array()));
         }
-        // 1. Probar endpoint Awtrix NG v1
-        $ch = curl_init("http://{$ip}:{$port}/api/v1/display/screen");
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 2);
-        if (!empty($password)) {
-            curl_setopt($ch, CURLOPT_USERPWD, 'admin:' . $password);
-        }
-        $res = curl_exec($ch);
-        $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);
 
-        // 2. Fallback estándar Awtrix Light / Awtrix 3 (/api/screen)
-        if ($code !== 200 || empty($res)) {
-            $ch = curl_init("http://{$ip}:{$port}/api/screen");
+        $endpoints = ($apiVersion === 'legacy')
+            ? array("http://{$ip}:{$port}/api/screen", "http://{$ip}:{$port}/api/v1/display/screen")
+            : array("http://{$ip}:{$port}/api/v1/display/screen", "http://{$ip}:{$port}/api/screen");
+
+        foreach ($endpoints as $url) {
+            $ch = curl_init($url);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($ch, CURLOPT_TIMEOUT, 2);
             if (!empty($password)) {
@@ -246,12 +240,18 @@ try {
             $res = curl_exec($ch);
             $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
             curl_close($ch);
-        }
 
-        if ($code === 200 && !empty($res)) {
-            $decoded = json_decode($res, true);
-            if (is_array($decoded)) {
-                ajax::success($decoded);
+            if ($code === 200 && !empty($res)) {
+                $decoded = json_decode($res, true);
+                if (is_array($decoded)) {
+                    if (isset($decoded['pixels']) && is_array($decoded['pixels'])) {
+                        ajax::success($decoded);
+                    }
+                    // AWTRIX 3 /api/screen returns a flat array of RGB ints
+                    if (isset($decoded[0]) || empty($decoded)) {
+                        ajax::success(array('pixels' => $decoded));
+                    }
+                }
             }
         }
         ajax::success(array('pixels' => array()));
