@@ -270,6 +270,7 @@ function renderAwtrixPixelsToCanvas(canvas, pixels, width, height) {
         canvas.height = height * cellSize;
         canvas.style.aspectRatio = width + ' / ' + height;
     }
+    canvas.style.width = (width * cellSize) + 'px';
 
     var ctx = canvas.getContext('2d');
     ctx.fillStyle = '#000000';

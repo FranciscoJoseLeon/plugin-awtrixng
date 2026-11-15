@@ -435,12 +435,12 @@ foreach ($eqLogics as $eqLogicItem) {
                     </div>
 
                     <!-- Live Device Screen Visualizer -->
-                    <div id="awtrix_tester_live_wrap" style="background: #141413; border-radius: 8px; padding: 8px 10px; margin-bottom: 12px; border: 1px solid #2b2b29;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; font-size: 11px; color: #bbb;">
+                    <div id="awtrix_tester_live_wrap" style="background: #141413; border-radius: 8px; padding: 8px 12px; margin: 0 auto 12px auto; border: 1px solid #2b2b29; width: fit-content; max-width: 100%;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 6px; font-size: 11px; color: #bbb;">
                             <span><i class="fas fa-tv" style="color: #5bc0de;"></i> {{Pantalla actual del dispositivo}} <small id="awtrix_tester_live_dims" style="color: #888;"></small></span>
                             <span id="awtrix_tester_live_status" style="color: #888;">{{Esperando datos...}}</span>
                         </div>
-                        <canvas id="awtrix_tester_live_canvas" width="384" height="96" style="max-width: 100%; height: auto; aspect-ratio: 32 / 8; image-rendering: pixelated; display: block; margin: 0 auto; background: #000000; border-radius: 4px;"></canvas>
+                        <canvas id="awtrix_tester_live_canvas" width="384" height="96" style="width: 384px; max-width: 100%; height: auto; aspect-ratio: 32 / 8; image-rendering: pixelated; display: block; margin: 0 auto; background: #000000; border-radius: 4px;"></canvas>
                     </div>
 
                     <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 8px;">
