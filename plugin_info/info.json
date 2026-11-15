@@ -33,8 +33,8 @@
     "diy",
     "mobile"
   ],
-  "documentation": "https://blueforcer.github.io/awtrix-ng/esp32/",
-  "changelog": "https://github.com/FranciscoJoseLeon/Jeedom-Awtrixng/blob/main/docs/es_ES/changelog.md",
+  "documentation": "https://github.com/FranciscoJoseLeon/plugin-awtrixng/blob/main/docs/#language#/index.md",
+  "changelog": "https://github.com/FranciscoJoseLeon/plugin-awtrixng/blob/main/docs/#language#/changelog.md",
   "link": {
     "get_started": "https://blueforcer.github.io/awtrix-ng/esp32/",
     "diy_build": "https://blueforcer.github.io/awtrix-ng/esp32/advanced/diy-build/"
