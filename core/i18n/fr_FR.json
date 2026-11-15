@@ -766,7 +766,9 @@
         "Sin conexión con el panel": "Aucune connexion avec le panneau",
         "Sin respuesta de pantalla": "Aucune réponse de l’écran",
         "Sincroniza todas las aplicaciones de carrusel configuradas en Información del Panel.": "Synchronise toutes les applications du carrousel configurées dans Informations du panneau.",
-        "Vuelve a la aplicación anterior del carrusel.": "Revient à l’application précédente du carrousel."
+        "Vuelve a la aplicación anterior del carrusel.": "Revient à l’application précédente du carrousel.",
+        "Cambiar modelo": "Changer de modèle",
+        "Ocultar otros modelos": "Masquer les autres modèles"
     },
     "plugins/awtrixng/desktop/modal/modal.awtrixng.php": {
         "401 - Acceso no autorizado": "401 - Accès non autorisé",

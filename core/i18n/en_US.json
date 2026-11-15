@@ -766,7 +766,9 @@
         "Sin conexión con el panel": "No connection to panel",
         "Sin respuesta de pantalla": "No screen response",
         "Sincroniza todas las aplicaciones de carrusel configuradas en Información del Panel.": "Syncs all carousel apps configured in Panel Info.",
-        "Vuelve a la aplicación anterior del carrusel.": "Returns to the previous carousel app."
+        "Vuelve a la aplicación anterior del carrusel.": "Returns to the previous carousel app.",
+        "Cambiar modelo": "Change model",
+        "Ocultar otros modelos": "Hide other models"
     },
     "plugins/awtrixng/desktop/modal/modal.awtrixng.php": {
         "401 - Acceso no autorizado": "401 - Unauthorized access",

@@ -59,6 +59,13 @@ function updateModelCardUI(selectedModel) {
     $('.modelRadio[value="' + selectedModel + '"]').prop('checked', true);
     $('#input_awtrix_model').val(selectedModel);
 
+    if ($('#bt_toggleAllModels').data('expanded') != 1) {
+        $('.awtrix-model-col').hide();
+        $('.awtrix-model-card[data-model="' + selectedModel + '"]').closest('.awtrix-model-col').show();
+    } else {
+        $('.awtrix-model-col').show();
+    }
+
     var activeW = 32;
     var activeH = 8;
     if (selectedModel === 'custom') {
@@ -106,14 +113,29 @@ function updateModelCardUI(selectedModel) {
     }
 }
 
+// Toggle showing all model cards vs only the selected model
+$(document).off('click.awtrixng', '#bt_toggleAllModels').on('click.awtrixng', '#bt_toggleAllModels', function() {
+    var $btn = $(this);
+    var expanded = ($btn.data('expanded') == 1);
+    if (expanded) {
+        $btn.data('expanded', 0).html('<i class="fas fa-exchange-alt"></i> ' + '{{Cambiar modelo}}');
+        updateModelCardUI($('#input_awtrix_model').val() || '32x8');
+    } else {
+        $btn.data('expanded', 1).html('<i class="fas fa-compress-alt"></i> ' + '{{Ocultar otros modelos}}');
+        $('.awtrix-model-col').show();
+    }
+});
+
 // Click on model card
 $(document).on('click.awtrixng', '.awtrix-model-card', function() {
     var model = $(this).attr('data-model');
+    $('#bt_toggleAllModels').data('expanded', 0).html('<i class="fas fa-exchange-alt"></i> ' + '{{Cambiar modelo}}');
     updateModelCardUI(model);
 });
 
 // Change on radio
 $(document).on('change.awtrixng', '.modelRadio', function() {
+    $('#bt_toggleAllModels').data('expanded', 0).html('<i class="fas fa-exchange-alt"></i> ' + '{{Cambiar modelo}}');
     updateModelCardUI($(this).val());
 });
 

@@ -244,9 +244,14 @@ foreach ($eqLogics as $eqLogicItem) {
                         <div class="form-group">
                             <label class="col-sm-3 control-label">{{Tipo y Tamaño de Matriz}}</label>
                             <div class="col-sm-9">
-                                <div class="row">
+                                <div style="margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
+                                    <button type="button" class="btn btn-xs btn-default" id="bt_toggleAllModels" data-expanded="0">
+                                        <i class="fas fa-exchange-alt"></i> {{Cambiar modelo}}
+                                    </button>
+                                </div>
+                                <div class="row" id="awtrix_model_cards_row">
                                     <!-- 32x8 Card (TC001 & DIY) with Real Photo -->
-                                    <div class="col-xs-12 col-sm-4">
+                                    <div class="col-xs-12 col-sm-4 awtrix-model-col">
                                         <div class="panel panel-default awtrix-model-card" data-model="32x8" style="cursor: pointer; border: 2px solid #ddd; border-radius: 10px; overflow: hidden; margin-bottom: 15px; transition: all 0.25s ease; box-shadow: 0 2px 8px rgba(0,0,0,0.06);">
                                             <div style="width: 100%; height: 140px; background: #e9ecef; overflow: hidden; position: relative;">
                                                 <img src="plugins/awtrixng/plugin_info/images/tc001_32x8.jpg" alt="Ulanzi TC001 32x8" style="width: 100%; height: 100%; object-fit: cover; display: block;" onerror="this.src='plugins/awtrixng/plugin_info/awtrixng_icon.png'">
@@ -266,7 +271,7 @@ foreach ($eqLogics as $eqLogicItem) {
                                     </div>
 
                                     <!-- 52x16 Card (TC002) with Real Photo -->
-                                    <div class="col-xs-12 col-sm-4">
+                                    <div class="col-xs-12 col-sm-4 awtrix-model-col">
                                         <div class="panel panel-default awtrix-model-card" data-model="52x16" style="cursor: pointer; border: 2px solid #ddd; border-radius: 10px; overflow: hidden; margin-bottom: 15px; transition: all 0.25s ease; box-shadow: 0 2px 8px rgba(0,0,0,0.06);">
                                             <div style="width: 100%; height: 140px; background: #e9ecef; overflow: hidden; position: relative;">
                                                 <img src="plugins/awtrixng/plugin_info/images/tc002_52x16.jpg" alt="Ulanzi TC002 52x16" style="width: 100%; height: 100%; object-fit: cover; display: block;" onerror="this.src='plugins/awtrixng/plugin_info/awtrixng_icon.png'">
@@ -286,7 +291,7 @@ foreach ($eqLogics as $eqLogicItem) {
                                     </div>
 
                                     <!-- Custom Size DIY Card (Official Awtrix NG DIY: 32x8 to 128x8) -->
-                                    <div class="col-xs-12 col-sm-4">
+                                    <div class="col-xs-12 col-sm-4 awtrix-model-col">
                                         <div class="panel panel-default awtrix-model-card" data-model="custom" style="cursor: pointer; border: 2px solid #ddd; border-radius: 10px; overflow: hidden; margin-bottom: 15px; transition: all 0.25s ease; box-shadow: 0 2px 8px rgba(0,0,0,0.06);">
                                             <div style="width: 100%; height: 140px; background: #0f172a; overflow: hidden; position: relative;">
                                                 <img src="plugins/awtrixng/plugin_info/images/diy_matrix.png" alt="Matriz DIY 32x8 a 128x8" style="width: 100%; height: 100%; object-fit: cover; display: block;" onerror="this.src='plugins/awtrixng/plugin_info/awtrixng_icon.png'">
