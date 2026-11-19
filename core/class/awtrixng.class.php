@@ -94,8 +94,8 @@ class awtrixng extends eqLogic {
             $ch = curl_init();
             curl_setopt($ch, CURLOPT_URL, $url);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_TIMEOUT, 4);
-            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 3);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 8);
+            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 6);
             if (!empty($password)) {
                 curl_setopt($ch, CURLOPT_USERPWD, 'admin:' . $password);
             }
@@ -545,13 +545,16 @@ class awtrixng extends eqLogic {
         if ($port <= 0) $port = 80;
 
         $url = 'http://' . $ip . ':' . $port . '/api/' . ltrim($endpoint, '/');
-        $timeout = intval(config::byKey('timeout', 'awtrixng', 5));
+        $timeout = intval(config::byKey('timeout', 'awtrixng', 6));
+        if ($timeout < 6) {
+            $timeout = 6;
+        }
 
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);
-        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 3);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 6);
 
         $headers = array('Content-Type: application/json; charset=utf-8');
 

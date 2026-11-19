@@ -303,7 +303,8 @@ try {
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'PUT');
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 4);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 6);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 6);
         curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
         if (!empty($password)) {
             curl_setopt($ch, CURLOPT_USERPWD, 'admin:' . $password);
@@ -320,7 +321,8 @@ try {
             curl_setopt($ch2, CURLOPT_POST, true);
             curl_setopt($ch2, CURLOPT_POSTFIELDS, json_encode($payload));
             curl_setopt($ch2, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch2, CURLOPT_TIMEOUT, 4);
+            curl_setopt($ch2, CURLOPT_TIMEOUT, 6);
+            curl_setopt($ch2, CURLOPT_CONNECTTIMEOUT, 6);
             curl_setopt($ch2, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
             if (!empty($password)) curl_setopt($ch2, CURLOPT_USERPWD, 'admin:' . $password);
             $resp2 = curl_exec($ch2);
