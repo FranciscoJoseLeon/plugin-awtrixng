@@ -51,26 +51,22 @@
             <span class="awtrix-slider-val">#brightness#%</span>
         </div>
 
-        <!-- SELECTOR DE TODOS LOS COMANDOS DEL PANEL -->
-        <div class="awtrix-quick-action-row">
-            <div style="display: flex; gap: 4px; align-items: center;">
-                <select class="form-control input-sm awtrix-widget-cmd-select" style="flex: 1;" title="{{Seleccionar comando}}">
-                    #cmd_options#
-                </select>
-                <a href="#eqLogic_href#" class="btn btn-xs btn-default awtrix-btn-help-link reportModeHidden" title="{{Ayuda, configuración y visualizador}}">
-                    <i class="fas fa-question-circle"></i>
-                </a>
-            </div>
-            <div class="input-group input-group-sm" style="margin-top: 4px;">
+        <!-- BARRA INTEGRADA DE COMANDO (FILA ÚNICA ESTILO LOVELACE) -->
+        <div class="awtrix-quick-action-row awtrix-unified-action-bar">
+            <select class="form-control input-sm awtrix-widget-cmd-select" title="{{Seleccionar comando}}">
+                #cmd_options#
+            </select>
+            <div class="awtrix-input-wrapper">
                 <input type="text" class="form-control awtrix-input-text" placeholder="{{Texto o JSON de notificación...}}" />
                 <select class="form-control awtrix-input-select" style="display: none;"></select>
                 <input type="number" class="form-control awtrix-input-slider" min="0" max="100" value="#brightness#" style="display: none;" />
-                <div class="input-group-btn">
-                    <button type="button" class="btn btn-warning awtrix-btn-run-selected" title="{{Ejecutar comando}}">
-                        <i class="fas fa-play"></i>
-                    </button>
-                </div>
             </div>
+            <button type="button" class="btn btn-warning awtrix-btn-run-selected" title="{{Ejecutar comando}}">
+                <i class="fas fa-play"></i>
+            </button>
+            <a href="#eqLogic_href#" class="btn btn-default awtrix-btn-help-link reportModeHidden" title="{{Ayuda, configuración y visualizador}}">
+                <i class="fas fa-question-circle"></i>
+            </a>
         </div>
     </div>
 
@@ -173,61 +169,148 @@
             font-weight: bold;
             color: #F59E0B;
         }
-        .awtrix-quick-action-row .awtrix-widget-cmd-select {
+        /* BARRA INTEGRADA DE COMANDO (FILA ÚNICA ESTILO LOVELACE) */
+        .awtrix-unified-action-bar {
+            display: flex !important;
+            align-items: stretch !important;
+            height: 28px !important;
+            background: rgba(0, 0, 0, 0.35) !important;
+            border: 1px solid rgba(255, 255, 255, 0.14) !important;
+            border-radius: 6px !important;
+            overflow: hidden !important;
+            margin-top: 4px !important;
+            box-sizing: border-box !important;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        .awtrix-unified-action-bar:focus-within {
+            border-color: rgba(245, 158, 11, 0.6) !important;
+            box-shadow: 0 0 6px rgba(245, 158, 11, 0.25) !important;
+        }
+        .awtrix-unified-action-bar .awtrix-widget-cmd-select {
             -webkit-appearance: none !important;
             -moz-appearance: none !important;
             appearance: none !important;
-            background: rgba(255, 255, 255, 0.08) !important;
-            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23F59E0B' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e") !important;
+            background: rgba(255, 255, 255, 0.07) !important;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23F59E0B' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e") !important;
             background-repeat: no-repeat !important;
-            background-position: right 8px center !important;
-            background-size: 12px 12px !important;
-            border: 1px solid rgba(255, 255, 255, 0.18) !important;
-            color: #FFF !important;
-            border-radius: 4px !important;
+            background-position: right 6px center !important;
+            background-size: 10px 10px !important;
+            border: none !important;
+            border-right: 1px solid rgba(255, 255, 255, 0.12) !important;
+            border-radius: 0 !important;
+            color: #EAE6DF !important;
             font-size: 11px !important;
-            height: 26px !important;
-            padding: 2px 24px 2px 8px !important;
-            cursor: pointer;
+            font-weight: 500 !important;
+            height: 100% !important;
+            line-height: 26px !important;
+            padding: 0 18px 0 8px !important;
+            cursor: pointer !important;
+            max-width: 95px !important;
+            min-width: 75px !important;
+            flex-shrink: 0 !important;
+            text-overflow: ellipsis !important;
+            white-space: nowrap !important;
+            overflow: hidden !important;
+            box-shadow: none !important;
         }
-        .awtrix-quick-action-row .awtrix-widget-cmd-select option,
-        .awtrix-quick-action-row .awtrix-input-select option {
-            background: #23211E;
+        .awtrix-unified-action-bar .awtrix-widget-cmd-select option {
+            background: #1c1917;
             color: #FFF;
         }
-        .awtrix-quick-action-row .awtrix-btn-help-link {
-            background: rgba(245, 158, 11, 0.15) !important;
-            border: 1px solid rgba(245, 158, 11, 0.35) !important;
-            color: #F59E0B !important;
-            height: 26px;
-            line-height: 22px;
-            padding: 1px 7px;
-            border-radius: 4px !important;
+        .awtrix-unified-action-bar .awtrix-input-wrapper {
+            flex: 1 1 auto !important;
+            min-width: 0 !important;
+            display: flex !important;
+            align-items: stretch !important;
+            height: 100% !important;
         }
-        .awtrix-quick-action-row .awtrix-btn-help-link:hover {
-            background: rgba(245, 158, 11, 0.3) !important;
+        .awtrix-unified-action-bar .form-control.awtrix-input-text,
+        .awtrix-unified-action-bar .form-control.awtrix-input-slider {
+            background: transparent !important;
+            border: none !important;
+            border-radius: 0 !important;
             color: #FFF !important;
+            font-size: 11px !important;
+            height: 100% !important;
+            padding: 0 8px !important;
+            box-shadow: none !important;
+            outline: none !important;
+            width: 100% !important;
         }
-        .awtrix-quick-action-row .form-control.awtrix-input-text,
-        .awtrix-quick-action-row .form-control.awtrix-input-slider {
-            background: rgba(255, 255, 255, 0.1) !important;
-            border: 1px solid rgba(255, 255, 255, 0.2) !important;
-            color: #FFF !important;
-            border-radius: 4px 0 0 4px !important;
+        .awtrix-unified-action-bar .form-control.awtrix-input-text::placeholder {
+            color: rgba(255, 255, 255, 0.4) !important;
+            font-style: italic;
         }
-        .awtrix-quick-action-row .form-control.awtrix-input-select {
+        .awtrix-unified-action-bar .form-control.awtrix-input-text:disabled {
+            background: rgba(255, 255, 255, 0.02) !important;
+            color: rgba(255, 255, 255, 0.35) !important;
+            cursor: not-allowed;
+        }
+        .awtrix-unified-action-bar .form-control.awtrix-input-select {
             -webkit-appearance: none !important;
             -moz-appearance: none !important;
             appearance: none !important;
-            background: rgba(255, 255, 255, 0.08) !important;
+            background: transparent !important;
             background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23F59E0B' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e") !important;
             background-repeat: no-repeat !important;
-            background-position: right 8px center !important;
-            background-size: 12px 12px !important;
-            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            background-position: right 6px center !important;
+            background-size: 10px 10px !important;
+            border: none !important;
+            border-radius: 0 !important;
             color: #FFF !important;
-            border-radius: 4px 0 0 4px !important;
-            padding: 2px 24px 2px 8px !important;
+            font-size: 11px !important;
+            height: 100% !important;
+            padding: 0 20px 0 8px !important;
+            box-shadow: none !important;
+            outline: none !important;
+            width: 100% !important;
+            cursor: pointer !important;
+        }
+        .awtrix-unified-action-bar .form-control.awtrix-input-select option {
+            background: #1c1917;
+            color: #FFF;
+        }
+        .awtrix-unified-action-bar .awtrix-btn-run-selected {
+            background: rgba(245, 158, 11, 0.22) !important;
+            border: none !important;
+            border-left: 1px solid rgba(255, 255, 255, 0.12) !important;
+            border-radius: 0 !important;
+            color: #F59E0B !important;
+            font-size: 11px !important;
+            height: 100% !important;
+            width: 28px !important;
+            padding: 0 !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            cursor: pointer !important;
+            flex-shrink: 0 !important;
+            transition: background 0.15s ease, color 0.15s ease;
+        }
+        .awtrix-unified-action-bar .awtrix-btn-run-selected:hover {
+            background: #F59E0B !important;
+            color: #1C1917 !important;
+        }
+        .awtrix-unified-action-bar .awtrix-btn-help-link {
+            background: transparent !important;
+            border: none !important;
+            border-left: 1px solid rgba(255, 255, 255, 0.08) !important;
+            border-radius: 0 !important;
+            color: rgba(255, 255, 255, 0.35) !important;
+            font-size: 11px !important;
+            height: 100% !important;
+            width: 22px !important;
+            padding: 0 !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            cursor: pointer !important;
+            flex-shrink: 0 !important;
+            transition: color 0.15s ease, background 0.15s ease;
+        }
+        .awtrix-unified-action-bar .awtrix-btn-help-link:hover {
+            color: #F59E0B !important;
+            background: rgba(245, 158, 11, 0.12) !important;
         }
     </style>
 
@@ -261,9 +344,11 @@
                 }
 
                 if (sub === 'message') {
-                    $txt.attr('placeholder', ph).show();
+                    $txt.prop('disabled', false).attr('placeholder', ph || '...').val('').show();
                 } else if (sub === 'slider') {
                     $sld.show();
+                } else {
+                    $txt.prop('disabled', true).attr('placeholder', ph ? ('— ' + ph + ' —') : '—').val('').show();
                 }
             }
 
