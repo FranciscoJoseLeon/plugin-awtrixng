@@ -72,6 +72,8 @@
 
     <style>
         .awtrix-widget {
+            height: auto !important;
+            min-height: auto !important;
             background: linear-gradient(145deg, rgba(35, 33, 30, 0.96), rgba(20, 19, 18, 0.98)) !important;
             border-radius: 12px !important;
             border-top: 3px solid #F59E0B !important;
@@ -406,6 +408,14 @@
                     runSelectedAwtrixWidgetCmd();
                 }
             });
+
+            // Ajustar altura automáticamente al contenido y refrescar el grid de Jeedom si aplica
+            setTimeout(function() {
+                $widget.css('height', 'auto');
+                if (typeof jeedom !== 'undefined' && typeof jeedom.packery !== 'undefined' && typeof jeedom.packery.layout === 'function') {
+                    try { jeedom.packery.layout(); } catch (e) {}
+                }
+            }, 60);
         })();
     </script>
 </div>

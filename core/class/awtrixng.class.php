@@ -2188,6 +2188,10 @@ class awtrixng extends eqLogic {
         if ($version !== 'dashboard') {
             return parent::toHtml($_version);
         }
+        $replace['#height#'] = 'auto';
+        if (isset($replace['#style#'])) {
+            $replace['#style#'] = preg_replace('/height\s*:\s*[^;]+;?/', '', $replace['#style#']);
+        }
         $replace['#eqLogic_href#'] = $this->getLinkToConfiguration();
 
         $onlineCmd = $this->getCmd('info', 'online');
