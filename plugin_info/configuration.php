@@ -33,7 +33,7 @@ if (!isConnect()) {
         <div class="form-group">
             <label class="col-sm-3 control-label">{{Tiempo de espera HTTP (segundos)}}</label>
             <div class="col-sm-3">
-                <input type="number" class="configKey form-control" data-l1key="timeout" placeholder="5" value="5" />
+                <input type="number" class="configKey form-control" data-l1key="timeout" placeholder="10" value="10" />
             </div>
         </div>
         <div class="form-group">

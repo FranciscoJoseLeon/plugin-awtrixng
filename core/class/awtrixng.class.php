@@ -94,8 +94,8 @@ class awtrixng extends eqLogic {
             $ch = curl_init();
             curl_setopt($ch, CURLOPT_URL, $url);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_TIMEOUT, 8);
-            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 6);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
             if (!empty($password)) {
                 curl_setopt($ch, CURLOPT_USERPWD, 'admin:' . $password);
             }
@@ -545,16 +545,16 @@ class awtrixng extends eqLogic {
         if ($port <= 0) $port = 80;
 
         $url = 'http://' . $ip . ':' . $port . '/api/' . ltrim($endpoint, '/');
-        $timeout = intval(config::byKey('timeout', 'awtrixng', 6));
-        if ($timeout < 6) {
-            $timeout = 6;
+        $timeout = intval(config::byKey('timeout', 'awtrixng', 10));
+        if ($timeout < 10) {
+            $timeout = 10;
         }
 
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);
-        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 6);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, min(10, $timeout));
 
         $headers = array('Content-Type: application/json; charset=utf-8');
 
@@ -1614,7 +1614,7 @@ class awtrixng extends eqLogic {
             'created_at' => date('Y-m-d H:i:s'),
             'scope' => ($panelId === 'all' || empty($panelId)) ? 'all_panels' : 'single_panel',
             'global_config' => array(
-                'timeout' => config::byKey('timeout', 'awtrixng', 5),
+                'timeout' => config::byKey('timeout', 'awtrixng', 10),
                 'default_icon' => config::byKey('default_icon', 'awtrixng', '31805')
             ),
             'panels_count' => count($panelsData),
