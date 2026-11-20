@@ -2211,13 +2211,16 @@ class awtrixng extends eqLogic {
         $powerCmd = $this->getCmd('info', 'power_state');
         $isPowerOn = (!is_object($powerCmd) || $powerCmd->execCmd() == 1);
         $replace['#power_btn_class#'] = $isPowerOn ? 'awtrix-power-on' : 'awtrix-power-off';
+        $replace['#power_state_cmd_id#'] = is_object($powerCmd) ? $powerCmd->getId() : '';
 
         $briCmd = $this->getCmd('info', 'brightness_state');
         $replace['#brightness#'] = is_object($briCmd) ? intval($briCmd->execCmd()) : 50;
+        $replace['#brightness_state_cmd_id#'] = is_object($briCmd) ? $briCmd->getId() : '';
 
         $appCmd = $this->getCmd('info', 'current_app');
         $curApp = is_object($appCmd) ? trim((string)$appCmd->execCmd()) : '';
         $replace['#current_app#'] = ($curApp !== '') ? htmlspecialchars($curApp) : __('Reloj / Carrusel', __FILE__);
+        $replace['#current_app_cmd_id#'] = is_object($appCmd) ? $appCmd->getId() : '';
 
         // Telemetry pills (only if command has a value)
         $telPills = '';

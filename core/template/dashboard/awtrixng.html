@@ -26,7 +26,7 @@
         <div class="awtrix-display-section">
             <div class="awtrix-app-info" title="{{Aplicación actual en pantalla}}">
                 <i class="fas fa-tv" style="color: #F59E0B;"></i>
-                <span class="awtrix-current-app">#current_app#</span>
+                <span class="awtrix-current-app" data-cmd_id="#current_app_cmd_id#">#current_app#</span>
             </div>
             <div class="awtrix-display-controls">
                 <button type="button" class="btn btn-default btn-circle btn-sm cmd-btn-awtrix" data-cmd_id="#prev_app_id#" title="{{App anterior}}">
@@ -360,10 +360,59 @@
                 syncAwtrixWidgetCmdInput();
             });
 
+            // Botón de refresco con animación de giro y actualización en vivo
+            $widget.find('.cmd.refresh').off('click').on('click', function() {
+                var $icon = $(this).find('i');
+                $icon.addClass('fa-spin');
+                if ('#refresh_id#') {
+                    jeedom.cmd.execute({
+                        id: '#refresh_id#',
+                        success: function() {
+                            setTimeout(function() { $icon.removeClass('fa-spin'); }, 800);
+                        },
+                        error: function() {
+                            $icon.removeClass('fa-spin');
+                        }
+                    });
+                }
+            });
+
+            // Botones de control de pantalla (siguiente/anterior app, encendido, descartar)
             $widget.find('.cmd-btn-awtrix').off('click').on('click', function() {
                 var cmdId = $(this).attr('data-cmd_id');
                 if (cmdId) {
                     jeedom.cmd.execute({id: cmdId});
+                    // Tras cambiar de app o pulsar encendido, consultar el nuevo estado a los 600ms
+                    var isNav = (cmdId == '#next_app_id#' || cmdId == '#prev_app_id#' || cmdId == '#toggle_power_id#');
+                    if (isNav && '#refresh_id#') {
+                        setTimeout(function() {
+                            jeedom.cmd.execute({id: '#refresh_id#'});
+                        }, 600);
+                    }
+                }
+            });
+
+            // Listener de eventos en tiempo real de Jeedom (actualiza la app y estados sin recargar)
+            $('body').off('jeedom::cmd::update.awtrix#id#').on('jeedom::cmd::update.awtrix#id#', function(_event, _options) {
+                if (_options.cmd_id == '#current_app_cmd_id#') {
+                    var appName = _options.display_value || _options.value || '';
+                    $widget.find('.awtrix-current-app').text(appName || '{{Reloj / Carrusel}}');
+                }
+                if (_options.cmd_id == '#brightness_state_cmd_id#') {
+                    var bVal = parseInt(_options.display_value || _options.value, 10);
+                    if (!isNaN(bVal)) {
+                        $widget.find('.awtrix-brightness-slider').val(bVal);
+                        $widget.find('.awtrix-slider-val').text(bVal + '%');
+                    }
+                }
+                if (_options.cmd_id == '#power_state_cmd_id#') {
+                    var pVal = parseInt(_options.display_value || _options.value, 10);
+                    var $pBtn = $widget.find('[data-cmd_id="#toggle_power_id#"]');
+                    if (pVal === 1) {
+                        $pBtn.removeClass('awtrix-power-off').addClass('awtrix-power-on');
+                    } else {
+                        $pBtn.removeClass('awtrix-power-on').addClass('awtrix-power-off');
+                    }
                 }
             });
 
