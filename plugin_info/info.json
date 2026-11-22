@@ -35,6 +35,8 @@
   ],
   "documentation": "https://github.com/FranciscoJoseLeon/plugin-awtrixng/blob/main/docs/#language#/index.md",
   "changelog": "https://github.com/FranciscoJoseLeon/plugin-awtrixng/blob/main/docs/#language#/changelog.md",
+  "documentation_beta": "https://github.com/FranciscoJoseLeon/plugin-awtrixng/blob/beta/docs/#language#/index.md",
+  "changelog_beta": "https://github.com/FranciscoJoseLeon/plugin-awtrixng/blob/beta/docs/#language#/changelog.md",
   "link": {
     "get_started": "https://blueforcer.github.io/awtrix-ng/esp32/",
     "diy_build": "https://blueforcer.github.io/awtrix-ng/esp32/advanced/diy-build/"
