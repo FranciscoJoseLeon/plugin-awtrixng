@@ -33,7 +33,20 @@ if (!isConnect('admin')) {
         <div class="form-group">
             <label class="col-sm-3 control-label">{{Tiempo de espera HTTP (segundos)}}</label>
             <div class="col-sm-3">
-                <input type="number" class="configKey form-control" data-l1key="timeout" placeholder="10" value="10" />
+                <input type="number" class="configKey form-control" data-l1key="timeout" placeholder="5" value="5" min="1" max="60" />
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-3 control-label">{{Tiempo de conexión HTTP (segundos)}}</label>
+            <div class="col-sm-3">
+                <input type="number" class="configKey form-control" data-l1key="connect_timeout" placeholder="2" value="2" min="1" max="15" />
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-3 control-label">{{Silenciar errores en Centro de Mensajes}}</label>
+            <div class="col-sm-6">
+                <input type="checkbox" class="configKey" data-l1key="silence_offline_errors" checked />
+                <span class="help-block">{{Evita inundar el Centro de Mensajes de Jeedom cuando la pantalla esté apagada o fuera de cobertura WiFi. Los avisos se registran como advertencia en el log del plugin sin interrumpir los escenarios.}}</span>
             </div>
         </div>
         <div class="form-group">

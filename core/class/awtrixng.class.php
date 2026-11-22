@@ -94,8 +94,8 @@ class awtrixng extends eqLogic {
             $ch = curl_init();
             curl_setopt($ch, CURLOPT_URL, $url);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_TIMEOUT, 10);
-            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 3);
+            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 2);
             if (!empty($password)) {
                 curl_setopt($ch, CURLOPT_USERPWD, 'admin:' . $password);
             }
@@ -545,16 +545,21 @@ class awtrixng extends eqLogic {
         if ($port <= 0) $port = 80;
 
         $url = 'http://' . $ip . ':' . $port . '/api/' . ltrim($endpoint, '/');
-        $timeout = intval(config::byKey('timeout', 'awtrixng', 10));
-        if ($timeout < 10) {
-            $timeout = 10;
+        $timeout = intval(config::byKey('timeout', 'awtrixng', 5));
+        if ($timeout < 1) {
+            $timeout = 5;
+        }
+
+        $connectTimeout = intval(config::byKey('connect_timeout', 'awtrixng', 2));
+        if ($connectTimeout < 1) {
+            $connectTimeout = 2;
         }
 
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);
-        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, min(10, $timeout));
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $connectTimeout);
 
         $headers = array('Content-Type: application/json; charset=utf-8');
 
@@ -1370,7 +1375,6 @@ class awtrixng extends eqLogic {
                 log::add('awtrixng', 'info', "App carrusel v1 '{$cleanAppName}' actualizada en Awtrix con texto: '{$text}' (Color: " . ($color ?: 'por defecto') . ")");
                 return;
             } catch (Exception $e) {
-                log::add('awtrixng', 'error', "Error al actualizar app carrusel v1 '{$cleanAppName}': " . $e->getMessage());
                 throw $e;
             }
         }
@@ -2361,7 +2365,8 @@ class awtrixngCmd extends cmd {
         $title = isset($options['title']) ? $options['title'] : '';
         $message = isset($options['message']) ? $options['message'] : '';
 
-        switch ($logicalId) {
+        try {
+            switch ($logicalId) {
             case 'refresh':
                 $eqLogic->refresh();
                 break;
@@ -2509,6 +2514,14 @@ class awtrixngCmd extends cmd {
                 }
                 log::add('awtrixng', 'debug', "Comando {$logicalId} ejecutado sin acción específica");
                 break;
+            }
+        } catch (Exception $e) {
+            $silence = intval(config::byKey('silence_offline_errors', 'awtrixng', 1)) === 1;
+            if ($silence) {
+                log::add('awtrixng', 'warning', $this->getHumanName() . ' : ' . $e->getMessage());
+                return;
+            }
+            throw $e;
         }
     }
 }
